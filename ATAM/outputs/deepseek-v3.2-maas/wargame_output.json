@@ -1,0 +1,604 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "Wargame 2000 is a real-time, human-in-the-loop ballistic missile defense simulation system. It is designed to model concepts of operation, doctrine, and tactics in a realistic combat environment. The system supports distributed discrete event simulation, allowing for the integration of dissimilar parts and interoperability with other simulations via High Level Architecture (HLA).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Documentation existed in Rational Rose/UML but was considered weak for capturing discrete events. Some architectural drawings caused stakeholder confusion and required real-time refinement.",
+        "evaluator_inquiry_questions": [
+          "How are discrete simulation events represented in the static UML models?",
+          "Can you clarify the data flow in this architectural diagram to resolve stakeholder confusion?",
+          "How does the code reuse strategy align with the need for high-fidelity discrete event simulation?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed simulation environment capable of hosting online, offsite, and multiple simultaneous games.",
+          "Networked command centers allowing participants to play from their own locations."
+        ],
+        "runtime_constraints": [
+          "Must support 'Firm' real-time deadlines (statistical adherence).",
+          "Must provide 'Margin' (running faster than real-time) to support future requirements."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "initialization_time": "10 minutes",
+        "exercise_turnaround_frequency": "1 exercise per month",
+        "latency_constraints": {
+          "max_instantaneous_lag": "5 seconds",
+          "max_average_lag": "3 seconds"
+        },
+        "data_collection_window": "30 seconds post-termination",
+        "timeline_fidelity": "Within 10% of EADSIM events"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Distributed",
+          "questions": [
+            "How does the client-server separation impact the latency requirements for the human-in-the-loop displays?",
+            "How does the publish/subscribe mechanism handle peak load during high-density missile scenarios?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0."
+        },
+        {
+          "id": "RS-02",
+          "description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game."
+        },
+        {
+          "id": "RS-03",
+          "description": "Add cruise missile infrastructure into next software release."
+        },
+        {
+          "id": "RS-04",
+          "description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week."
+        },
+        {
+          "id": "RS-05",
+          "description": "Replace existing database with an object-oriented database within 5-10 staff years."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Answer the 'Big Five Questions' regarding operator knowledge and action timing",
+          "Serve as a rapid prototyping facility for interoperability studies",
+          "Support evolving mission needs and incremental functionality extensions"
+        ],
+        "technical_constraints": [
+          "Must be compliant with High Level Architecture (HLA) standards",
+          "Must run on government-owned contractor-operated infrastructure",
+          "Must support human-in-control experiments with 'fog-of-war' realism"
+        ],
+        "architectural_drivers": [
+          "Performance (Real-time & Margin)",
+          "Modifiability/Composability",
+          "Reliability",
+          "Interoperability",
+          "Fidelity"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Distributed Discrete Event Simulation",
+          "description": "The system is designed as a distributed discrete event simulation, integrating dissimilar parts and supporting interoperability via High Level Architecture (HLA).",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "HLA standards enable integration with other simulations."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Supports real-time and faster-than-real-time (Margin) execution for human-in-the-loop simulation."
+            }
+          ]
+        },
+        {
+          "approach_name": "Client-Server / Distributed",
+          "description": "The system operates in a networked, distributed simulation environment, allowing participants to connect from remote command centers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Distributed architecture must meet firm real-time deadlines and latency constraints for human-in-the-loop displays."
+            },
+            {
+              "quality_attribute": "Scalability",
+              "rationale": "Supports hosting multiple simultaneous games and distributed participants."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Simulation execution starts all processes and runs from T=-infinity to T=0 within required real-time deadlines.",
+                "scenario_id": "P1",
+                "scenario_description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability/Composability",
+            "children": [
+              {
+                "refinement": "Change joint firing doctrine rule set in automated weapon target assigner within one game cycle.",
+                "scenario_id": "MC1",
+                "scenario_description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Add new weapon system (cruise missile) infrastructure in a single software release.",
+                "scenario_id": "MC2",
+                "scenario_description": "Add cruise missile infrastructure into next software release.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Reconfigure wargame simulation from theater to national missile defense within one week.",
+                "scenario_id": "MC3",
+                "scenario_description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "System maintains uptime and data integrity during major database migration.",
+                "scenario_id": "R1",
+                "scenario_description": "Replace existing database with an object-oriented database within 5-10 staff years.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "System integrates with new, dissimilar simulations via HLA standards.",
+                "scenario_id": "I1",
+                "scenario_description": "Serve as a rapid prototyping facility for interoperability studies.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Fidelity",
+            "children": [
+              {
+                "refinement": "Simulation provides 'fog-of-war' realism sufficient for human-in-control experiments.",
+                "scenario_id": "F1",
+                "scenario_description": "Support human-in-control experiments with 'fog-of-war' realism.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game.",
+          "primary_quality_attribute": [
+            "Modifiability/Composability"
+          ]
+        },
+        {
+          "scenario_text": "Add cruise missile infrastructure into next software release.",
+          "primary_quality_attribute": [
+            "Modifiability/Composability"
+          ]
+        },
+        {
+          "scenario_text": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+          "primary_quality_attribute": [
+            "Modifiability/Composability"
+          ]
+        },
+        {
+          "scenario_text": "Replace existing database with an object-oriented database within 5-10 staff years.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Serve as a rapid prototyping facility for interoperability studies.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "Support human-in-control experiments with 'fog-of-war' realism.",
+          "primary_quality_attribute": [
+            "Fidelity"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal simulation startup",
+          "stimulus": "Simulation controller initiates execution",
+          "response_measure": "All processes start and run within required real-time deadlines (deadline unspecified).",
+          "architectural_decisions": [
+            "Distributed Discrete Event Simulation architecture",
+            "Client-Server / Distributed topology"
+          ],
+          "reasoning": "The distributed architecture supports parallel process initiation, which can reduce startup latency. However, network latency and synchronization overhead between nodes could impact the ability to meet firm real-time deadlines, especially if deadlines are stringent (e.g., <100ms). The HLA runtime may introduce additional latency for time management.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Network latency or synchronization delays may cause the simulation startup to miss real-time deadlines, affecting human-in-the-loop displays.",
+                "rationale": "Distributed coordination requires message passing; without guaranteed low-latency network, deadlines may be violated."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Distributed architecture inherently supports parallel process startup, reducing sequential bottlenecks.",
+                "rationale": "Multiple processes can be launched concurrently across nodes, improving startup performance."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network latency between simulation nodes",
+                "correlated_attribute": "Performance (startup time)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "HLA Runtime Infrastructure (RTI) time management overhead",
+                "correlated_attribute": "Performance (real-time deadline compliance)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Degree of distribution (number of nodes)",
+                "conflicting_attributes": [
+                  "Performance (scalability for multiple games)",
+                  "Performance (synchronization latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MC1",
+            "text": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability/Composability",
+          "environment": "Between simulation games",
+          "stimulus": "Requirement to update firing doctrine rules",
+          "response_measure": "Change implemented and tested within one game cycle (cycle duration unspecified).",
+          "architectural_decisions": [
+            "Modular design of automated weapon target assigner",
+            "Use of configuration files or rule engines"
+          ],
+          "reasoning": "If the rule set is encapsulated in a modular component with well-defined interfaces, changes can be isolated. However, if rules are hard-coded or tightly coupled with other simulation logic, modification may require extensive regression testing, risking missing the deadline.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-02",
+                "description": "Tight coupling between rule logic and other simulation components may increase change effort, causing delays.",
+                "rationale": "Poor modularity can lead to widespread code changes and testing overhead."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Use of a dedicated rule engine or configuration file allows quick updates without code recompilation.",
+                "rationale": "Separation of rules from core logic supports rapid modification."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Coupling between rule set and target assigner core logic",
+                "correlated_attribute": "Modifiability/Composability (change effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Rule engine complexity",
+                "conflicting_attributes": [
+                  "Modifiability/Composability (ease of change)",
+                  "Performance (rule evaluation latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MC2",
+            "text": "Add cruise missile infrastructure into next software release.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability/Composability",
+          "environment": "Software development cycle",
+          "stimulus": "Requirement to integrate new weapon system",
+          "response_measure": "Infrastructure added and delivered in a single software release.",
+          "architectural_decisions": [
+            "Plugin-based architecture for weapon systems",
+            "Adherence to HLA object model standards"
+          ],
+          "reasoning": "HLA standards promote interoperability by defining object classes and interactions. A plugin architecture allows new weapon types to be added as modules. However, if the missile model requires new HLA object classes or extensive federation agreement changes, integration may span multiple releases.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "New weapon system may require changes to HLA federation agreements or object models, delaying release.",
+                "rationale": "Interoperability standards impose coordination overhead with other simulations."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Plugin architecture isolates new weapon code, minimizing impact on existing systems.",
+                "rationale": "Well-defined interfaces allow incremental addition."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Flexibility of HLA object model to accommodate new entity types",
+                "correlated_attribute": "Modifiability/Composability (integration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Generality of weapon system interface",
+                "conflicting_attributes": [
+                  "Modifiability/Composability (ease of adding new types)",
+                  "Performance (overhead of abstraction layer)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MC3",
+            "text": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability/Composability",
+          "environment": "Simulation reconfiguration period",
+          "stimulus": "Need to change simulation scope from theater to national defense",
+          "response_measure": "Reconfiguration completed within one week.",
+          "architectural_decisions": [
+            "Parameterized scenario configuration",
+            "Modular geographic and entity models"
+          ],
+          "reasoning": "If the simulation uses configurable parameters (e.g., map boundaries, entity sets) and modular components, reconfiguration may be rapid. However, if the change requires alterations to core algorithms or data structures (e.g., different engagement models), it may exceed one week.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Core simulation algorithms may be specific to theater-level dynamics, requiring significant rework for national-level scenarios.",
+                "rationale": "Algorithmic assumptions may not scale or translate, leading to high modification difficulty."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Use of configuration files for scenario parameters allows quick switching between theater and national settings.",
+                "rationale": "Separation of configuration from code supports rapid re-scoping."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Degree of parameterization in simulation models",
+                "correlated_attribute": "Modifiability/Composability (reconfiguration time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Generality of simulation models",
+                "conflicting_attributes": [
+                  "Modifiability/Composability (adaptability to new scenarios)",
+                  "Fidelity (accuracy for specific scenarios)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "Replace existing database with an object-oriented database within 5-10 staff years.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Database migration operation",
+          "stimulus": "Migration to new database technology",
+          "response_measure": "System maintains uptime and data integrity during migration (downtime tolerance unspecified).",
+          "architectural_decisions": [
+            "Use of database abstraction layer",
+            "Planned migration over extended period (5-10 staff years)"
+          ],
+          "reasoning": "The extended timeline suggests a gradual migration, which can minimize downtime risks. However, if the abstraction layer is insufficient or data consistency mechanisms are weak, integrity may be compromised during cutover.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Data inconsistency or loss during migration cutover if replication and rollback strategies are inadequate.",
+                "rationale": "Database migration is complex; without robust transition plan, reliability may suffer."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Long migration timeline allows thorough testing and phased deployment, reducing operational risk.",
+                "rationale": "Extended schedule permits incremental validation and rollback planning."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Data replication latency and consistency during migration",
+                "correlated_attribute": "Reliability (data integrity)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Migration aggressiveness (big-bang vs. phased)",
+                "conflicting_attributes": [
+                  "Reliability (minimized downtime risk)",
+                  "Modifiability/Composability (migration duration)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "I1",
+            "text": "Serve as a rapid prototyping facility for interoperability studies.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Integration testing with new simulations",
+          "stimulus": "Need to integrate with new, dissimilar simulations",
+          "response_measure": "Successful integration via HLA standards (specific standards unspecified).",
+          "architectural_decisions": [
+            "Adherence to High Level Architecture (HLA) standards",
+            "Use of Runtime Infrastructure (RTI)"
+          ],
+          "reasoning": "HLA provides standardized interfaces for simulation interoperability. However, if the new simulations use different HLA versions or non-compliant implementations, integration may require significant adaptation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "New simulations may use incompatible HLA versions or extensions, requiring custom adapters.",
+                "rationale": "Standards evolution and implementation variances can hinder plug-and-play interoperability."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "HLA provides a well-defined framework for object model and time management, facilitating integration.",
+                "rationale": "Compliance with standards reduces integration effort."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "HLA RTI version compatibility",
+                "correlated_attribute": "Interoperability (integration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Strictness of HLA compliance",
+                "conflicting_attributes": [
+                  "Interoperability (broad compatibility)",
+                  "Performance (overhead of full standard)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "F1",
+            "text": "Support human-in-control experiments with 'fog-of-war' realism.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Fidelity",
+          "environment": "Human-in-the-loop simulation execution",
+          "stimulus": "Human operator interacting with simulation",
+          "response_measure": "Simulation provides sufficient realism for valid experimental results (realism threshold unspecified).",
+          "architectural_decisions": [
+            "High-fidelity sensor and effect models",
+            "Dynamic information hiding mechanisms"
+          ],
+          "reasoning": "Fidelity depends on accurate models of sensors, communications, and enemy actions. The distributed architecture must update displays with low latency to maintain realism. If network delays cause stale information, 'fog-of-war' may be unrealistic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Network latency may cause delayed updates to human displays, reducing realism of 'fog-of-war'.",
+                "rationale": "Real-time constraints are critical for human perception; delays break immersion."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Modular sensor models allow independent refinement to improve accuracy without affecting whole simulation.",
+                "rationale": "Encapsulation supports incremental fidelity improvements."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Update rate of situational awareness displays",
+                "correlated_attribute": "Fidelity (realism)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Level of detail in sensor models",
+                "conflicting_attributes": [
+                  "Fidelity (accuracy)",
+                  "Performance (computation load)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

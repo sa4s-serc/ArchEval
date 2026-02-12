@@ -1,0 +1,449 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Large, real-time, embedded process control system [cite: 16]",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ultra-high availability, performance, and the ability to extract a functionally useful subset from the system[cite: 59]."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Event-Driven",
+          "Distributed",
+          "Fault-Tolerant"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Large Real-Time Embedded Process Control System",
+            "description": "A distributed, fault-tolerant architecture designed for ultra-high availability and strict real-time performance in a large-scale embedded process control environment. The system is implemented primarily in Ada (~1 million lines of code) and supports flexible configuration to meet stringent human interface and reliability constraints.",
+            "architecture_characteristics": "Ultra-high availability, real-time performance, fault tolerance, distribution, configurability, reliability, deterministic behavior",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Process Control Supervisor",
+                "responsibilities": "Orchestrates overall system operation, manages high-level control logic, coordinates distributed nodes, and enforces system-wide policies and safety constraints.",
+                "dependencies": [
+                  "C-02",
+                  "C-03",
+                  "C-04"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Real-Time Data Acquisition & Sensor Interface",
+                "responsibilities": "Collects real-time sensor data from the physical process, performs initial filtering/validation, and timestamps events for downstream processing.",
+                "dependencies": [
+                  "C-05"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Control Algorithm Engine",
+                "responsibilities": "Hosts the core, deterministic control algorithms (e.g., PID controllers, state machines) that compute actuator outputs based on process data and setpoints.",
+                "dependencies": [
+                  "C-02",
+                  "C-04"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Actuator Command & Output Interface",
+                "responsibilities": "Translates computed control commands into signals for physical actuators (valves, motors, etc.) and manages output safety interlocks.",
+                "dependencies": [
+                  "C-03",
+                  "C-05"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "Fault Tolerance & Health Monitoring Manager",
+                "responsibilities": "Continuously monitors the health of all hardware and software components, manages redundancy (hot/cold standbys), initiates failover procedures, and logs fault events.",
+                "dependencies": [
+                  "C-01",
+                  "C-02",
+                  "C-03",
+                  "C-04"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "Human-Machine Interface (HMI) Server",
+                "responsibilities": "Provides the real-time operational interface for human controllers, displaying process data, alarms, and system status, and accepting supervisory commands.",
+                "dependencies": [
+                  "C-01",
+                  "C-05"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-07",
+                "component_name": "Configuration & Subset Management Service",
+                "responsibilities": "Manages the system's flexible configuration, enabling the extraction and deployment of specific, functionally useful subsets of the overall system for different operational scenarios.",
+                "dependencies": [
+                  "C-01"
+                ],
+                "change_sensitivity": "Low"
+              }
+            ],
+            "data_flow": "Data flows in a primarily event-driven, real-time loop: 1) Sensor data is acquired (C-02) and passed to the Control Algorithm Engine (C-03). 2) The engine processes the data and generates command outputs. 3) Commands are sent to the Actuator Interface (C-04). 4) The Process Control Supervisor (C-01) oversees this cycle, coordinating across distributed nodes. 5) The Fault Tolerance Manager (C-05) monitors all steps, while the HMI Server (C-06) provides a real-time view. Data flows are time-critical and deterministic, with health/status events asynchronously reported to the monitoring and HMI components.",
+            "architectural_constraints": [
+              "Strict real-time deadlines for control loops",
+              "Ultra-high availability requirement (e.g., 99.999% uptime)",
+              "Use of Ada as the primary implementation language",
+              "Distributed physical deployment across process areas",
+              "Stringent safety and reliability certification standards"
+            ],
+            "notes": "The architecture is designed to support the extraction of a 'functionally useful subset,' implying a high degree of modularity within the constraints of real-time determinism. Changes to core real-time components (C-02, C-03, C-04) are highly sensitive due to performance and certification impacts. The distributed, fault-tolerant nature adds complexity but is essential for meeting availability goals. The use of Ada suggests strong typing and reliability-focused constructs but may constrain modern tooling integration."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "The system must maintain an operational uptime of 99.999% (five nines) over a rolling 12-month period, with no single fault causing a system-wide outage or violating real-time control loop deadlines.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Fault Tolerance & Health Monitoring Manager",
+            "Process Control Supervisor",
+            "Real-Time Data Acquisition & Sensor Interface",
+            "Control Algorithm Engine",
+            "Actuator Command & Output Interface"
+          ],
+          "feasibility_note": "Direct match. The architecture is explicitly designed for extreme reliability and fault tolerance. The distributed nature and dedicated health monitoring component support this scenario, though meeting five nines requires rigorous validation of all single points of failure and recovery mechanisms.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Ultra-high availability is a core, non-negotiable requirement for a process control system where downtime can lead to safety risks, production loss, or environmental damage."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A system administrator must be able to generate a new, standalone runtime instance comprising only the 'Pressure Regulation' and 'Temperature Monitoring' control functions, from the full system configuration, within 4 hours, without requiring code recompilation.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Configuration & Subset Management Service",
+            "Process Control Supervisor",
+            "Control Algorithm Engine",
+            "Human-Machine Interface (HMI) Server"
+          ],
+          "feasibility_note": "Direct match. The architecture includes a dedicated 'Configuration & Subset Management Service' and was designed to be 'flexibly configured', indicating built-in support for extracting functional subsets. The 4-hour target is a measurable test of this capability's efficiency.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "The ability to extract a functionally useful subset is explicitly stated as a stakeholder need, crucial for deploying tailored systems for different plants, testing, or partial upgrades."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "The Control Algorithm Engine must process all sensor input and generate corresponding actuator commands for a control loop comprising 500 I/O points within a guaranteed maximum latency of 10 milliseconds, 100% of the time under peak load.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Control Algorithm Engine",
+            "Real-Time Data Acquisition & Sensor Interface",
+            "Actuator Command & Output Interface"
+          ],
+          "feasibility_note": "Direct match. The architecture is designed for 'strict real-time performance' and 'embedded process control'. This scenario provides a specific, testable performance benchmark (500 I/O @ 10ms) that the current components must be validated against.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Strict performance constraints are fundamental to real-time control. Failure to meet timing deadlines can render the system ineffective or dangerous for controlling physical processes."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A developer must be able to integrate a new, third-party predictive maintenance algorithm (provided as a certified Ada library) into the Control Algorithm Engine, including its configuration via the HMI, with less than 40 person-hours of integration effort.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Control Algorithm Engine",
+            "Human-Machine Interface (HMI) Server",
+            "Configuration & Subset Management Service"
+          ],
+          "feasibility_note": "Indirect match/requires change. While the system is 'flexibly configured', integrating new algorithmic libraries likely requires well-defined APIs, modular interfaces, and HMI hooks that may not be fully realized. The 40-hour target tests the architecture's extensibility for developers.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "To keep the system technologically relevant and adaptable to new operational insights (like predictive maintenance) without prohibitively high development costs or risks to core stability."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A maintainer must be able to deploy a patch to the Fault Tolerance & Health Monitoring Manager's logging subsystem across all 50 distributed nodes in the production environment, with a planned 30-second service degradation per node and zero impact on active control processes.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Fault Tolerance & Health Monitoring Manager",
+            "Configuration & Subset Management Service",
+            "Process Control Supervisor"
+          ],
+          "feasibility_note": "Requires change. The architecture supports distribution and fault tolerance, but this scenario tests 'hot' patching or rolling update capabilities for non-critical subsystems while preserving core real-time functions. This is a sophisticated operational requirement that may not be fully supported.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Enables efficient, low-risk application of security and reliability updates, reducing maintenance windows and preserving the system's ultra-high availability mandate."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture is explicitly designed for ultra-high availability (99.999%) and fault tolerance, with dedicated components (C-05, C-01) managing redundancy, health monitoring, and failover. The distributed nature and strict real-time deadlines are core characteristics that directly support this scenario.",
+          "supporting_components": [
+            "C-05",
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Direct",
+          "rationale": "The architecture includes a dedicated 'Configuration & Subset Management Service' (C-07) designed for flexible configuration and extraction of functionally useful subsets, which directly aligns with the requirement to generate standalone runtime instances without code recompilation.",
+          "supporting_components": [
+            "C-07",
+            "C-01",
+            "C-03",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "The architecture is designed for strict real-time performance and deterministic behavior, with components (C-02, C-03, C-04) specifically responsible for real-time data acquisition, control algorithms, and actuator commands. The 10ms latency for 500 I/O points is a measurable performance target that the current design must validate.",
+          "supporting_components": [
+            "C-03",
+            "C-02",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "While the system supports configurability and uses Ada, integrating a new third-party Ada library into the Control Algorithm Engine requires well-defined modular interfaces, APIs, and HMI configuration hooks that may not be fully realized. The 40-person-hour target assumes high extensibility, which is not explicitly guaranteed by the current architecture.",
+          "supporting_components": [
+            "C-03",
+            "C-06",
+            "C-07"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The architecture supports distribution and fault tolerance but does not explicitly include capabilities for hot patching or rolling updates with zero impact on active control processes. Deploying patches across 50 nodes with only 30-second degradation per node requires sophisticated update orchestration and isolation mechanisms that are not described.",
+          "supporting_components": [
+            "C-05",
+            "C-07",
+            "C-01"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The architecture's fault tolerance, distribution, and health monitoring components are designed to meet this scenario. Validation and testing are needed to ensure no single points of failure exist.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Requires rigorous validation of all single points of failure and recovery mechanisms to achieve 99.999% uptime in practice."
+          ],
+          "alternative_approaches": "N/A"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The Configuration & Subset Management Service (C-07) is designed for this purpose. The 4-hour target is an operational efficiency metric that depends on tooling and process maturity.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "The 4-hour target may require optimized tooling and predefined configuration templates for specific subsets like 'Pressure Regulation' and 'Temperature Monitoring'."
+          ],
+          "alternative_approaches": "N/A"
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The real-time components (C-02, C-03, C-04) are designed for deterministic performance. Validation is needed to ensure the 10ms latency for 500 I/O points is achievable under peak load.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Performance validation must account for worst-case execution times, network latency in distributed deployment, and interference from other system activities."
+          ],
+          "alternative_approaches": "N/A"
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-06",
+            "C-07"
+          ],
+          "change_description": "1) Define and implement a modular plugin interface in the Control Algorithm Engine (C-03) for integrating certified Ada libraries. 2) Extend the HMI Server (C-06) to support configuration of new algorithms via dynamic forms or templates. 3) Update the Configuration & Subset Management Service (C-07) to include new algorithm configurations in subsets.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Changes to C-03 (change_sensitivity: Medium) risk impacting real-time determinism and certification. Ada library integration must maintain type safety and avoid memory leaks. The 40-hour target may be optimistic for initial setup."
+          ],
+          "alternative_approaches": "Package the predictive maintenance algorithm as a standalone service that communicates with the Control Algorithm Engine via a well-defined real-time interface, minimizing changes to core components."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-05",
+            "C-07",
+            "C-01"
+          ],
+          "change_description": "1) Enhance the Fault Tolerance Manager (C-05) to support hot patching of its logging subsystem with minimal service degradation. 2) Develop a rolling update orchestration mechanism in the Configuration & Subset Management Service (C-07). 3) Modify the Process Control Supervisor (C-01) to manage node isolation during updates.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Changes to C-05 (change_sensitivity: High) risk compromising fault detection and failover during updates. Ensuring zero impact on active control processes requires strict isolation, which is challenging in a real-time embedded system. The 30-second degradation target may be difficult to guarantee."
+          ],
+          "alternative_approaches": "Schedule patches during planned maintenance windows with full failover to redundant nodes, or implement a shadow logging subsystem that can be updated independently without affecting the primary fault tolerance functions."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-07",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-04",
+            "S-05"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-07",
+          "scenario_ids": [
+            "S-04",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator",
+            "Maintainer",
+            "Developer"
+          ],
+          "rationale": "C-07 is the only interaction hotspot, affected by two scenarios with widespread changes and medium-to-high risk. In S-04, it must manage new algorithm configurations for predictive maintenance, impacting operational flexibility and safety certification. In S-05, it requires rolling update orchestration for hot patching, directly affecting system availability and fault tolerance. If not addressed, C-07 becomes a single point of failure for both adaptability and reliability, risking violation of real-time constraints (S-04) and causing uncontrolled downtime during updates (S-05). This impacts end-users through potential service disruption, administrators through complex update procedures, maintainers through integration challenges, and developers through extensive rework."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: The architecture demonstrates strong inherent support for core real-time and high-availability requirements. Scenarios S-01 (99.999% uptime), S-02 (rapid subset deployment), and S-03 (10ms deterministic control) are all classified as 'Direct' fits, requiring no architectural changes. The evaluation indicates the foundational design for fault tolerance (C-05), distribution, health monitoring, real-time components (C-02, C-03, C-04), and configuration management (C-07) correctly addresses these critical business goals of 'ultra-high availability' and 'performance'.",
+          "Strength 2: The architecture shows good initial separation of concerns through dedicated components. The Configuration & Subset Management Service (C-07) is correctly identified as the central point for managing operational configurations and deployments, which aligns with the business goal of extracting 'functionally useful subsets'. Its design is deemed sufficient for the direct scenario S-02, indicating a sound architectural decision for managing system variability."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: The architecture exhibits rigidity and high coupling in its core real-time and fault-tolerance components, making them difficult to modify safely. Scenarios S-04 (adding predictive maintenance) and S-05 (hot patching) are classified as 'Indirect', requiring 'Widespread' changes to highly sensitive components (C-03, C-05). The evaluations highlight significant risks: modifying the Control Algorithm Engine (C-03) threatens real-time determinism and certification, while enhancing the Fault Tolerance Manager (C-05) for hot patching risks compromising failover during updates.",
+          "Weakness 2: The Configuration & Subset Management Service (C-07) is identified as a critical interaction hotspot and a potential single point of architectural failure. While designed for its core role, it becomes a bottleneck for change, as evidenced by its involvement in both S-04 and S-05. The evaluation notes it must be extended for complex new capabilities (algorithm integration, rolling updates), but its current design may not be modular enough to absorb these responsibilities without becoming overly complex and risky, impacting 'adaptability'."
+        ],
+        "modifiability_assessment": "The architecture is robust for its original, well-defined real-time control domain but has poor modifiability for incorporating new algorithmic capabilities or advanced operational paradigms like hot patching. Its evolvability is limited by tight coupling in certified core components and a central configuration service that risks becoming a monolithic change bottleneck."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Refactor the Configuration & Subset Management Service (C-07) into a more modular, plugin-based orchestration layer. Decouple the core subset definition and deployment from the specific orchestration logic for updates (S-05) and algorithm registration (S-04). Implement well-defined, versioned APIs for these extended capabilities.",
+          "rationale": "This directly addresses the identified hotspot, reducing C-07's role as a single point of failure for change. It improves modifiability by isolating new change vectors (new update strategies, new algorithm types) into plugins, preventing the core configuration service from becoming monolithic and allowing these features to evolve independently.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Adopt the 'alternative approach' for S-04: Package the predictive maintenance algorithm as a standalone, certified service that communicates with the Control Algorithm Engine (C-03) via a strict, real-time interface (e.g., a shared memory ring buffer or time-triggered bus).",
+          "rationale": "This avoids the high-risk, widespread changes to the sensitive C-03 component, preserving its determinism and certification. It improves modifiability by establishing a pattern for integrating new algorithmic capabilities as decoupled services, rather than through invasive plugin interfaces to core engines.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "For S-05, implement a 'shadow logging subsystem' as the alternative approach suggests. Develop a separate, updatable service for logging that receives fault events from the primary Fault Tolerance Manager (C-05) via a firewalled channel, allowing the core C-05 logic to remain static and certified during patches.",
+          "rationale": "This mitigates the 'High' risk of modifying C-05 directly. It improves modifiability by separating the concern of *logging* faults from the *management* of faults, allowing the log collection/analysis piece to be updated more freely without impacting the critical failover logic.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Formalize the validation protocols identified in the direct scenarios (S-01, S-03) into the architecture's definition of done. Create architectural decision records (ADRs) mandating performance and failure mode validation for any future changes to the real-time and fault-tolerance components.",
+          "rationale": "While not a structural change, this institutionalizes the quality attributes that the architecture currently supports well. It protects existing strengths by making the validation requirements for determinism and uptime explicit constraints for all future modifications, thereby safeguarding modifiability within safe boundaries.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

@@ -1,0 +1,540 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Minimize systems acquisition and sustainment costs ",
+      "Reduce the total ownership cost over the life of the avionics system ",
+      "Modernize the system with minimal impact to Army Special Operations readiness ",
+      "Ensure that new CAASs work well with other programs "
+    ],
+    "technical_constraints": [
+      "Large set of applicable standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) ",
+      "Must support multiple helicopter platforms (A/MH-6, MH-47, MH-60) "
+    ],
+    "architectural_drivers": [
+      "Availability ",
+      "Performance ",
+      "Modifiability ",
+      "Affordability ",
+      "Reliability "
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The CAAS was already well into development at the time of evaluation. Evaluators performed a pre-exercise review of architecture documentation to capture approaches.",
+      "evaluator_inquiry_questions": [
+        "How does the cyclic executive ensure real-time performance? ",
+        "How is the system partitioned to ensure availability and safety? "
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Hardware is portable between platforms ('plug and play' architecture).",
+        "Applications are location-transparent and can migrate to other hardware for load balancing.",
+        "Every application is resident on every box."
+      ],
+      "runtime_constraints": [
+        "Inviolable timing and memory walls between applications (POSIX partitioning).",
+        "Applications must not overrun processing time limits or memory allotments."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "boot_time_limit": "2 seconds (warm boot) ",
+      "power_interruption_limit": "1.9 seconds ",
+      "guaranteed_resources": {
+        "sockets": "Number of sockets is known and guaranteed "
+      }
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Layered and Partitioned Style",
+        "questions": [
+          "Does the partitioning strategy successfully isolate failures? ",
+          "Do layers effectively isolate high-level graphics services? ",
+          "Does the client-server approach effectively decouple system parts? "
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Invalid data is entered by the pilot, and the system does not crash."
+      },
+      {
+        "id": "RS-02",
+        "description": "Invalid data comes from an actor on any bus, and the system does not crash."
+      },
+      {
+        "id": "RS-03",
+        "description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+      },
+      {
+        "id": "RS-04",
+        "description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+      },
+      {
+        "id": "RS-05",
+        "description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+      },
+      {
+        "id": "RS-06",
+        "description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+      },
+      {
+        "id": "RS-07",
+        "description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Partitioning Architecture",
+        "description": "The system employs strict partitioning (e.g., POSIX partitioning) to create inviolable timing and memory walls between applications. This ensures resource isolation and fault containment. Applications are designed to be resident on multiple hardware units, facilitating migration and redundancy.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Isolates failures, preventing a single point of failure from crashing the entire system, and supports redundancy by having applications resident on multiple boxes."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Enforces resource boundaries (timing, memory walls) to ensure predictable and stable operation, preventing interference between applications."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Guarantees dedicated resources for critical tasks, which is crucial for meeting real-time response requirements."
+          }
+        ]
+      },
+      {
+        "approach_name": "Layered Architecture",
+        "description": "The system is organized into distinct layers, each with specific responsibilities and well-defined interfaces. This structure helps in separating concerns, such as isolating high-level graphics services from lower-level system functions.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Promotes separation of concerns, making it easier to change or update specific functionalities within a layer without affecting others."
+          },
+          {
+            "quality_attribute": "Affordability",
+            "rationale": "Clear separation of concerns can reduce development complexity and testing efforts, contributing to lower total ownership costs."
+          }
+        ]
+      },
+      {
+        "approach_name": "Client-Server Architecture",
+        "description": "Components interact following a client-server paradigm, promoting decoupling of system parts. This allows for distributed functionality and potentially facilitates load balancing and scalability.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Decouples components, allowing them to evolve independently without tightly coupled dependencies."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Supports distribution and potential replication of server components, enhancing fault tolerance and uptime."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Can support distribution of workload and load balancing across multiple server instances."
+          }
+        ]
+      },
+      {
+        "approach_name": "Real-time Cyclic Executive / Scheduling",
+        "description": "The system utilizes a cyclic executive or similar real-time scheduling mechanism to ensure deterministic execution and meet strict timing and performance requirements for avionics operations.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Provides deterministic execution and scheduling, ensuring critical tasks meet strict deadlines and response times."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Guarantees predictable behavior under time-critical conditions, preventing timing overruns or missed deadlines essential for safety-critical systems."
+          }
+        ]
+      },
+      {
+        "approach_name": "Component-Based / Distributed Architecture",
+        "description": "The architecture leverages independent, reusable components that are location-transparent and can migrate between hardware units. This facilitates a 'plug and play' capability for hardware and allows for dynamic load balancing.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Enables 'plug and play' hardware portability and independent component updates, as well as easy adaptation to multiple platforms."
+          },
+          {
+            "quality_attribute": "Affordability",
+            "rationale": "Facilitates reuse of components and systems across multiple helicopter platforms, reducing development and integration costs."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Location transparency and migration capabilities allow for dynamic resource reallocation and load balancing, contributing to system resilience and fault recovery."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "System recovers from 1.9s power interruption",
+              "scenario_id": "RS-03",
+              "scenario_description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Fault containment for partition failure",
+              "scenario_id": "RS-05",
+              "scenario_description": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Flight-critical info available despite battle damage",
+              "scenario_id": "RS-06",
+              "scenario_description": "The data concentrator suffers battle damage, and all flight-critical information is still available.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "MFD processor failure does not impact other displays",
+              "scenario_id": "RS-07",
+              "scenario_description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "System does not crash on invalid pilot input",
+              "scenario_id": "RS-01",
+              "scenario_description": "Invalid data is entered by the pilot, and the system does not crash.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "System does not crash on invalid external bus data",
+              "scenario_id": "RS-02",
+              "scenario_description": "Invalid data comes from an actor on any bus, and the system does not crash.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "System handles loss of Doppler",
+              "scenario_id": "RS-04",
+              "scenario_description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Critical flight control input processing time < 50ms",
+              "scenario_id": "P1",
+              "scenario_description": "Critical flight control inputs (e.g., joystick commands) must be processed and reflected in actuator outputs within 50ms under normal operating load.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Sensor data processing and availability at 100Hz, latency < 10ms",
+              "scenario_id": "P2",
+              "scenario_description": "Sensor data (e.g., IMU, GPS) must be sampled, processed, and available to display and control systems at a rate of at least 100Hz with a maximum latency of 10ms.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Primary flight display updates at minimum 30fps",
+              "scenario_id": "P3",
+              "scenario_description": "The primary flight display (PFD) must update all critical symbology at a minimum of 30 frames per second (fps) under all operating conditions.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Integrate new sensor type in < 2 person-weeks, 2 modules",
+              "scenario_id": "M1",
+              "scenario_description": "Integrate a new sensor type (e.g., advanced radar altimeter) into the system, requiring changes to 2 software modules, with an effort of no more than 2 person-weeks.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Deploy software update to partition without full recertification",
+              "scenario_id": "M2",
+              "scenario_description": "Deploy a software update to a specific application partition (e.g., navigation) without requiring a full system re-certification or impacting other partitions.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Adapt to new platform with < 10% code change, 3 person-months",
+              "scenario_id": "M3",
+              "scenario_description": "Adapt the system software to run on a new helicopter platform variant (different hardware configuration) with less than 10% code change and 3 person-months of effort.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Affordability",
+          "children": [
+            {
+              "refinement": "Reuse 80% core software across 3 platforms",
+              "scenario_id": "A1",
+              "scenario_description": "Reuse 80% of core avionics software components across three different helicopter platforms (A/MH-6, MH-47, MH-60) to minimize new development costs.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Reduce hardware integration cost by 15% per peripheral",
+              "scenario_id": "A2",
+              "scenario_description": "Reduce the cost of hardware integration for new peripherals by utilizing standardized interfaces and component abstraction layers, saving 15% on integration costs per peripheral.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            },
+            {
+              "refinement": "Minimize certification effort for minor updates to < 1 person-month",
+              "scenario_id": "A3",
+              "scenario_description": "Minimize the effort for system certification and testing for minor software updates to a specific module to less than 1 person-month, reducing sustainment costs.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Invalid data is entered by the pilot, and the system does not crash.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "Invalid data comes from an actor on any bus, and the system does not crash.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds.",
+        "primary_quality_attribute": [
+          "Availability",
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "The data concentrator suffers battle damage, and all flight-critical information is still available.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "Critical flight control inputs (e.g., joystick commands) must be processed and reflected in actuator outputs within 50ms under normal operating load.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Sensor data (e.g., IMU, GPS) must be sampled, processed, and available to display and control systems at a rate of at least 100Hz with a maximum latency of 10ms.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The primary flight display (PFD) must update all critical symbology at a minimum of 30 frames per second (fps) under all operating conditions.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Integrate a new sensor type (e.g., advanced radar altimeter) into the system, requiring changes to 2 software modules, with an effort of no more than 2 person-weeks.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "Deploy a software update to a specific application partition (e.g., navigation) without requiring a full system re-certification or impacting other partitions.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "Adapt the system software to run on a new helicopter platform variant (different hardware configuration) with less than 10% code change and 3 person-months of effort.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "Reuse 80% of core avionics software components across three different helicopter platforms (A/MH-6, MH-47, MH-60) to minimize new development costs.",
+        "primary_quality_attribute": [
+          "Affordability"
+        ]
+      },
+      {
+        "scenario_text": "Reduce the cost of hardware integration for new peripherals by utilizing standardized interfaces and component abstraction layers, saving 15% on integration costs per peripheral.",
+        "primary_quality_attribute": [
+          "Affordability"
+        ]
+      },
+      {
+        "scenario_text": "Minimize the effort for system certification and testing for minor software updates to a specific module to less than 1 person-month, reducing sustainment costs.",
+        "primary_quality_attribute": [
+          "Affordability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "RS-05",
+          "text": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Normal operating conditions, with an internal software fault occurring.",
+        "stimulus": "A software partition within a processor encounters a fatal error and fails.",
+        "response_measure": "The remaining partitions on the same processor continue execution, and overall system functionality is maintained without interruption.",
+        "architectural_decisions": [
+          "Adoption of a strict Partitioning Architecture (e.g., ARINC 653 compliant) to enforce resource isolation.",
+          "Implementation of fault containment mechanisms within each partition.",
+          "Leveraging Component-Based / Distributed Architecture principles for potential dynamic reallocation or redundancy of critical functions."
+        ],
+        "reasoning": "The 'Partitioning Architecture' is designed to create 'inviolable timing and memory walls' between applications, ensuring 'resource isolation and fault containment'. This directly supports the scenario by preventing a failure in one partition from affecting others on the same processor. The system's ability to 'continue to function' suggests that critical services are either inherently resilient within the remaining partitions or that the 'Component-Based / Distributed Architecture' allows for quick recovery or migration of affected services to other healthy components or hardware units.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "The overhead introduced by the partitioning mechanism (e.g., hypervisor, context switching) consumes a significant portion of processor resources, potentially impacting the performance of other critical tasks.",
+              "rationale": "Strict partitioning requires a management layer that consumes CPU cycles and memory. If this overhead is high, it can reduce the effective resources available for applications, potentially leading to performance degradation or missed deadlines for other functions."
+            },
+            {
+              "id": "R-02",
+              "description": "Complexity and potential bottlenecks in inter-partition communication due to security and isolation requirements.",
+              "rationale": "While partitioning isolates, applications often need to communicate. Secure inter-partition communication channels can introduce latency and complexity. Mismanagement of these channels could lead to deadlocks or become a performance bottleneck, despite partition isolation."
+            },
+            {
+              "id": "R-03",
+              "description": "A fault in the underlying partition manager or hypervisor could compromise the isolation, leading to a cascade failure across multiple partitions or the entire processor.",
+              "rationale": "The effectiveness of partitioning relies heavily on the correctness and robustness of the core partitioning mechanism. If this central component fails, the 'walls' between partitions could collapse, leading to widespread system failure."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Direct fault propagation from a failed partition to other active partitions on the same processor is prevented.",
+              "rationale": "The fundamental principle of Partitioning Architecture is strict resource isolation (memory, timing). A failure within one partition is contained and cannot corrupt the state or execution of other partitions."
+            },
+            {
+              "id": "NR-02",
+              "description": "Resource starvation of healthy partitions by a misbehaving or failed partition is prevented.",
+              "rationale": "Each partition is allocated specific resources (e.g., CPU time slice, memory blocks). A faulty partition cannot consume more than its allocated share, thus ensuring that other partitions have their guaranteed resources."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Processor overhead of the partitioning mechanism (e.g., CPU cycles consumed by hypervisor/scheduler)",
+              "correlated_attribute": "Performance"
+            },
+            {
+              "id": "S-02",
+              "parameter": "Latency and throughput of inter-partition communication channels",
+              "correlated_attribute": "Performance"
+            },
+            {
+              "id": "S-03",
+              "parameter": "Recovery time for detecting a partition failure and initiating corrective actions (e.g., restart, migration)",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Degree of partition isolation/granularity",
+              "conflicting_attributes": [
+                "Availability (positive: better fault containment)",
+                "Performance (negative: higher overhead, more complex communication)"
+              ]
+            },
+            {
+              "id": "T-02",
+              "parameter": "Resource allocation per partition",
+              "conflicting_attributes": [
+                "Performance (positive: guaranteed resources for critical tasks)",
+                "Resource Utilization (negative: potential for idle resources if not fully utilized by the partition)"
+              ]
+            },
+            {
+              "id": "T-03",
+              "parameter": "Level of redundancy/migration for critical functions",
+              "conflicting_attributes": [
+                "Availability (positive: system function maintained despite failures)",
+                "Affordability (negative: increased hardware/software complexity and cost)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

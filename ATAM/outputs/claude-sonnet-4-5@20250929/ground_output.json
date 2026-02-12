@@ -1,0 +1,590 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A reference architecture designed to standardize interfaces between software components for various ground-based command and control systems. It serves as a generalized architecture and common infrastructure to facilitate 'plug-and-play' integration, reduce development costs, and support strategic reuse across multiple government and commercial organizations.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The reference architecture was partially documented. The team had developed high-level Interface Design Language (IDL) and completed approximately one-fourth of the IDL for the 12 identified sub-domains. The specification was not complete.",
+        "evaluator_inquiry_questions": [
+          "What are the specific quality attribute goals for the system?",
+          "How does the architecture support reasoning about tradeoffs between competing attributes like performance and reliability?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed system constellation",
+          "Ground-based command and control hardware infrastructure"
+        ],
+        "runtime_constraints": [
+          "Real-time performance requirements",
+          "High availability requirements",
+          "Interoperability across autonomous and directed components"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "Latency_Budgets": "Undefined/Missing",
+        "Availability_Models": "Undefined/Missing",
+        "Data_Management_Capacities": "Undefined/Missing"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Distributed Objects (CORBA)",
+          "questions": [
+            "How does the system ensure semantic integration between components, not just syntactic connection?",
+            "What mechanisms exist to guarantee real-time performance across the distributed middleware?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "A system integrator incorporates a new vendor component into the system."
+        },
+        {
+          "id": "RS-02",
+          "description": "The system must operate continuously despite a partial network failure."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Enable system builders to integrate systems on time and within costs",
+          "Drive down the cost of command and control systems",
+          "Facilitate 'plug-and-play' integration regardless of component location"
+        ],
+        "technical_constraints": [
+          "Must use Object-Oriented Technology",
+          "Must use Common Object Request Broker Architecture (CORBA)",
+          "Focus on interface definition rather than direct component reuse"
+        ],
+        "architectural_drivers": [
+          "Interoperability",
+          "Real-time Performance",
+          "Availability",
+          "Modifiability",
+          "Security"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Distributed Objects (CORBA)",
+          "description": "The system employs Common Object Request Broker Architecture (CORBA) as the middleware foundation to enable distributed object communication across heterogeneous components in ground-based command and control systems. This approach standardizes interfaces and facilitates location-transparent component integration.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "CORBA provides language-independent and platform-independent interface definitions (IDL), enabling heterogeneous components from different vendors to communicate seamlessly regardless of implementation technology."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "The focus on interface standardization rather than direct component reuse allows components to be replaced or modified independently as long as they conform to the defined interfaces, supporting plug-and-play integration."
+            },
+            {
+              "quality_attribute": "Real-time Performance",
+              "rationale": "CORBA middleware can be configured to support real-time performance requirements through priority-based request handling and deterministic communication patterns, though this requires careful design of the distributed object interactions."
+            }
+          ]
+        },
+        {
+          "approach_name": "Object-Oriented Design",
+          "description": "The architecture mandates object-oriented technology as a foundational principle, promoting encapsulation, abstraction, and interface-based design to structure system components and their interactions.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Object-oriented principles such as encapsulation and separation of interface from implementation enable localized changes and reduce ripple effects across the system when modifications are needed."
+            },
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Well-defined object interfaces provide clear contracts for component interaction, facilitating integration of components developed by different organizations."
+            }
+          ]
+        },
+        {
+          "approach_name": "Reference Architecture Pattern",
+          "description": "The system serves as a reference architecture that defines standardized interfaces and common infrastructure patterns to be reused across multiple command and control system implementations, promoting strategic reuse.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "By establishing a common architectural template, the reference architecture enables consistent modification patterns across multiple system instances and reduces the cost of evolving the architecture over time."
+            },
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Standardized interfaces across the reference architecture ensure that systems built using this architecture can interoperate with each other and share components more easily."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "Component Integration",
+                "scenario_id": "P1",
+                "scenario_description": "A system integrator incorporates a new vendor component into the system using CORBA IDL interfaces",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                },
+                "response_measure": "Integration time < 8 hours for IDL-compliant components, zero interface modifications required to existing components, successful interoperability test completion"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "Fault Tolerance",
+                "scenario_id": "A1",
+                "scenario_description": "The system must operate continuously despite a partial network failure affecting CORBA communication paths",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                },
+                "response_measure": "System uptime \u2265 99.5%, recovery time < 30 seconds for non-critical services, < 5 seconds for critical command paths, graceful degradation with no data loss"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Component Replacement",
+                "scenario_id": "M1",
+                "scenario_description": "Replace existing CORBA component with updated version maintaining IDL interface compatibility",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                },
+                "response_measure": "Replacement time < 4 hours, affects \u2264 2 directly dependent components, no changes to IDL interfaces, regression test suite passes"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Real-time Performance",
+            "children": [
+              {
+                "refinement": "Command Processing Latency",
+                "scenario_id": "P2",
+                "scenario_description": "Process critical command under normal load through CORBA middleware with priority-based request handling",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                },
+                "response_measure": "End-to-end latency < 100ms for critical commands, < 500ms for standard commands, deterministic response under peak load (1000 requests/sec)"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Access Control",
+                "scenario_id": "S1",
+                "scenario_description": "Unauthorized user attempts to invoke privileged CORBA operation on command component",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                },
+                "response_measure": "Access denied within 50ms, security violation logged, no system state corruption, audit trail complete"
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A system integrator incorporates a new vendor component into the system using CORBA IDL interfaces. The integration must complete in less than 8 hours for IDL-compliant components with zero interface modifications required to existing components and successful interoperability test completion.",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The system must operate continuously despite a partial network failure affecting CORBA communication paths. System uptime must be greater than or equal to 99.5%, with recovery time less than 30 seconds for non-critical services and less than 5 seconds for critical command paths, ensuring graceful degradation with no data loss.",
+          "primary_quality_attribute": [
+            "Availability",
+            "Real-time Performance"
+          ]
+        },
+        {
+          "scenario_text": "Replace existing CORBA component with updated version maintaining IDL interface compatibility. Replacement time must be less than 4 hours, affecting no more than 2 directly dependent components, with no changes to IDL interfaces and full regression test suite passing.",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "Process critical command under normal load through CORBA middleware with priority-based request handling. End-to-end latency must be less than 100ms for critical commands and less than 500ms for standard commands, with deterministic response under peak load of 1000 requests per second.",
+          "primary_quality_attribute": [
+            "Real-time Performance"
+          ]
+        },
+        {
+          "scenario_text": "Unauthorized user attempts to invoke privileged CORBA operation on command component. Access must be denied within 50ms, security violation logged, with no system state corruption and complete audit trail maintained.",
+          "primary_quality_attribute": [
+            "Security",
+            "Availability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "A system integrator incorporates a new vendor component into the system using CORBA IDL interfaces. The integration must complete in less than 8 hours for IDL-compliant components with zero interface modifications required to existing components and successful interoperability test completion.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Normal operations during system integration phase",
+          "stimulus": "New vendor component with CORBA IDL interface requires integration",
+          "response_measure": "Integration time < 8 hours, zero interface modifications to existing components, successful interoperability test completion",
+          "architectural_decisions": [
+            "Use of CORBA IDL for language-independent and platform-independent interface definitions",
+            "Standardized reference architecture pattern enforcing interface contracts",
+            "Object-oriented encapsulation separating interface from implementation"
+          ],
+          "reasoning": "CORBA IDL provides a standardized contract mechanism that enables heterogeneous components to integrate without source-level dependencies. The reference architecture ensures consistent interface patterns across vendors. If the new component strictly adheres to published IDL specifications, integration involves only ORB configuration and interface binding, not code modification. The 8-hour target is achievable for IDL-compliant components through automated stub/skeleton generation and standardized deployment procedures.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Vendor component may have undocumented dependencies on specific CORBA ORB implementations or versions",
+                "rationale": "CORBA standard allows vendor-specific extensions. If the new component relies on proprietary ORB features not present in the existing infrastructure, integration will require ORB upgrades or middleware reconfiguration, exceeding the 8-hour target."
+              },
+              {
+                "id": "R-02",
+                "description": "Semantic mismatches in IDL interface interpretation between vendors",
+                "rationale": "While IDL defines syntactic interfaces, semantic behavior (e.g., error handling, state management, transaction semantics) may differ between vendor implementations, causing interoperability failures despite syntactic compliance."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Interface modifications to existing components are not required for IDL-compliant integration",
+                "rationale": "The architectural decision to use CORBA IDL as the integration contract ensures that existing components remain unchanged as long as the new component conforms to published interfaces. The ORB handles marshaling and protocol translation transparently."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "IDL interface complexity (number of operations, parameter types)",
+                "correlated_attribute": "Interoperability"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Degree of CORBA standard compliance vs. vendor extensions",
+                "correlated_attribute": "Interoperability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "IDL interface granularity",
+                "conflicting_attributes": [
+                  "Interoperability (positive: coarse-grained interfaces reduce integration points)",
+                  "Performance (negative: coarse-grained interfaces increase message size and marshaling overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "The system must operate continuously despite a partial network failure affecting CORBA communication paths. System uptime must be greater than or equal to 99.5%, with recovery time less than 30 seconds for non-critical services and less than 5 seconds for critical command paths, ensuring graceful degradation with no data loss.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Operational system under partial network failure conditions",
+          "stimulus": "Network partition or link failure disrupting CORBA communication between distributed components",
+          "response_measure": "System uptime \u2265 99.5%, recovery time < 30s for non-critical services, < 5s for critical command paths, graceful degradation with no data loss",
+          "architectural_decisions": [
+            "CORBA middleware for distributed object communication",
+            "Component-based architecture enabling independent failure domains",
+            "Object-oriented encapsulation supporting redundancy and failover mechanisms"
+          ],
+          "reasoning": "Achieving 99.5% uptime (43.8 hours downtime/year) with sub-5-second recovery for critical paths requires redundant communication paths, stateless or replicated component design, and rapid failure detection. CORBA itself does not inherently provide fault tolerance; the architecture must layer additional mechanisms (e.g., CORBA Fault Tolerant extensions, application-level heartbeats, redundant ORBs) on top of the middleware. The 5-second recovery target for critical commands demands pre-established backup paths and hot standby components to avoid connection re-establishment overhead.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "CORBA request timeout and exception handling may exceed 5-second recovery target for critical paths",
+                "rationale": "Standard CORBA timeout mechanisms and connection re-establishment can take 10-30 seconds depending on ORB configuration. Without pre-configured failover paths and aggressive timeout tuning, critical command recovery will violate the 5-second requirement."
+              },
+              {
+                "id": "R-04",
+                "description": "Stateful CORBA objects may lose state during failover, violating no-data-loss requirement",
+                "rationale": "If components maintain session state in CORBA object instances without persistent storage or state replication, network failures causing object migration or restart will result in state loss, contradicting the no-data-loss guarantee."
+              },
+              {
+                "id": "R-05",
+                "description": "Cascading failures due to synchronous CORBA invocation blocking",
+                "rationale": "Synchronous CORBA calls can cause thread exhaustion and cascading timeouts if failed components do not respond quickly. Without circuit breaker patterns or asynchronous messaging for non-critical paths, partial failures may propagate system-wide."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Component isolation prevents total system failure from single component crashes",
+                "rationale": "The distributed object architecture with well-defined IDL interfaces creates natural failure boundaries. A single component failure affects only its direct clients, not the entire system, supporting graceful degradation."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "CORBA request timeout values",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Network redundancy topology (number of alternate paths)",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Component state persistence frequency",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "CORBA timeout aggressiveness",
+                "conflicting_attributes": [
+                  "Availability (positive: shorter timeouts enable faster failover)",
+                  "Reliability (negative: aggressive timeouts cause false positives under transient load)"
+                ]
+              },
+              {
+                "id": "T-03",
+                "parameter": "State replication frequency",
+                "conflicting_attributes": [
+                  "Availability (positive: frequent replication reduces data loss)",
+                  "Performance (negative: replication overhead increases latency and network traffic)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "Replace existing CORBA component with updated version maintaining IDL interface compatibility. Replacement time must be less than 4 hours, affecting no more than 2 directly dependent components, with no changes to IDL interfaces and full regression test suite passing.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance window for component upgrade",
+          "stimulus": "Developer replaces CORBA component implementation while preserving IDL interface",
+          "response_measure": "Replacement time < 4 hours, affects \u2264 2 directly dependent components, no IDL changes, regression tests pass",
+          "architectural_decisions": [
+            "CORBA IDL interface contracts separating specification from implementation",
+            "Object-oriented encapsulation hiding implementation details",
+            "Reference architecture standardizing component deployment patterns"
+          ],
+          "reasoning": "The architectural commitment to interface stability through CORBA IDL enables component replacement without ripple effects. If the new implementation maintains behavioral compatibility (not just syntactic IDL compliance), only the replaced component and its direct clients require testing. The 4-hour window accommodates component shutdown, deployment, ORB re-registration, and focused regression testing. The constraint of affecting \u22642 dependent components indicates low coupling, achievable through coarse-grained interfaces and minimal direct dependencies.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Behavioral changes in component implementation may break client assumptions despite IDL compatibility",
+                "rationale": "IDL defines only syntactic contracts (method signatures, data types). If the new implementation changes timing behavior, error handling semantics, or side effects, clients relying on previous behavior will fail even though interfaces are unchanged."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Interface stability prevents widespread system impact from component replacement",
+                "rationale": "The architectural decision to enforce strict IDL interface versioning ensures that component replacements maintaining interface compatibility require no changes to other system components. The ORB handles dynamic binding transparently."
+              },
+              {
+                "id": "NR-04",
+                "description": "Regression test automation enables rapid validation within 4-hour window",
+                "rationale": "The reference architecture's standardized testing patterns and component isolation allow focused regression testing of the replaced component and its direct dependents, making the 4-hour target achievable."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Component coupling (number of direct dependencies)",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Regression test suite coverage and execution time",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "IDL interface granularity and stability",
+                "conflicting_attributes": [
+                  "Modifiability (positive: stable interfaces reduce change impact)",
+                  "Performance (negative: stable coarse interfaces may require inefficient workarounds for new features)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Process critical command under normal load through CORBA middleware with priority-based request handling. End-to-end latency must be less than 100ms for critical commands and less than 500ms for standard commands, with deterministic response under peak load of 1000 requests per second.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Real-time Performance",
+          "environment": "Normal operational load with peak traffic of 1000 requests/sec",
+          "stimulus": "Critical command issued requiring priority processing through CORBA middleware",
+          "response_measure": "End-to-end latency < 100ms for critical commands, < 500ms for standard commands, deterministic response under 1000 req/sec peak load",
+          "architectural_decisions": [
+            "CORBA middleware with priority-based request handling configuration",
+            "Distributed object architecture enabling parallel processing",
+            "Real-time CORBA extensions for deterministic scheduling"
+          ],
+          "reasoning": "Achieving sub-100ms latency for critical commands through CORBA middleware requires careful attention to marshaling overhead, network latency, ORB scheduling, and server-side processing. At 1000 req/sec system-wide load, priority mechanisms must prevent lower-priority requests from blocking critical commands. Real-time CORBA (RT-CORBA) features like priority propagation, thread pools with priority lanes, and explicit binding can provide determinism. However, standard CORBA implementations may introduce 20-50ms overhead per remote call from marshaling, network transmission, and demarshaling, leaving limited budget for application logic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "CORBA marshaling and network overhead may consume majority of 100ms latency budget",
+                "rationale": "Typical CORBA round-trip times range from 20-50ms on LAN depending on message complexity and ORB implementation. With multi-hop distributed object calls, cumulative middleware overhead can exceed the 100ms budget before application processing begins."
+              },
+              {
+                "id": "R-08",
+                "description": "Priority inversion in CORBA ORB thread pools under high load",
+                "rationale": "Without RT-CORBA priority propagation and careful thread pool configuration, high-priority critical commands may queue behind low-priority standard requests, causing unpredictable latency spikes that violate the 100ms guarantee."
+              },
+              {
+                "id": "R-09",
+                "description": "Non-deterministic garbage collection pauses in ORB runtime",
+                "rationale": "Many CORBA ORB implementations run on JVM or use garbage-collected languages. GC pauses of 50-200ms can occur unpredictably under load, violating real-time determinism requirements for critical commands."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Distributed architecture enables parallel processing to handle 1000 req/sec throughput",
+                "rationale": "The distributed object model allows horizontal scaling by deploying multiple component instances across nodes. With proper load distribution, 1000 req/sec is achievable without saturating individual components."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "CORBA message size and marshaling complexity",
+                "correlated_attribute": "Real-time Performance"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Network latency between distributed components",
+                "correlated_attribute": "Real-time Performance"
+              },
+              {
+                "id": "S-10",
+                "parameter": "ORB thread pool size and priority configuration",
+                "correlated_attribute": "Real-time Performance"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Number of distributed object hops in critical command path",
+                "correlated_attribute": "Real-time Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "CORBA interface granularity for critical commands",
+                "conflicting_attributes": [
+                  "Real-time Performance (positive: coarse interfaces reduce remote calls and cumulative latency)",
+                  "Modifiability (negative: coarse interfaces reduce flexibility and increase coupling)"
+                ]
+              },
+              {
+                "id": "T-06",
+                "parameter": "Priority queue depth for critical commands",
+                "conflicting_attributes": [
+                  "Real-time Performance (positive: dedicated priority lanes ensure low latency)",
+                  "Throughput (negative: reserved resources reduce capacity for standard requests)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "Unauthorized user attempts to invoke privileged CORBA operation on command component. Access must be denied within 50ms, security violation logged, with no system state corruption and complete audit trail maintained.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Operational system with active authentication and authorization infrastructure",
+          "stimulus": "Unauthorized user attempts to invoke privileged CORBA method",
+          "response_measure": "Access denied within 50ms, security violation logged, no state corruption, complete audit trail",
+          "architectural_decisions": [
+            "CORBA security service integration for authentication and authorization",
+            "Object-oriented encapsulation protecting component internal state",
+            "Centralized security policy enforcement at ORB interceptor level"
+          ],
+          "reasoning": "The 50ms access denial requirement demands efficient security checks, likely implemented as CORBA portable interceptors that validate credentials before method dispatch. This approach prevents unauthorized code execution while maintaining low overhead. Logging and audit trail generation must be asynchronous to avoid blocking the denial response. State corruption prevention relies on the security check occurring before any component logic executes, which CORBA request interceptors naturally provide.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "Synchronous audit logging may cause 50ms response time violation",
+                "rationale": "If security violation logging is performed synchronously (writing to database or file system before returning denial), I/O latency can easily exceed 50ms, especially under high load or storage contention."
+              },
+              {
+                "id": "R-11",
+                "description": "Distributed security credential validation may introduce network round-trips exceeding 50ms budget",
+                "rationale": "If authorization decisions require remote calls to centralized policy servers or LDAP directories, network latency and server processing time can exceed the 50ms target, especially in geographically distributed deployments."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "CORBA interceptor architecture prevents state corruption from unauthorized access",
+                "rationale": "Security checks implemented as CORBA portable interceptors execute before method dispatch, ensuring that unauthorized requests never reach component logic. This architectural decision guarantees no state corruption from failed access attempts."
+              },
+              {
+                "id": "NR-07",
+                "description": "Object encapsulation limits blast radius of security breaches",
+                "rationale": "The object-oriented architecture with well-defined interfaces ensures that even if an attacker bypasses one component's security, they cannot directly access internal state of other components, limiting lateral movement."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Security policy complexity (number of rules evaluated)",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Credential cache hit rate",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Security check granularity",
+                "conflicting_attributes": [
+                  "Security (positive: fine-grained checks provide better access control)",
+                  "Performance (negative: more checks increase latency and overhead)"
+                ]
+              },
+              {
+                "id": "T-08",
+                "parameter": "Audit log detail level",
+                "conflicting_attributes": [
+                  "Security (positive: detailed logs improve forensics and compliance)",
+                  "Performance (negative: verbose logging increases I/O overhead and storage requirements)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

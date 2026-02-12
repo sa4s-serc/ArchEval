@@ -1,0 +1,305 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Large, real-time, embedded process control system [cite: 16]",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ultra-high availability, performance, and the ability to extract a functionally useful subset from the system[cite: 59]."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Distributed",
+          "Real-Time",
+          "Fault-Tolerant",
+          "Component-Based"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Distributed Ada Real-Time Control System",
+            "description": "A million-line Ada-based embedded system designed for large-scale process control. It is built to be distributed across multiple nodes, ensuring high reliability and the ability to extract functional subsets for specific deployment scenarios.",
+            "architecture_characteristics": "Ultra-high availability, Deterministic Performance, Modularity, Fault Tolerance, Distributed Execution",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Distributed Process Controllers",
+                "responsibilities": "Executes real-time control logic and handles direct interfacing with embedded hardware processes.",
+                "dependencies": [
+                  "C-02",
+                  "C-04"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Inter-node Communication Middleware",
+                "responsibilities": "Manages distributed message passing and ensures synchronization across the distributed Ada environment.",
+                "dependencies": [],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Human Interface Subsystem",
+                "responsibilities": "Manages operator interactions and data visualization under strict human interface constraints.",
+                "dependencies": [
+                  "C-02"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Fault-Tolerance & Health Manager",
+                "responsibilities": "Monitors system health, manages redundancy, and ensures ultra-high availability through error recovery.",
+                "dependencies": [
+                  "C-01",
+                  "C-02"
+                ],
+                "change_sensitivity": "High"
+              }
+            ],
+            "data_flow": "Real-time process data flows from sensors to Distributed Process Controllers; state updates are replicated via the Communication Middleware to ensure fault-tolerance, while summarized telemetry is pushed to the Human Interface Subsystem.",
+            "architectural_constraints": [
+              "Strict real-time performance deadlines",
+              "Ada-specific development and runtime environment",
+              "Hardware-embedded integration limits",
+              "Deterministic execution requirements"
+            ],
+            "notes": "The architecture is highly optimized for reliability and can accommodate functional subsetting for different deployments. However, it cannot easily accommodate non-deterministic workloads or integration with non-Ada legacy systems without significant bridging overhead."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture was explicitly designed for modularity and the extraction of functional subsets to support distributed deployment scenarios as stated in the business goals and description.",
+          "supporting_components": [
+            "C-01",
+            "C-02"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "The system is strictly Ada-based and optimized for deterministic performance; integrating non-Ada legacy systems is noted as a significant challenge requiring bridging overhead that violates current constraints.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "Fault tolerance and ultra-high availability are core architectural characteristics, managed by a dedicated Health Manager component designed for error recovery.",
+          "supporting_components": [
+            "C-04",
+            "C-02"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-01",
+            "C-02"
+          ],
+          "change_description": "Minimal configuration changes to define the functional subset and node mapping; no structural code changes required.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02"
+          ],
+          "change_description": "Implementation of Ada-to-External language bindings (FFI), development of a synchronization bridge in the middleware to handle non-deterministic timing from legacy components, and modification of data types for cross-environment compatibility.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Risk of breaking deterministic performance deadlines due to bridging overhead",
+            "Memory management and safety concerns at the Ada/Legacy boundary",
+            "Complexity in maintaining fault-tolerance across heterogeneous environments"
+          ],
+          "alternative_approaches": "Isolate the legacy system on a separate hardware node and communicate via a strictly defined network protocol through a dedicated gateway component to preserve the core system's determinism."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-04",
+            "C-02"
+          ],
+          "change_description": "No changes required; the Health Manager (C-04) and Communication Middleware (C-02) are designed to handle state replication and failover automatically.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A"
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-01",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-01",
+            "S-02"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-03"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-03"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "C-02 is the most critical hotspot as it is the only component participating in all three scenarios. Its involvement in S-02 is particularly high-risk, as it acts as a synchronization bridge for legacy timing. Failure to address the architectural complexity here threatens the system's deterministic performance deadlines and fault-tolerance, directly impacting the end-user experience and the maintainer's ability to debug cross-environment issues."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-01",
+            "S-02"
+          ],
+          "priority": "Medium",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "C-01 is a primary site for the widespread changes required in S-02, specifically regarding Ada-to-External language bindings. While it is hit by fewer scenarios than C-02, the technical complexity of memory management and safety at the language boundary represents a significant risk for developers. If not addressed, this component will become a source of memory leaks and safety violations that are difficult for maintainers to trace."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "High Availability and Fault Tolerance: The architecture demonstrates robust automatic state replication and failover capabilities through the Health Manager (C-04) and Communication Middleware (C-02), as evidenced by the low-effort, low-risk rating for S-03.",
+          "Functional Flexibility: The system supports the strategic business goal of extracting functional subsets with minimal effort, requiring only configuration changes rather than structural code modifications (S-01).",
+          "Effective Component Decoupling for Internal Logic: The separation of concerns between health management and communication allows the system to handle failure scenarios without manual intervention or architectural rework."
+        ],
+        "architectural_weaknesses": [
+          "Fragile External Interoperability: The architecture struggles with legacy integration (S-02), requiring widespread changes and posing a high risk to deterministic performance deadlines and memory safety at the Ada/External boundary.",
+          "Critical Component Overloading (C-02): The Communication Middleware is a major hotspot involved in every evaluated scenario. Its role as a synchronization bridge for legacy timing (S-02) creates a significant risk of architectural 'bottlenecking' and cross-environment instability.",
+          "Inadequate Abstraction for Heterogeneous Environments: The current design requires complex FFI and manual data type modifications for cross-environment compatibility, indicating a lack of a standardized isolation layer for non-native components."
+        ],
+        "modifiability_assessment": "The architecture is highly modifiable regarding internal functional scaling and availability configurations, but it exhibits significant rigidity and high-risk complexity when evolving to support heterogeneous or legacy integrations."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement a Gateway Pattern for Legacy Integration",
+          "rationale": "Isolating legacy components (S-02) on separate hardware nodes using a dedicated gateway will preserve core system determinism and eliminate memory safety risks at the Ada boundary, addressing the highest-ranked stakeholder concern.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Refactor C-02 Middleware to Decouple Synchronization Logic",
+          "rationale": "Since C-02 is a hotspot for all scenarios, separating its core communication functions from the complex synchronization bridging required for legacy timing will reduce the risk of breaking performance deadlines across the entire system.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Standardize Data Marshalling Layer",
+          "rationale": "Developing a formal automated layer for cross-environment data type compatibility will reduce the 'Widespread' change extent identified in S-02 and improve maintainability for developers and maintainers.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Formalize Subsetting Configuration Schema",
+          "rationale": "To ensure the long-term viability of the 'subset extraction' business goal, the current configuration-based approach (S-01) should be formalized into a validated schema to prevent misconfiguration during node mapping.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

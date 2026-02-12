@@ -1,0 +1,568 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "MINPHIS is a service-oriented health information system designed specifically for the Nigerian and African healthcare context. Originally based on MUMPS language, FileMan-database, and Kernel-package, the system has undergone modernization to a Client-Server architecture utilizing an RPC Broker. It serves as a low-cost, sustainable application for managing patient records, accounting, and medical records across federal, state, and local government healthcare tiers.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Pre-exercise review of architecture documentation was conducted, though architectural approaches required further identification and elicitation during the session.",
+        "evaluator_inquiry_questions": [
+          "How does the system function and behave during execution?",
+          "Questions related to run-time behavior (sent via text/email to remote users)"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Client-Server architecture",
+          "Database Layer utilizing FileMan and M Software",
+          "RPC Broker Server Layer for middleware communication"
+        ],
+        "runtime_constraints": [
+          "Transaction response time",
+          "System throughput",
+          "Web-based system performance with web services"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "storage_latency_limit": "200ms",
+        "report_generation_time": "10ms",
+        "transaction_completion_peak_load": "1 second",
+        "transaction_completion_double_peak_load": "4 seconds",
+        "throughput_peak_load": "150 normalised transactions per second"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Layered",
+          "questions": [
+            "How does the architecture respond to peak load scenarios?",
+            "How does the database structure affect performance and migration needs?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "No unauthorized access to the system (User)"
+        },
+        {
+          "id": "RS-02",
+          "description": "User errors in using system should be handled (User)"
+        },
+        {
+          "id": "RS-03",
+          "description": "All operations are processed in fastest possible speed (User)"
+        },
+        {
+          "id": "RS-04",
+          "description": "Proper data encapsulation and secure data structures (Architect)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Flexible implementation using other programming languages (Architect)"
+        },
+        {
+          "id": "RS-06",
+          "description": "Overall consistent behavior expected from the architecture (Architect)"
+        },
+        {
+          "id": "RS-07",
+          "description": "Framework should be complete, clear and perform exactly as required (Application Developer)"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Use for Keeping patient records",
+          "Use for Answering ad hoc queries from medical Researchers",
+          "Use to Provide performance information (e.g., mortality rates, patient counts)",
+          "Use for Resource Management Decisions",
+          "Produce on-demand & Periodic reports based on specific needs of Institution or Hospital"
+        ],
+        "technical_constraints": [
+          "An improved web-based system with web services",
+          "Transaction response time",
+          "System throughput"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Security",
+          "Reliability",
+          "Availability",
+          "Functionality",
+          "Modifiability",
+          "Portability",
+          "Conceptual Integrity"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server with RPC Broker",
+          "description": "Modernized architecture from a legacy MUMPS/FileMan system, utilizing an RPC Broker as middleware for communication between client and server layers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Centralized server processing and efficient RPC mechanisms can optimize transaction response times and data throughput."
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Centralized control at the server layer facilitates consistent authentication, authorization, and data access policies."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Server-side management of critical business logic and data can enhance system stability and fault containment."
+            },
+            {
+              "quality_attribute": "Availability",
+              "rationale": "The server can be designed for high availability (e.g., clustering) to ensure service continuity for multiple clients."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Separation of client and server concerns allows for independent updates and changes to user interfaces or business logic."
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "The client and server can potentially be deployed on different platforms, aided by standardized RPC communication."
+            },
+            {
+              "quality_attribute": "Conceptual Integrity",
+              "rationale": "A clear Client-Server separation enforces a consistent architectural model and division of responsibilities across the system."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Transaction response time under typical load",
+                "scenario_id": "P1",
+                "scenario_description": "A user submits a clinical order; the system processes and confirms it within 2 seconds.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Unauthorized access prevention",
+                "scenario_id": "S1",
+                "scenario_description": "An external actor attempts to access patient data without proper credentials; access is denied and logged.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "System uptime during business hours",
+                "scenario_id": "R1",
+                "scenario_description": "The system maintains 99.9% availability during core clinic hours (8 AM-6 PM).",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "Service continuity for multiple clients",
+                "scenario_id": "A1",
+                "scenario_description": "The server component fails; a clustered backup server takes over within 30 seconds with no data loss.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Ease of updating business logic",
+                "scenario_id": "M1",
+                "scenario_description": "A change to medication dosage calculation rules is deployed to the server without requiring client updates.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Client deployment across platforms via RPC abstraction",
+                "scenario_id": "PT1",
+                "scenario_description": "The client application, using the RPC broker interface, is successfully deployed on both Windows and macOS environments.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Conceptual Integrity",
+            "children": [
+              {
+                "refinement": "Consistent architectural model enforcement",
+                "scenario_id": "CI1",
+                "scenario_description": "A new developer correctly implements a feature by placing business logic only on the server, following the documented client-server separation.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A user submits a clinical order; the system processes and confirms it within 2 seconds.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "An external actor attempts to access patient data without proper credentials; access is denied and logged.",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "The system maintains 99.9% availability during core clinic hours (8 AM-6 PM).",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "The server component fails; a clustered backup server takes over within 30 seconds with no data loss.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "A change to medication dosage calculation rules is deployed to the server without requiring client updates.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The client application, using the RPC broker interface, is successfully deployed on both Windows and macOS environments.",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        },
+        {
+          "scenario_text": "A new developer correctly implements a feature by placing business logic only on the server, following the documented client-server separation.",
+          "primary_quality_attribute": [
+            "Conceptual Integrity"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "A user submits a clinical order; the system processes and confirms it within 2 seconds.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations under typical load",
+          "stimulus": "User submits a clinical order",
+          "response_measure": "Transaction processed and confirmed within 2 seconds",
+          "architectural_decisions": [
+            "Client-Server separation with RPC Broker middleware",
+            "Centralized server processing of business logic"
+          ],
+          "reasoning": "The 2-second response time goal depends on network latency, server processing speed, and RPC overhead. The centralized server can optimize processing, but the single point of the server and network dependency introduce latency risks. Without specific parameters on network bandwidth, message size, and server capacity, the achievability of the 2-second goal is uncertain.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Network latency or bandwidth constraints between client and server may cause the total transaction time to exceed 2 seconds.",
+                "rationale": "The RPC communication adds network round-trip time. Without guaranteed low-latency/high-bandwidth network, the response time goal is at risk."
+              },
+              {
+                "id": "R-02",
+                "description": "Server processing capacity may be insufficient under peak load, causing increased queueing delays and breaching the 2-second threshold.",
+                "rationale": "A single server (or cluster) handling all business logic is a potential bottleneck. Performance depends on unspecified hardware specs and concurrent user load."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "The RPC Broker provides a structured, efficient mechanism for remote procedure calls, which is a suitable pattern for request-response transactions like order submission.",
+                "rationale": "RPC is a standard, well-understood pattern for client-server communication, facilitating predictable interaction."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network latency between client and server",
+                "correlated_attribute": "Performance (Response time)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Server CPU processing speed per transaction",
+                "correlated_attribute": "Performance (Response time)"
+              },
+              {
+                "id": "S-03",
+                "parameter": "RPC broker overhead (serialization/deserialization time)",
+                "correlated_attribute": "Performance (Response time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Level of data validation and business logic on server",
+                "conflicting_attributes": [
+                  "Security (Centralized control improves security)",
+                  "Performance (Increased server processing can increase latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "An external actor attempts to access patient data without proper credentials; access is denied and logged.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "System under attack or unauthorized access attempt",
+          "stimulus": "External actor attempts to access patient data without credentials",
+          "response_measure": "Access is denied and the attempt is logged",
+          "architectural_decisions": [
+            "Centralized server control for authentication and authorization",
+            "RPC Broker as controlled communication channel"
+          ],
+          "reasoning": "The Client-Server model centralizes security enforcement at the server, which is a strength. The RPC Broker must be secured. The scenario's success depends on the implementation of robust authentication/authorization and logging mechanisms at the server layer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "If the RPC Broker interface is not properly secured (e.g., lacks encryption, strong authentication), it could become an attack vector.",
+                "rationale": "The broker mediates all communication; a vulnerability here could bypass server-side checks."
+              },
+              {
+                "id": "R-04",
+                "description": "Inadequate logging detail or log storage capacity could compromise auditability and incident response.",
+                "rationale": "The scenario requires logging, but the architecture description does not specify log management."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Centralizing security policy enforcement at the server reduces the risk of inconsistent or weak client-side security checks.",
+                "rationale": "The server is a controlled environment where security policies can be uniformly applied and updated."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Strength of authentication protocol (e.g., token expiration time, multi-factor)",
+                "correlated_attribute": "Security (Unauthorized access prevention)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Granularity and frequency of security logging",
+                "conflicting_attributes": [
+                  "Security (Detailed logs improve auditability)",
+                  "Performance (Logging adds processing overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "The system maintains 99.9% availability during core clinic hours (8 AM-6 PM).",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal business operations during core hours",
+          "stimulus": "Time passage and ongoing user requests",
+          "response_measure": "System uptime of 99.9% (approx. 43.2 minutes of downtime per month allowed)",
+          "architectural_decisions": [
+            "Server-side management of critical logic and data",
+            "Potential for server clustering (implied by Availability scenario A1)"
+          ],
+          "reasoning": "99.9% availability is a demanding target. The reliability of the single server (or cluster) is critical. The architecture's reliability hinges on server hardware robustness, software stability, and operational procedures (e.g., patching, backups).",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Single server deployment (if not clustered) creates a single point of failure, making 99.9% availability difficult to achieve.",
+                "rationale": "Any hardware failure, OS crash, or required maintenance on the primary server causes total system downtime."
+              },
+              {
+                "id": "R-06",
+                "description": "The RPC Broker component itself could be a single point of failure if not designed for high availability.",
+                "rationale": "If the broker fails, all client-server communication halts."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Centralizing business logic on the server simplifies monitoring and health checks for the core system component.",
+                "rationale": "A single, well-instrumented server is easier to monitor for reliability metrics than distributed logic."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Mean Time Between Failures (MTBF) of server hardware",
+                "correlated_attribute": "Reliability (Uptime)"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Planned maintenance window duration and frequency",
+                "correlated_attribute": "Reliability (Uptime)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Server complexity (features, services running)",
+                "conflicting_attributes": [
+                  "Modifiability (Rich server functionality)",
+                  "Reliability (Increased complexity can reduce stability)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "The server component fails; a clustered backup server takes over within 30 seconds with no data loss.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Primary server failure",
+          "stimulus": "Primary server hardware or software failure",
+          "response_measure": "Backup server takes over within 30 seconds with no data loss",
+          "architectural_decisions": [
+            "Server clustering for high availability",
+            "Use of shared or replicated data storage"
+          ],
+          "reasoning": "This scenario explicitly tests the failover capability. The 30-second Recovery Time Objective (RTO) and zero data loss (RPO=0) are stringent. The architecture must include a robust clustering mechanism with synchronous data replication and fast failure detection.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Achieving a 30-second failover with no data loss requires synchronous replication and instant failure detection, which is complex and may impact performance.",
+                "rationale": "Synchronous replication adds latency to primary server writes. Slow failure detection can breach the 30-second RTO."
+              },
+              {
+                "id": "R-08",
+                "description": "The RPC Broker must be cluster-aware to redirect client connections to the new active server within the failover time.",
+                "rationale": "If clients remain connected to the failed server's broker endpoint, service is interrupted until they reconnect."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "The Client-Server model naturally supports active-passive or active-active clustering patterns for the server component.",
+                "rationale": "The architecture separates client and server, allowing the server layer to be replaced without changing clients, given proper broker redirection."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Failure detection heartbeat interval",
+                "correlated_attribute": "Availability (Failover time)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Data replication latency between primary and backup servers",
+                "correlated_attribute": "Availability (Data loss)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Data replication mode (synchronous vs. asynchronous)",
+                "conflicting_attributes": [
+                  "Availability (Synchronous ensures no data loss)",
+                  "Performance (Synchronous replication increases write latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A change to medication dosage calculation rules is deployed to the server without requiring client updates.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System maintenance and update deployment",
+          "stimulus": "Need to update business logic (dosage calculation rules)",
+          "response_measure": "Change deployed to server only; no client updates required",
+          "architectural_decisions": [
+            "Separation of client and server concerns",
+            "Centralization of business logic on the server"
+          ],
+          "reasoning": "This scenario highlights a key benefit of the Client-Server pattern. As long as the RPC interface (API contract) remains stable, server-side logic can be modified independently.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "If the business logic change requires modifications to the data structures or RPC method signatures, the interface changes, forcing client updates.",
+                "rationale": "Modifiability is only high if changes are confined within the existing API contract."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "The architecture inherently supports modifying server-side business logic without touching client code, given a stable interface.",
+                "rationale": "This is a fundamental strength of the layered Client-Server pattern."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Stability of the RPC interface (API) definition",
+                "correlated_attribute": "Modifiability (Ease of updating business logic)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "API versioning strategy",
+                "conflicting_attributes": [
+                  "Modifiability (Allowing API evolution)",
+                  "Conceptual Integrity (Maintaining a simple, consistent interface)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

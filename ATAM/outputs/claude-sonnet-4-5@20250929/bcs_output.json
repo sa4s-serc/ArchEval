@@ -1,0 +1,1037 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The Battlefield Control System (BCS) is a real-time system used by army battalions to control troop movement, strategy, and operations. It supports a Commander who commands a set of Soldiers and their equipment (weapons, sensors). The system interfaces with external command-and-control systems to receive commands and intelligence and to report status. It operates on a client-server model where the Commander node acts as the server and Soldier nodes are clients, communicating exclusively via encrypted messages over a shared 9600 baud radio modem channel.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Minimal; high level data flows and functionality divisions with no clear mapping to software constructs or architectural styles.",
+        "evaluator_inquiry_questions": [
+          "What is the structure of the message-handling software (modules, functions, APIs, layers)?",
+          "What facilities exist in the software architecture for self-testing and monitoring of software components?",
+          "What facilities exist for redundancy, liveness monitoring, failover, and data consistency maintenance?",
+          "What is the process/task view of the system, including mapping to hardware?",
+          "What functional dependencies exist among software components ('uses' view)?",
+          "What data is kept in the database, how big is it, how much does it change, and who reads/writes it?",
+          "What is the anticipated frequency and volume of data being transmitted among system components?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The Commander node acts as a server and the Soldier nodes are its clients.",
+          "Soldier nodes make requests of the Commander and update the server's database with their status.",
+          "Inter-node communication is only through encrypted messages sent via a radio modem.",
+          "Neither subsystem (Commander/Soldier) controls the other.",
+          "The radio modem is a shared communication channel; only one node can broadcast at any moment."
+        ],
+        "runtime_constraints": [
+          "Maximum of 25 Soldiers per Commander.",
+          "Radio modem speed is 9600 baud.",
+          "Initialization time budget (implicit) is 300 seconds."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "network_bandwidth": "9600 bits/second",
+        "message_sizes": {
+          "mission_plans": "280 Kbits",
+          "environmental_database_update": "66 Kbits",
+          "issued_orders_per_soldier": "18 Kbits",
+          "location_status_per_soldier": "12 Kbits",
+          "inventory_status_per_soldier": "42 Kbits"
+        },
+        "periodic_update_volume": "59,800 Kbits every 10 minutes"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Backup Commander (Availability)",
+          "questions": [
+            "How is the failure of a component detected?",
+            "How is the failure of a communication channel detected?",
+            "What is the latency for a spare component to be turned into a working replacement?",
+            "By what means is a failed component marked for replacement?",
+            "How are the system's working components notified that they should use the services of the spare?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS1",
+          "description": "Same information presented to user, but different presentation (location, fonts, sizes, colors, etc.)."
+        },
+        {
+          "id": "RS2",
+          "description": "Additional data requested to be presented to user."
+        },
+        {
+          "id": "RS3",
+          "description": "User requests a change of dialog."
+        },
+        {
+          "id": "RS4",
+          "description": "A new device is added to the network, e.g., a location device that returns accurate GPS data."
+        },
+        {
+          "id": "RS5",
+          "description": "An existing device adds additional fields that are not currently handled to existing messages."
+        },
+        {
+          "id": "RS6",
+          "description": "Map data format changes."
+        },
+        {
+          "id": "RS7",
+          "description": "The time budget for initialization is reduced from 5 minutes to 90 seconds."
+        },
+        {
+          "id": "RS8",
+          "description": "Modem baud rate is increased by a factor of 4."
+        },
+        {
+          "id": "RS9",
+          "description": "Operating system changes to Solaris."
+        },
+        {
+          "id": "RS10",
+          "description": "Operating schedule is unpredictable."
+        },
+        {
+          "id": "RS11",
+          "description": "Can a new schedule be accommodated by the OS?."
+        },
+        {
+          "id": "RS12",
+          "description": "Change the number of Soldier nodes from 25 to 35."
+        },
+        {
+          "id": "RS13",
+          "description": "Change the number of simultaneous missions from 3 to 6."
+        },
+        {
+          "id": "RS14",
+          "description": "A node converts from being a Soldier/client to become a Commander/server."
+        },
+        {
+          "id": "RS15",
+          "description": "Incoming message format changes."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Control movement, strategy, and operations of troops in real-time",
+          "Support a Commander commanding a set of Soldiers and their equipment (weapons, sensors)",
+          "Interface with numerous external command-and-control systems"
+        ],
+        "technical_constraints": [
+          "Must use a standard set of hardware and software",
+          "Communication via encrypted radio modem at 9600 baud (shared channel)",
+          "Extreme levels of system robustness required"
+        ],
+        "architectural_drivers": [
+          "Availability",
+          "Modifiability",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server Architecture",
+          "description": "Commander node acts as server, Soldier nodes as clients. Soldiers make requests and update server database with status information.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Separation of concerns between Commander and Soldier nodes allows independent modification of client and server logic."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Centralized server manages coordination and data consistency for distributed clients."
+            }
+          ]
+        },
+        {
+          "approach_name": "Message-Based Communication",
+          "description": "All inter-node communication occurs through encrypted messages over a shared radio modem channel. No direct control between subsystems.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Loose coupling via messages allows nodes to operate semi-independently and recover from communication failures."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Message-based interface allows changes to internal node implementation without affecting communication protocol."
+            }
+          ]
+        },
+        {
+          "approach_name": "Shared Channel with Arbitration",
+          "description": "Single 9600 baud radio modem channel shared among all nodes; only one node can broadcast at any moment, requiring channel arbitration.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Channel arbitration prevents message collisions and ensures orderly communication despite bandwidth constraints."
+            }
+          ]
+        },
+        {
+          "approach_name": "Database-Centric State Management",
+          "description": "Commander maintains a centralized database updated by Soldier status reports, serving as the authoritative source of system state.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Centralized state repository enables recovery and consistency management."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Single source of truth reduces need for distributed consensus protocols."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Initialization latency",
+                "scenario_id": "P1",
+                "scenario_description": "The time budget for initialization is reduced from 5 minutes to 90 seconds. System must complete database initialization and network discovery over the 9600 baud shared channel within the reduced timeframe.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Communication bandwidth scalability",
+                "scenario_id": "P2",
+                "scenario_description": "Modem baud rate is increased by a factor of 4 (from 9600 to 38400 baud). System must adapt shared channel arbitration protocol and message scheduling to leverage increased bandwidth.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Node scalability",
+                "scenario_id": "P3",
+                "scenario_description": "Change the number of Soldier nodes from 25 to 35. System must handle increased message traffic, database update frequency, and shared channel contention without degrading response times.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Concurrent mission capacity",
+                "scenario_id": "P4",
+                "scenario_description": "Change the number of simultaneous missions from 3 to 6. System must manage doubled concurrent mission state in centralized database and handle increased message traffic for mission coordination.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "User interface presentation changes",
+                "scenario_id": "M1",
+                "scenario_description": "Same information presented to user, but different presentation (location, fonts, sizes, colors, etc.). Client-server separation should isolate UI changes from server logic.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Device type extensibility",
+                "scenario_id": "M2",
+                "scenario_description": "A new device is added to the network, e.g., a location device that returns accurate GPS data. System must extend message protocol, database schema, and arbitration logic to accommodate new device type.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Message protocol evolution",
+                "scenario_id": "M3",
+                "scenario_description": "An existing device adds additional fields that are not currently handled to existing messages. System must modify message parsing, encryption handling, and database storage without breaking existing functionality.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Data format changes",
+                "scenario_id": "M4",
+                "scenario_description": "Map data format changes. Database-centric architecture must isolate data layer updates from application logic and message communication.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Platform portability",
+                "scenario_id": "M5",
+                "scenario_description": "Operating system changes to Solaris. System must adapt OS-specific dependencies in radio modem drivers, database layer, and potentially message encryption libraries.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "Operational deployment flexibility",
+                "scenario_id": "A1",
+                "scenario_description": "Operating schedule is unpredictable. System must support flexible deployment patterns and maintain operational readiness despite irregular usage schedules without requiring fixed initialization windows.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Dynamic role reconfiguration",
+                "scenario_id": "A2",
+                "scenario_description": "A node converts from being a Soldier/client to become a Commander/server. System must support runtime role switching including database migration, arbitration authority transfer, and client reconnection without mission interruption.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "The time budget for initialization is reduced from 5 minutes to 90 seconds. The system must complete database initialization, network discovery, and establish encrypted communication channels with all Soldier nodes over the 9600 baud shared channel within the reduced 90-second timeframe while maintaining data integrity and proper channel arbitration.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Modem baud rate is increased by a factor of 4 (from 9600 to 38400 baud). The system must adapt the shared channel arbitration protocol, message scheduling algorithms, and timing assumptions to leverage the increased bandwidth without introducing message collisions or degrading reliability of encrypted communications.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The number of Soldier nodes increases from 25 to 35. The system must handle the 40% increase in message traffic, database update frequency, and shared channel contention while maintaining response times for mission-critical updates and ensuring the Commander's centralized database remains consistent under higher update loads.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The number of simultaneous missions increases from 3 to 6. The system must manage doubled concurrent mission state in the centralized Commander database, handle increased message traffic for mission coordination across all nodes, and maintain channel arbitration efficiency despite doubled coordination message volume.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "User interface presentation requirements change (location, fonts, sizes, colors, etc.) while displaying the same underlying information. The client-server architecture must allow UI modifications on Commander and Soldier nodes without requiring changes to server logic, database schema, or message communication protocols.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A new device type is added to the network (e.g., a GPS location device providing accurate positioning data). The system must extend the message protocol to support new message types, update the database schema to store new data fields, modify channel arbitration to accommodate the new device's communication patterns, and ensure backward compatibility with existing Soldier nodes.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "An existing device adds additional fields to its status messages that are not currently handled. The system must modify message parsing logic, update encryption/decryption handling for extended message formats, extend database storage schema, and ensure existing functionality continues to operate correctly during the transition period.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Map data format changes from the current format to a new standard. The database-centric architecture must isolate data layer updates from application logic and message communication, allowing map data storage and retrieval mechanisms to be modified without affecting message protocols or client-server coordination logic.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Operating system changes from the current platform to Solaris. The system must adapt OS-specific dependencies including radio modem device drivers, database layer implementations, message encryption libraries, and process scheduling mechanisms while maintaining functional equivalence and performance characteristics.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Operating schedule becomes unpredictable with irregular deployment patterns. The system must support flexible deployment without requiring fixed initialization windows, maintain operational readiness despite variable usage schedules, and handle rapid transitions between idle and active states while preserving database consistency and communication channel integrity.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "A node converts from Soldier/client role to Commander/server role during runtime. The system must support dynamic role switching including migration of database state, transfer of channel arbitration authority, reconnection of client nodes to the new Commander, and preservation of ongoing mission state without mission interruption or data loss.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "The time budget for initialization is reduced from 5 minutes to 90 seconds. The system must complete database initialization, network discovery, and establish encrypted communication channels with all Soldier nodes over the 9600 baud shared channel within the reduced 90-second timeframe while maintaining data integrity and proper channel arbitration.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Performance",
+          "environment": "System startup with 25 Soldier nodes",
+          "stimulus": "Initialization time budget reduced from 300s to 90s",
+          "response_measure": "Complete database init, network discovery, and encrypted channel establishment within 90 seconds",
+          "architectural_decisions": [
+            "Shared Channel with Arbitration: Sequential initialization over single 9600 baud channel",
+            "Database-Centric State Management: Commander must initialize centralized database before accepting Soldier connections",
+            "Message-Based Communication: Each Soldier must exchange encrypted handshake messages with Commander"
+          ],
+          "reasoning": "At 9600 baud, theoretical max throughput is ~960 bytes/sec. With 25 Soldiers, each node has ~3.6 seconds average for handshake if evenly distributed. Encryption overhead, channel arbitration delays, and database write latency consume significant portions of this budget. Sequential discovery over shared channel creates linear scaling bottleneck.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Initialization may exceed 90-second budget with 25 nodes due to sequential channel access and encryption overhead",
+                "rationale": "Shared channel arbitration forces sequential handshakes. If each Soldier requires >3.6s for discovery + encryption + database update, the budget is violated. No parallel initialization paths exist."
+              },
+              {
+                "id": "R-02",
+                "description": "Database initialization blocking network discovery creates cascading delays",
+                "rationale": "Database-centric approach requires Commander database to be ready before accepting Soldier connections. Any database initialization delay directly reduces time available for network discovery."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Message-based communication protocol itself does not inherently prevent meeting the 90s budget",
+                "rationale": "Message protocol overhead is fixed and predictable. The risk lies in sequential channel access, not the message format itself."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Number of Soldier nodes",
+                "correlated_attribute": "Initialization latency"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Encryption handshake message size",
+                "correlated_attribute": "Initialization latency"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Database write latency per Soldier registration",
+                "correlated_attribute": "Initialization latency"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Channel arbitration strictness",
+                "conflicting_attributes": [
+                  "Performance (faster initialization with relaxed arbitration)",
+                  "Availability (message collision risk increases with relaxed arbitration)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Modem baud rate is increased by a factor of 4 (from 9600 to 38400 baud). The system must adapt the shared channel arbitration protocol, message scheduling algorithms, and timing assumptions to leverage the increased bandwidth without introducing message collisions or degrading reliability of encrypted communications.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with upgraded modem hardware",
+          "stimulus": "Baud rate increases from 9600 to 38400",
+          "response_measure": "System adapts arbitration and scheduling to utilize 4x bandwidth without collisions",
+          "architectural_decisions": [
+            "Shared Channel with Arbitration: Arbitration timing parameters must be recalibrated for 4x faster transmission",
+            "Message-Based Communication: Message timing assumptions embedded in protocol may need adjustment"
+          ],
+          "reasoning": "4x bandwidth increase reduces message transmission time by 75%, but arbitration protocol likely has hardcoded timing assumptions (e.g., wait periods, timeout values) tuned for 9600 baud. If not updated, system may underutilize bandwidth or introduce race conditions.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Hardcoded arbitration timing parameters may cause bandwidth underutilization or message collisions",
+                "rationale": "Arbitration wait times, backoff intervals, and timeout values tuned for 9600 baud will be incorrect at 38400 baud. Too-long waits waste bandwidth; too-short waits cause collisions."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Message format and encryption mechanisms are bandwidth-agnostic",
+                "rationale": "Message structure and encryption do not depend on baud rate. Only timing parameters need adjustment."
+              },
+              {
+                "id": "NR-03",
+                "description": "Database-centric architecture is unaffected by modem speed changes",
+                "rationale": "Database operations are independent of communication channel speed."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Arbitration timeout values",
+                "correlated_attribute": "Performance (bandwidth utilization)"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Message scheduling interval",
+                "correlated_attribute": "Performance (throughput)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Arbitration aggressiveness",
+                "conflicting_attributes": [
+                  "Performance (higher throughput with aggressive arbitration)",
+                  "Availability (collision risk increases with aggressive arbitration)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P3",
+            "text": "The number of Soldier nodes increases from 25 to 35. The system must handle the 40% increase in message traffic, database update frequency, and shared channel contention while maintaining response times for mission-critical updates and ensuring the Commander's centralized database remains consistent under higher update loads.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with expanded node count",
+          "stimulus": "Soldier node count increases from 25 to 35 (40% increase)",
+          "response_measure": "Maintain response times and database consistency despite 40% traffic increase",
+          "architectural_decisions": [
+            "Shared Channel with Arbitration: 40% more nodes compete for same 9600 baud channel",
+            "Database-Centric State Management: Commander database must handle 40% more update transactions",
+            "Client-Server Architecture: Commander must service 40% more client requests"
+          ],
+          "reasoning": "Shared channel bandwidth is fixed at 9600 baud. 40% more nodes means 40% more status updates, mission messages, and arbitration overhead. Channel utilization increases proportionally, potentially causing queuing delays. Database write contention also increases linearly.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Shared channel saturation may cause unacceptable message latency for mission-critical updates",
+                "rationale": "9600 baud channel has fixed capacity. 40% more nodes generating periodic status updates and mission messages will increase channel utilization, potentially causing queuing delays that violate response time requirements."
+              },
+              {
+                "id": "R-05",
+                "description": "Database write contention may degrade Commander responsiveness",
+                "rationale": "Centralized database must process 40% more Soldier status updates. If database write throughput is near capacity at 25 nodes, adding 10 nodes may cause transaction queuing and lock contention."
+              },
+              {
+                "id": "R-06",
+                "description": "Channel arbitration overhead increases non-linearly with node count",
+                "rationale": "More nodes means more arbitration messages and longer wait times for channel access. Arbitration overhead grows faster than linearly, reducing effective payload bandwidth."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Client-server architecture scales to 35 nodes without structural changes",
+                "rationale": "Client-server pattern supports arbitrary client counts. No architectural modification needed for 35 vs 25 clients."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Number of Soldier nodes",
+                "correlated_attribute": "Performance (message latency)"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Soldier status update frequency",
+                "correlated_attribute": "Performance (channel utilization)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Database transaction throughput capacity",
+                "correlated_attribute": "Performance (Commander responsiveness)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Status update frequency",
+                "conflicting_attributes": [
+                  "Availability (higher update frequency improves state freshness)",
+                  "Performance (higher frequency increases channel contention)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P4",
+            "text": "The number of simultaneous missions increases from 3 to 6. The system must manage doubled concurrent mission state in the centralized Commander database, handle increased message traffic for mission coordination across all nodes, and maintain channel arbitration efficiency despite doubled coordination message volume.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with doubled mission load",
+          "stimulus": "Concurrent mission count increases from 3 to 6",
+          "response_measure": "Maintain database consistency and channel efficiency with doubled mission coordination traffic",
+          "architectural_decisions": [
+            "Database-Centric State Management: Commander database must store and manage 2x mission state",
+            "Message-Based Communication: Mission coordination messages double in volume",
+            "Shared Channel with Arbitration: Channel must handle doubled mission-related message traffic"
+          ],
+          "reasoning": "Doubling concurrent missions doubles mission coordination messages (assignments, status updates, completions). Database must maintain consistency across 6 mission contexts instead of 3. Channel bandwidth is fixed, so doubled mission traffic competes with existing status update traffic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Database transaction complexity increases with concurrent mission state management",
+                "rationale": "Managing 6 concurrent missions requires more complex transaction isolation and locking. Risk of deadlocks or consistency violations increases with mission count."
+              },
+              {
+                "id": "R-08",
+                "description": "Mission coordination message volume may saturate shared channel",
+                "rationale": "Doubling mission count doubles mission assignment, update, and completion messages. Combined with Soldier status updates, channel utilization may exceed capacity during mission-intensive periods."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Database schema supports arbitrary mission counts without structural changes",
+                "rationale": "Database-centric design uses relational model that scales to multiple concurrent missions without schema modification."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Number of concurrent missions",
+                "correlated_attribute": "Performance (database transaction load)"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Mission coordination message frequency",
+                "correlated_attribute": "Performance (channel utilization)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Mission state update granularity",
+                "conflicting_attributes": [
+                  "Availability (fine-grained updates improve mission state accuracy)",
+                  "Performance (fine-grained updates increase message traffic)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "User interface presentation requirements change (location, fonts, sizes, colors, etc.) while displaying the same underlying information. The client-server architecture must allow UI modifications on Commander and Soldier nodes without requiring changes to server logic, database schema, or message communication protocols.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development/maintenance phase",
+          "stimulus": "UI presentation requirements change",
+          "response_measure": "UI changes isolated to presentation layer without affecting server, database, or messaging",
+          "architectural_decisions": [
+            "Client-Server Architecture: Separation of presentation (client) from business logic (server)",
+            "Message-Based Communication: UI changes do not affect message protocol"
+          ],
+          "reasoning": "Client-server separation isolates UI (client-side) from data management (server-side). Presentation changes affect only client rendering logic, not server operations or message formats.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "UI presentation changes are fully isolated by client-server architecture",
+                "rationale": "Client-server separation ensures presentation logic is independent of server business logic, database schema, and message protocols. UI changes require only client-side modifications."
+              },
+              {
+                "id": "NR-07",
+                "description": "Message-based communication is unaffected by UI changes",
+                "rationale": "Message protocol operates at data layer, independent of presentation. UI changes do not alter message content or format."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "A new device type is added to the network (e.g., a GPS location device providing accurate positioning data). The system must extend the message protocol to support new message types, update the database schema to store new data fields, modify channel arbitration to accommodate the new device's communication patterns, and ensure backward compatibility with existing Soldier nodes.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution with new device integration",
+          "stimulus": "New device type (GPS location device) added to network",
+          "response_measure": "Extend protocol, database, and arbitration while maintaining backward compatibility",
+          "architectural_decisions": [
+            "Message-Based Communication: Must extend message protocol with new message types for GPS device",
+            "Database-Centric State Management: Must extend schema to store GPS data",
+            "Shared Channel with Arbitration: Must accommodate new device in arbitration logic"
+          ],
+          "reasoning": "Adding a new device type requires changes across multiple architectural layers: message protocol (new message formats), database (new tables/fields), and arbitration (new device in channel access). Backward compatibility requires versioning or graceful degradation mechanisms.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Message protocol extension may break backward compatibility with existing Soldier nodes",
+                "rationale": "Introducing new message types requires all nodes to recognize (or safely ignore) new formats. Without protocol versioning, existing Soldiers may fail when encountering GPS messages."
+              },
+              {
+                "id": "R-10",
+                "description": "Database schema changes require migration strategy and may cause downtime",
+                "rationale": "Adding new tables/fields for GPS data requires database migration. If not carefully managed, migration may cause Commander downtime or data inconsistency during transition."
+              },
+              {
+                "id": "R-11",
+                "description": "Channel arbitration logic changes may introduce unforeseen contention patterns",
+                "rationale": "GPS device may have different communication patterns (e.g., high-frequency position updates). Arbitration logic must be modified to accommodate this, potentially affecting existing node access patterns."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Message-based architecture provides extension points for new device types",
+                "rationale": "Message-based communication naturally supports new message types through protocol extension, provided versioning is implemented."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Message protocol versioning strategy",
+                "correlated_attribute": "Modifiability (ease of adding new devices)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Database schema flexibility",
+                "correlated_attribute": "Modifiability (ease of adding new data types)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Protocol extensibility mechanisms",
+                "conflicting_attributes": [
+                  "Modifiability (flexible protocol supports new devices easily)",
+                  "Performance (protocol versioning/negotiation adds overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M3",
+            "text": "An existing device adds additional fields to its status messages that are not currently handled. The system must modify message parsing logic, update encryption/decryption handling for extended message formats, extend database storage schema, and ensure existing functionality continues to operate correctly during the transition period.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution with message format extension",
+          "stimulus": "Existing device adds new fields to status messages",
+          "response_measure": "Extend parsing, encryption, and database while maintaining existing functionality",
+          "architectural_decisions": [
+            "Message-Based Communication: Must update message parsing to handle extended formats",
+            "Database-Centric State Management: Must extend schema to store new fields",
+            "Encryption handling must support variable-length messages"
+          ],
+          "reasoning": "Extending existing message formats requires coordinated changes across parsing, encryption, and storage layers. Backward compatibility is critical to avoid breaking existing devices during rollout.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Message parsing changes may introduce errors if field boundaries are not correctly handled",
+                "rationale": "Adding fields to existing messages changes message structure. Parsing logic must correctly identify old vs. new format messages, or risk misinterpreting field boundaries and corrupting data."
+              },
+              {
+                "id": "R-13",
+                "description": "Encryption/decryption logic may fail with variable-length messages if fixed-size buffers are assumed",
+                "rationale": "If encryption implementation assumes fixed message sizes, adding fields may cause buffer overflows or truncation. Encryption layer must handle variable-length messages."
+              },
+              {
+                "id": "R-14",
+                "description": "Database schema extension requires migration that may cause inconsistency during transition",
+                "rationale": "Adding new fields to database requires schema migration. During transition, some devices send old format (missing fields) while others send new format, requiring careful null-handling logic."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Client-server architecture isolates message format changes from UI layer",
+                "rationale": "Server-side message parsing changes do not affect client UI, provided server API remains stable."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Message format versioning support",
+                "correlated_attribute": "Modifiability (ease of extending messages)"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Encryption buffer sizing strategy",
+                "correlated_attribute": "Modifiability (ability to handle variable-length messages)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Message format flexibility",
+                "conflicting_attributes": [
+                  "Modifiability (flexible formats support easy extension)",
+                  "Performance (flexible formats require runtime parsing overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M4",
+            "text": "Map data format changes from the current format to a new standard. The database-centric architecture must isolate data layer updates from application logic and message communication, allowing map data storage and retrieval mechanisms to be modified without affecting message protocols or client-server coordination logic.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution with data format change",
+          "stimulus": "Map data format changes to new standard",
+          "response_measure": "Isolate data layer changes from application and communication layers",
+          "architectural_decisions": [
+            "Database-Centric State Management: Database layer should encapsulate map data format",
+            "Client-Server Architecture: Server API should abstract map data format from clients"
+          ],
+          "reasoning": "Database-centric architecture should provide abstraction layer between data storage format and application logic. If properly layered, map format changes affect only database storage/retrieval code, not message protocols or client logic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-15",
+                "description": "Insufficient abstraction between database and application may leak map format dependencies into application logic",
+                "rationale": "If application code directly manipulates map data structures instead of using database abstraction layer, map format changes will require widespread application code changes."
+              },
+              {
+                "id": "R-16",
+                "description": "Map data migration from old to new format may require downtime or dual-format support",
+                "rationale": "Converting existing map data to new format requires migration process. Without dual-format support during transition, system may experience downtime."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "Message-based communication is unaffected by map data format changes",
+                "rationale": "Map data is stored in database, not transmitted in messages. Message protocol remains unchanged."
+              },
+              {
+                "id": "NR-11",
+                "description": "Client-server architecture isolates clients from map storage format",
+                "rationale": "Clients request map data through server API. If API remains stable, map storage format changes are transparent to clients."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Database abstraction layer quality",
+                "correlated_attribute": "Modifiability (isolation of data format changes)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M5",
+            "text": "Operating system changes from the current platform to Solaris. The system must adapt OS-specific dependencies including radio modem device drivers, database layer implementations, message encryption libraries, and process scheduling mechanisms while maintaining functional equivalence and performance characteristics.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Platform migration",
+          "stimulus": "Operating system changes to Solaris",
+          "response_measure": "Adapt OS-specific dependencies while maintaining functionality and performance",
+          "architectural_decisions": [
+            "All architectural approaches have OS dependencies that must be ported",
+            "Radio modem drivers (Shared Channel approach)",
+            "Database implementation (Database-Centric approach)",
+            "Encryption libraries (Message-Based approach)"
+          ],
+          "reasoning": "OS migration requires porting all OS-specific components: device drivers for radio modem, database engine or bindings, encryption libraries, and process/thread management. Extent of effort depends on OS abstraction quality in current implementation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-17",
+                "description": "Radio modem device drivers may require complete rewrite for Solaris",
+                "rationale": "Device drivers are highly OS-specific. Solaris driver model differs significantly from other OSes, likely requiring substantial driver rewrite effort."
+              },
+              {
+                "id": "R-18",
+                "description": "Database layer may have OS-specific dependencies that complicate porting",
+                "rationale": "Database implementations often use OS-specific file I/O, locking, and memory management. Porting may require significant database layer rework."
+              },
+              {
+                "id": "R-19",
+                "description": "Encryption library availability and API compatibility on Solaris may differ",
+                "rationale": "Encryption libraries may not be available on Solaris, or may have different APIs. May require library replacement or wrapper layer."
+              },
+              {
+                "id": "R-20",
+                "description": "Performance characteristics may change on Solaris due to different scheduling and I/O models",
+                "rationale": "Solaris process scheduling, thread management, and I/O subsystems differ from other OSes. Performance tuning may be required to maintain equivalent performance."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-16",
+                "parameter": "OS abstraction layer quality",
+                "correlated_attribute": "Modifiability (ease of OS porting)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "OS abstraction layer thickness",
+                "conflicting_attributes": [
+                  "Modifiability (thick abstraction eases porting)",
+                  "Performance (abstraction layers add overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "Operating schedule becomes unpredictable with irregular deployment patterns. The system must support flexible deployment without requiring fixed initialization windows, maintain operational readiness despite variable usage schedules, and handle rapid transitions between idle and active states while preserving database consistency and communication channel integrity.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Unpredictable operational schedule",
+          "stimulus": "Irregular deployment patterns with rapid state transitions",
+          "response_measure": "Maintain operational readiness and data consistency across variable usage patterns",
+          "architectural_decisions": [
+            "Database-Centric State Management: Database must support rapid startup/shutdown without corruption",
+            "Message-Based Communication: Communication channels must re-establish quickly after idle periods",
+            "Shared Channel with Arbitration: Arbitration must handle nodes joining/leaving dynamically"
+          ],
+          "reasoning": "Unpredictable schedules require system to transition rapidly between idle and active states without lengthy initialization. Database must persist state reliably across shutdowns. Communication channels must re-establish without manual intervention.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-21",
+                "description": "Rapid startup/shutdown cycles may cause database corruption if transactions are not properly committed",
+                "rationale": "Frequent state transitions increase risk of database corruption if shutdown occurs during transaction. Requires robust transaction logging and recovery mechanisms."
+              },
+              {
+                "id": "R-22",
+                "description": "Channel re-establishment after idle periods may fail if arbitration state is not properly preserved",
+                "rationale": "Shared channel arbitration requires nodes to coordinate. If arbitration state is lost during shutdown, re-establishing channel may require manual intervention or lengthy discovery."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-12",
+                "description": "Message-based communication supports dynamic node joining/leaving",
+                "rationale": "Message-based architecture naturally supports nodes appearing and disappearing, provided discovery mechanisms are robust."
+              },
+              {
+                "id": "NR-13",
+                "description": "Client-server architecture supports clients connecting/disconnecting dynamically",
+                "rationale": "Client-server pattern inherently supports dynamic client populations."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Database transaction commit frequency",
+                "correlated_attribute": "Availability (data consistency across shutdowns)"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Channel re-establishment timeout",
+                "correlated_attribute": "Availability (recovery time from idle)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Database transaction commit frequency",
+                "conflicting_attributes": [
+                  "Availability (frequent commits reduce data loss risk)",
+                  "Performance (frequent commits increase I/O overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A2",
+            "text": "A node converts from Soldier/client role to Commander/server role during runtime. The system must support dynamic role switching including migration of database state, transfer of channel arbitration authority, reconnection of client nodes to the new Commander, and preservation of ongoing mission state without mission interruption or data loss.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Runtime with ongoing missions",
+          "stimulus": "Node role conversion from Soldier to Commander",
+          "response_measure": "Complete role switch with database migration, arbitration transfer, and client reconnection without mission interruption",
+          "architectural_decisions": [
+            "Client-Server Architecture: Must support dynamic server migration",
+            "Database-Centric State Management: Must migrate database state from old to new Commander",
+            "Shared Channel with Arbitration: Must transfer arbitration authority",
+            "Message-Based Communication: Must redirect client connections to new Commander"
+          ],
+          "reasoning": "Dynamic role switching requires coordinated state transfer across all architectural layers: database replication/migration, arbitration authority handoff, and client reconnection. Maintaining mission continuity during transition is highly complex.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-23",
+                "description": "Database state migration may cause data loss or inconsistency during transition",
+                "rationale": "Migrating database from old Commander to new Commander while missions are active requires complex synchronization. Risk of losing in-flight updates or creating inconsistent state."
+              },
+              {
+                "id": "R-24",
+                "description": "Arbitration authority transfer may cause channel deadlock or split-brain scenario",
+                "rationale": "If both old and new Commander attempt to arbitrate simultaneously, or if neither arbitrates during handoff, channel may deadlock. Requires careful handoff protocol."
+              },
+              {
+                "id": "R-25",
+                "description": "Client reconnection may fail if new Commander is not fully initialized before old Commander releases authority",
+                "rationale": "Clients must seamlessly reconnect to new Commander. If new Commander is not ready when old Commander shuts down, clients lose connectivity and missions are interrupted."
+              },
+              {
+                "id": "R-26",
+                "description": "Ongoing mission state may be lost if not properly transferred during role switch",
+                "rationale": "Active missions have state distributed across Commander database and Soldier nodes. Ensuring all mission state is captured and transferred during role switch is complex and error-prone."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-19",
+                "parameter": "Database replication lag",
+                "correlated_attribute": "Availability (data consistency during migration)"
+              },
+              {
+                "id": "S-20",
+                "parameter": "Arbitration handoff protocol timeout",
+                "correlated_attribute": "Availability (channel availability during transition)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Role switch coordination complexity",
+                "conflicting_attributes": [
+                  "Availability (complex coordination enables seamless failover)",
+                  "Modifiability (complex coordination increases system complexity and maintenance burden)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

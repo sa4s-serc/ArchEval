@@ -1,0 +1,463 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Game-based Architecture",
+      "date": "2005-06-15",
+      "ref": "https://staffwww.dcs.shef.ac.uk/people/s.maddock/publications/BinSubaihMaddock2006_ACE.pdf",
+      "evaluator_organization": "Department of Computer Science, University of Sheffield",
+      "phase_1_attendees": [
+        "Architect",
+        "Stakeholders",
+        "Evaluation Team"
+      ],
+      "phase_2_attendees": [
+        "Architect",
+        "Stakeholders",
+        "Evaluation Team"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "A component-based software architecture designed to facilitate game portability across different commercial and bespoke game engines. The core concept employs a 'game space' component that services game logic (plot/story) to multiple game engines (views) without requiring modification to the game itself. It utilizes a variant of the Model-View-Controller pattern where the game space acts as the Model and the game engines act as Views, connected via Adapters.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The text implies that like traditional system development cycles, the requirements document lacked or weakly articulated quality attributes, requiring the evaluation team to elicit them. Architectural decisions also had to be elicited as they were not fully listed in the documentation.",
+        "evaluator_inquiry_questions": [
+          "Does the game engine require the game state to be put in its own game state?",
+          "Does the game engine require objects to be represented in its own Game Model representation?",
+          "Does the game engine require the behaviour to be specified in the game engine's own language or format?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed environment where the game space and game engine run on different machines",
+          "Adapters are placed in the same application as the game space to minimize overhead"
+        ],
+        "runtime_constraints": [
+          "Network overhead due to distributed environment",
+          "Processing power limitations of the machine running the game engine",
+          "Mid-game scripting performance overhead (approx. 10x slower than pre-compiled code)"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "target_display_rate": "20 FPS",
+        "response_time_threshold": "< 1 second",
+        "scripting_performance_penalty": "10x slower than pre-compiled"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Model-View-Controller (MVC) / Game-based Architecture",
+          "questions": [
+            "How does the architecture break the direct link between the game space's game state and the game engine's game state?",
+            "How does the architecture break the direct link between the game space's game model and the game engine's game model?",
+            "How does the architecture ensure game behaviour is not formatted in the game engine's proprietary format?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Run two games from the same domain"
+        },
+        {
+          "id": "RS-02",
+          "description": "Run two games from two different domains"
+        },
+        {
+          "id": "RS-03",
+          "description": "Interoperate between two game engines"
+        },
+        {
+          "id": "RS-04",
+          "description": "Run two behaviour engines (internal and external)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Increase the load by increasing the number of NPCs the user can interact with"
+        },
+        {
+          "id": "RS-06",
+          "description": "Increase the load by simulating multiple number of simultaneous players"
+        },
+        {
+          "id": "RS-07",
+          "description": "Run the game space on the same machine as the game engine"
+        },
+        {
+          "id": "RS-08",
+          "description": "Run the behaviour engine and the game space on the same machine as the game engine"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Break the current tightly coupled practices employed when developing games using game engines",
+          "Make the architecture flexible to accommodate different games"
+        ],
+        "technical_constraints": [
+          "Must support commercial off-the-shelf (COTS) game engines (e.g., Torque)",
+          "Must support bespoke simulation engines",
+          "Distributed environment to offload processing from the game engine machine"
+        ],
+        "architectural_drivers": [
+          "Portability",
+          "Modifiability",
+          "Performance"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Model-View-Controller (MVC) (AD1)",
+          "description": "Separates the system core (Game Space/Model) from the view (Game Engine). Adapters act as Controllers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Allows multiple views (game engines) to exist for the same model (game) without modification."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Modifications to game state are restricted to the model and do not ripple to adapters or engines."
+            }
+          ]
+        },
+        {
+          "approach_name": "Asynchronous Messaging (AD2)",
+          "description": "Communication mechanism between the game space and game engines via adapters.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Limits delay caused by synchronous mechanisms and helps maintain acceptable frame rates (FPS)."
+            }
+          ]
+        },
+        {
+          "approach_name": "Mid-game Scripting (AD3)",
+          "description": "Use of interpreted scripting (e.g., Jython) to manipulate game state and behavior at run-time.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Enables manipulation of game state and behavior without recompiling the game space system."
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Avoids pre-compiled code that might require game engine specific formatting."
+            }
+          ]
+        },
+        {
+          "approach_name": "Ontologies (AD4)",
+          "description": "Used to specify game knowledge representation independently from the game engine's game model.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Avoids inflexibility of hard-coded classes and dependence on engine-specific models."
+            }
+          ]
+        },
+        {
+          "approach_name": "Scripts Mapping Table (AD7)",
+          "description": "Acts as a translator holding sentences in both the game space language and game engine language.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decouples the languages allowing translation changes without system-wide impact."
+            }
+          ]
+        },
+        {
+          "approach_name": "Objects Mapping Table (AD8)",
+          "description": "Links corresponding objects on both sides if unique identifiers cannot be set.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Ensures object correspondence across disparate systems."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Plug another game engine",
+                "scenario_id": "P1.1",
+                "scenario_description": "Run the same game on another engine without modifying the game",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Change the game data",
+                "scenario_id": "M1.1",
+                "scenario_description": "Change the game data by changing the game state and level data independently from the other subsystems",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Change the game behaviour (using game space state)",
+                "scenario_id": "M2.1",
+                "scenario_description": "Change to the game behaviour by changing the behaviour in the behaviour engine (which uses the game space\u2019s game state and game model) independently from the other subsystems",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Change the game behaviour (adding adapter)",
+                "scenario_id": "M2.2",
+                "scenario_description": "Change to the game behaviour by changing the behaviour in the behaviour engine (which does not use the game space\u2019s game state and game model) by adding adapter between the behaviour engine and the game space",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Plug another behaviour engine",
+                "scenario_id": "M2.3",
+                "scenario_description": "Plug another behaviour engine to the system",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Change the game model",
+                "scenario_id": "M3.1",
+                "scenario_description": "Change the game model would require changes to behaviour and adapters",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Display rate (FPS)",
+                "scenario_id": "PE1.1",
+                "scenario_description": "The system should aim to achieve 20 FPS",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Responsiveness",
+                "scenario_id": "PE1.2",
+                "scenario_description": "When the user triggers an action in the game the response should be achieved in less than 1 second",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Throughput",
+                "scenario_id": "PE1.3",
+                "scenario_description": "Measure the highest allowed before performance starts to be affected (i.e. responsiveness falls lower than PE2)",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Run two games from the same domain",
+          "primary_quality_attribute": [
+            "Use Case"
+          ]
+        },
+        {
+          "scenario_text": "Run two games from two different domains",
+          "primary_quality_attribute": [
+            "Use Case"
+          ]
+        },
+        {
+          "scenario_text": "Interoperate between two game engines",
+          "primary_quality_attribute": [
+            "Growth"
+          ]
+        },
+        {
+          "scenario_text": "Run two behaviour engines (internal and external)",
+          "primary_quality_attribute": [
+            "Growth"
+          ]
+        },
+        {
+          "scenario_text": "Increase the load by increasing the number of NPCs the user can interact with",
+          "primary_quality_attribute": [
+            "Exploratory"
+          ]
+        },
+        {
+          "scenario_text": "Increase the load by simulating multiple number of simultaneous players",
+          "primary_quality_attribute": [
+            "Exploratory"
+          ]
+        },
+        {
+          "scenario_text": "Run the game space on the same machine as the game engine",
+          "primary_quality_attribute": [
+            "Exploratory"
+          ]
+        },
+        {
+          "scenario_text": "Run the behaviour engine and the game space on the same machine as the game engine",
+          "primary_quality_attribute": [
+            "Exploratory"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1.1",
+            "text": "Run the same game on another engine without modifying the game",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Portability",
+          "environment": "Normal operation",
+          "stimulus": "Running the same game on another game engine",
+          "response_measure": "Achieved by adding an adapter to connect the game space and the newly added game engine",
+          "architectural_decisions": [
+            "AD1 MVC",
+            "AD2 Messaging",
+            "AD3 Mid-game Scripting",
+            "AD4 Ontologies",
+            "AD6 COTS behaviour engine"
+          ],
+          "reasoning": "The architecture separates the game logic from the engine using MVC and adapters. This allows the engine to be swapped, but introduces overhead and risks regarding data integrity and coupling.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Tight coupling between controller and model.",
+                "rationale": "Known liability of using the MVC pattern."
+              },
+              {
+                "id": "R2",
+                "description": "Data integrity issues.",
+                "rationale": "Difficulty maintaining integrity between the two game states (game space and game engine)."
+              },
+              {
+                "id": "R3",
+                "description": "Tight coupling due to pre-determined messages.",
+                "rationale": "Messages arriving from the game engine are pre-determined; changes require deployment of a new system."
+              },
+              {
+                "id": "R4",
+                "description": "Incomplete functionality exposure.",
+                "rationale": "Game engine or game space might not have fully exposed their functionality through scripting."
+              },
+              {
+                "id": "R5",
+                "description": "Manual mapping required.",
+                "rationale": "If no unique ID can be set, the mapping table must be done manually."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "N1",
+                "description": "Removal of direct link between view and controller.",
+                "rationale": "Decision taken to remove a known liability of MVC."
+              },
+              {
+                "id": "N2",
+                "description": "Use of asynchronous mechanism.",
+                "rationale": "Avoids negative impact on frame rate that could be caused by synchronous mechanisms."
+              },
+              {
+                "id": "N3",
+                "description": "Use of API approach.",
+                "rationale": "API should stay compatible."
+              },
+              {
+                "id": "N4",
+                "description": "Behaviour engine replication assumption.",
+                "rationale": "Assumption that behaviour engine requires game state to be replicated to its own working memory."
+              },
+              {
+                "id": "N5",
+                "description": "One-to-one mapping established.",
+                "rationale": "Established by unique identifier or objects mapping table."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Network latency",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S2",
+                "parameter": "Messages load",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S3",
+                "parameter": "Unique Identifier availability",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S4",
+                "parameter": "Use of Ontologies",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Layer Separation (MVC)",
+                "conflicting_attributes": [
+                  "Portability (+)",
+                  "Performance (-)"
+                ]
+              },
+              {
+                "id": "T2",
+                "parameter": "Messaging",
+                "conflicting_attributes": [
+                  "Portability (+)",
+                  "Performance (-)"
+                ]
+              },
+              {
+                "id": "T3",
+                "parameter": "Mid-game scripting",
+                "conflicting_attributes": [
+                  "Portability (+)",
+                  "Performance (-)"
+                ]
+              },
+              {
+                "id": "T4",
+                "parameter": "Ontologies",
+                "conflicting_attributes": [
+                  "Portability (+)",
+                  "Performance (-)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

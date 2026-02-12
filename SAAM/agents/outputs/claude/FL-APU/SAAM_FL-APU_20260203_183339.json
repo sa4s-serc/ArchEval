@@ -1,0 +1,993 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "FL-APU",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ease the use of FL in real-world cross-silo applications, emphasize collaboration between participants, combine governance with authentication, and offer traceability of governance decisions and training processes."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Peer-to-Peer Collaboration",
+          "Event-Driven"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "FL-APU",
+            "name": "Federated Learning Architecture for Practical Use",
+            "description": "A distributed federated learning architecture designed for cross-organizational collaboration where multiple companies train machine learning models together without sharing raw data. The architecture centers on a central FL Server that orchestrates training rounds and an FL Client deployed at each participating organization. It emphasizes governance-first collaboration, secure authentication, and complete traceability of both governance decisions and training activities.",
+            "architecture_characteristics": "Security-focused (authentication & encryption), Traceable (governance contracts & audit trails), Collaborative (multi-party negotiation), Decentralized data processing (data never leaves client premises), Scalable for few participants with high resources, Asynchronous communication patterns, Modular component design",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Governance Manager",
+                "responsibilities": "Orchestrates multi-party negotiation processes for FL collaboration agreements. Stores negotiated terms, training parameters, data requirements, and participation rules in immutable governance contracts. Acts as the source of truth for what was agreed upon before training begins. Ensures all participants consent to training conditions.",
+                "dependencies": [
+                  "C-02",
+                  "C-03"
+                ],
+                "change_sensitivity": "High - Changes affect legal/compliance aspects and require re-negotiation among all participants. Modifications impact trust model and contractual obligations."
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Client Management",
+                "responsibilities": "Handles the complete lifecycle of participant registration. Authenticates organizations attempting to join FL collaborations. Validates registration requests against governance contract requirements. Maintains registry of active, authorized participants. Enforces access control policies.",
+                "dependencies": [
+                  "C-01"
+                ],
+                "change_sensitivity": "High - Security-critical component. Changes to authentication mechanisms affect all participants and require coordinated updates across organizations."
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "FL Manager",
+                "responsibilities": "Core orchestrator of the federated learning process. Validates data quality and compliance with governance contracts. Coordinates preprocessing steps across clients. Manages training round scheduling and participant selection. Performs model aggregation (combining client model updates into global model). Evaluates global model performance. Tracks training progress and manages training lifecycle from initialization to completion.",
+                "dependencies": [
+                  "C-01",
+                  "C-02",
+                  "C-04",
+                  "C-05"
+                ],
+                "change_sensitivity": "Medium - Central to FL operations but designed to be configurable. Changes to aggregation algorithms or training strategies are contained here. However, changes affect all training rounds and require careful validation."
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Communicator",
+                "responsibilities": "Manages all network communication between FL Server and FL Clients using HTTP2-based protocols (likely gRPC). Handles message encryption to protect model updates in transit. Implements compression to reduce bandwidth requirements for model parameter transmission. Manages bidirectional streaming for efficient multi-round communication. Enforces the constraint that external servers cannot initiate operations within company infrastructure (pull-based communication from clients).",
+                "dependencies": [],
+                "change_sensitivity": "Medium - Protocol changes require synchronized updates on both server and all clients. However, encryption and compression strategies can evolve independently if interfaces remain stable."
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "FL Client Model Deployer",
+                "responsibilities": "Manages the client-side model lifecycle after training. Deploys trained global models to production environments within the client organization. Handles model personalization (fine-tuning global model with local data). Manages inference requests using deployed models. Monitors model performance in production. Provides feedback loop for model quality assessment.",
+                "dependencies": [
+                  "C-03",
+                  "C-04"
+                ],
+                "change_sensitivity": "Low - Client-side component that can be customized per organization. Changes here are localized and don't affect other participants or the FL training process."
+              }
+            ],
+            "data_flow": "**Phase 1 - Governance & Registration:** Organizations negotiate collaboration terms through Governance Manager (C-01), which creates a governance contract. Participants register via Client Management (C-02), which validates against the contract and authenticates each organization. **Phase 2 - Training Initialization:** FL Manager (C-03) reads governance contract to configure training parameters. Clients pull training configuration via Communicator (C-04) using encrypted HTTP2 connections. **Phase 3 - Iterative Training:** Each client trains locally on private data (data never transmitted). Clients push encrypted model updates (gradients/weights) through Communicator (C-04) to FL Manager (C-03). FL Manager aggregates updates into a global model. Global model is pulled by clients for next training round. This repeats for multiple rounds. **Phase 4 - Deployment:** Final global model is distributed to FL Client Model Deployer (C-05) at each organization. Each deployer can personalize, deploy, and monitor the model independently. **Traceability:** All governance decisions and training events are logged for audit purposes throughout all phases.",
+            "architectural_constraints": [
+              "Client-initiated communication only - External FL Server cannot push messages into company infrastructure (security boundary constraint)",
+              "No VPN requirement - Architecture must work across organizational boundaries without shared network infrastructure",
+              "HTTP2-based communication mandatory - Ensures efficient bidirectional streaming and modern protocol support",
+              "Data sovereignty - Raw training data must never leave client premises; only model updates are transmitted",
+              "Few participants assumption - Designed for cross-silo scenarios (5-50 organizations) rather than cross-device (millions of devices)",
+              "Resource-rich participants - Assumes clients have substantial computational resources for local training",
+              "Governance-first approach - Training cannot begin without established governance contract and authenticated participants"
+            ],
+            "what_architecture_supports": {
+              "easily_supported": [
+                "Adding new participants to existing FL collaborations (via Client Management registration)",
+                "Changing aggregation algorithms (contained within FL Manager)",
+                "Implementing different encryption or compression strategies (within Communicator)",
+                "Client-specific model personalization and deployment strategies (FL Client Model Deployer is independent)",
+                "Modifying training parameters through governance renegotiation",
+                "Adding new metadata tracking or audit logging (traceability is built-in)",
+                "Supporting different ML frameworks at client side (as long as model updates are compatible)",
+                "Scaling to moderate numbers of participants (architecture designed for this)"
+              ],
+              "difficult_or_unsupported": [
+                "Cross-device federated learning with millions of participants (architecture assumes few resource-rich participants)",
+                "Real-time/synchronous training requirements (architecture uses asynchronous pull-based communication)",
+                "Server-initiated emergency updates or commands (violates constraint that server cannot push into client infrastructure)",
+                "Scenarios requiring VPN or shared network infrastructure (explicitly ruled out)",
+                "Non-HTTP2 communication protocols (architectural constraint)",
+                "Training without governance contracts (governance-first design)",
+                "Centralized data collection or processing (violates federated learning principles)",
+                "Rapid participant turnover (governance and authentication overhead makes this inefficient)",
+                "Scenarios where participants cannot maintain persistent infrastructure (assumes stable organizational participants)"
+              ]
+            },
+            "change_impact_scenarios": {
+              "scenario_1": {
+                "change": "Add support for a new machine learning framework (e.g., PyTorch in addition to TensorFlow)",
+                "affected_components": [
+                  "C-03: FL Manager",
+                  "C-05: FL Client Model Deployer"
+                ],
+                "impact_level": "Medium",
+                "explanation": "FL Manager must handle aggregation for different model formats. Client Model Deployer needs framework-specific deployment logic. Communicator may need to handle different serialization formats. Governance Manager should track framework choice in contracts."
+              },
+              "scenario_2": {
+                "change": "Implement differential privacy guarantees",
+                "affected_components": [
+                  "C-03: FL Manager",
+                  "C-04: Communicator",
+                  "C-01: Governance Manager"
+                ],
+                "impact_level": "High",
+                "explanation": "Requires changes to aggregation logic (FL Manager), potentially new noise addition in communication (Communicator), and governance contracts must specify privacy parameters (Governance Manager). This is a cross-cutting concern affecting the core training process."
+              },
+              "scenario_3": {
+                "change": "Support real-time energy forecasting with sub-second model updates",
+                "affected_components": [
+                  "All components"
+                ],
+                "impact_level": "Very High - Architectural mismatch",
+                "explanation": "Current architecture uses asynchronous, pull-based communication unsuitable for real-time requirements. Would require fundamental redesign to support server-push notifications and synchronous coordination, which conflicts with the constraint that servers cannot initiate operations in client infrastructure."
+              },
+              "scenario_4": {
+                "change": "Add a new participant organization to existing collaboration",
+                "affected_components": [
+                  "C-02: Client Management",
+                  "C-01: Governance Manager"
+                ],
+                "impact_level": "Low",
+                "explanation": "Well-supported by existing architecture. New participant negotiates terms (Governance Manager), registers and authenticates (Client Management), then joins training rounds. Minimal impact on existing participants."
+              }
+            },
+            "notes": "This architecture prioritizes trust, governance, and security over performance and real-time responsiveness, making it well-suited for regulated industries (like energy) where legal agreements and data sovereignty are paramount. The pull-based communication model, while limiting real-time capabilities, ensures clients maintain control over their infrastructure. The governance-first approach adds overhead but provides essential traceability for multi-organizational collaborations. Stakeholders should understand that this architecture trades some flexibility and performance for security, compliance, and trust - a deliberate choice for cross-organizational scenarios where participants may have competing interests but shared goals."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A data scientist from Company A initiates a new federated learning training round for energy forecasting involving 5 participating organizations. The system must authenticate all participants, establish governance rules (data quality standards, model update frequency), and complete the first training round within 2 hours, with all governance decisions logged and traceable.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Governance Manager",
+            "Client Management",
+            "FL Manager",
+            "Communicator",
+            "FL Client Model Deployer"
+          ],
+          "feasibility_note": "Directly supported by current architecture. Governance Manager handles governance rules, Client Management handles authentication, FL Manager orchestrates training, Communicator enables cross-organization communication, and all activities should be traceable through logging mechanisms.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "End-users (data scientists) need seamless initiation of collaborative FL projects with clear governance and quick turnaround for practical business value in energy forecasting."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A system administrator needs to audit all governance decisions made in the last 6 months across 3 different FL projects. The system must provide a complete, chronological audit trail showing: who approved what governance rules, when they were approved, which organizations participated, and any modifications to governance policies, retrievable within 5 minutes.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Governance Manager"
+          ],
+          "feasibility_note": "Partially supported. Architecture emphasizes traceability of governance decisions, but specific audit trail retrieval mechanisms and query capabilities are not explicitly defined in component descriptions. May require additional logging/database query interfaces.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "System administrators need comprehensive audit capabilities for compliance, security reviews, and troubleshooting governance-related issues in multi-organizational settings."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "During a training round, Company B's FL Client experiences a network interruption for 15 minutes. The system must detect the disconnection, pause the affected training round, notify all participants, allow Company B to reconnect and resume, and maintain complete traceability of the interruption event including timestamp, affected components, and recovery actions.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "FL Manager",
+            "Communicator",
+            "Client Management"
+          ],
+          "feasibility_note": "Partially supported. Communicator handles inter-organizational communication and should detect disconnections. FL Manager orchestrates training and could pause rounds. However, fault tolerance, recovery mechanisms, and participant notification workflows are not explicitly defined in the architecture description.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Real-world cross-silo applications face network reliability issues. Administrators need robust fault handling to maintain trust and operational continuity across organizational boundaries."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A developer needs to integrate a new authentication provider (OAuth 2.0 with SAML) to support a new participating organization that has different security requirements. The integration must be completed without modifying the core FL Manager or Governance Manager components, and must be deployable within 3 days.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Client Management",
+            "Communicator"
+          ],
+          "feasibility_note": "Feasibility depends on modularity of Client Management component. Architecture emphasizes 'secure authentication' but doesn't specify if authentication mechanisms are pluggable. Would require well-defined authentication interfaces and abstraction layers to support multiple providers without core changes.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Developers need extensible authentication mechanisms to onboard diverse organizations with varying security policies, which is critical for scaling cross-silo FL adoption."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A maintainer needs to upgrade the FL algorithm from FedAvg to FedProx across all deployed FL Clients (10 organizations) to improve convergence for non-IID data. The upgrade must be backward compatible for 2 training rounds, allow gradual rollout (2 organizations at a time), and maintain complete traceability of which clients are running which algorithm version.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "FL Manager",
+            "FL Client Model Deployer",
+            "Client Management"
+          ],
+          "feasibility_note": "Partially supported. FL Client Model Deployer suggests deployment capabilities exist. However, algorithm versioning, backward compatibility management, gradual rollout orchestration, and version tracking are not explicitly addressed. Would require version management infrastructure and coordination mechanisms.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Maintainers need safe, traceable upgrade paths for FL algorithms to improve model quality without disrupting ongoing collaborations or causing version conflicts across organizations."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "An end-user data scientist wants to compare the performance of 3 different model architectures (LSTM, GRU, Transformer) for energy forecasting using the same federated dataset across 7 organizations. The system must support parallel execution of 3 separate FL training rounds with identical governance rules but different model architectures, and provide comparative performance metrics within 6 hours.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "FL Manager",
+            "Governance Manager",
+            "FL Client Model Deployer"
+          ],
+          "feasibility_note": "Partially supported. FL Manager orchestrates training rounds, but parallel execution of multiple experiments with shared governance is not explicitly defined. Would require experiment management capabilities, resource allocation for parallel rounds, and comparative analytics features.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "End-users need experimentation capabilities to optimize model selection for their specific use case (energy forecasting), which directly impacts business value and model quality."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "A governance officer from Company C proposes a modification to data quality standards mid-training (after round 3 of 10). The system must support a governance voting mechanism where all 6 participating organizations vote on the proposed change within 24 hours, automatically apply the new standards if approved (>66% vote), and maintain complete traceability of the proposal, voting records, and implementation.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Governance Manager",
+            "Client Management",
+            "Communicator"
+          ],
+          "feasibility_note": "Partially supported. Governance Manager handles governance rules and architecture emphasizes governance-first collaboration. However, dynamic governance modification, voting mechanisms, consensus protocols, and mid-training rule changes are not explicitly defined. Would require workflow orchestration and distributed consensus capabilities.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Real-world collaborations require adaptive governance as business needs evolve. End-users need democratic mechanisms to modify collaboration terms without restarting projects."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A developer needs to add custom privacy-preserving techniques (differential privacy with \u03b5=0.1) to the FL training process. The implementation must be pluggable, configurable per training round through governance settings, and must not require changes to the Communicator or Client Management components. Development and testing should be completable within 2 weeks.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "FL Manager",
+            "Governance Manager",
+            "FL Client Model Deployer"
+          ],
+          "feasibility_note": "Feasibility depends on extensibility of FL Manager and whether privacy mechanisms are treated as configurable policies. Architecture doesn't explicitly address privacy-preserving techniques or plugin architectures. Would require well-defined extension points and privacy policy integration with governance framework.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Developers need extensible privacy mechanisms to meet regulatory requirements (GDPR, industry-specific) and build trust among participating organizations in cross-silo scenarios."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A maintainer needs to diagnose why model convergence degraded in the last 5 training rounds across a 4-organization collaboration. The system must provide detailed training metrics (loss per round per client, gradient statistics, communication overhead, data distribution characteristics) with drill-down capabilities to individual client contributions, accessible through a diagnostic dashboard within 10 minutes.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "FL Manager",
+            "Communicator",
+            "Client Management"
+          ],
+          "feasibility_note": "Partially supported. Architecture emphasizes traceability of training processes, suggesting logging exists. However, detailed performance metrics collection, aggregation, visualization, and diagnostic tooling are not explicitly defined. Would require comprehensive monitoring infrastructure and analytics capabilities.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Maintainers need deep observability into FL training dynamics to troubleshoot performance issues, which is critical for maintaining stakeholder confidence in collaborative ML quality."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "A system administrator needs to enforce resource quotas (max 100GB storage, 50 training rounds per month) for each participating organization to prevent resource abuse. The system must track resource consumption per organization, automatically reject requests exceeding quotas, send notifications to organization administrators when 80% quota is reached, and provide monthly resource usage reports.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Client Management",
+            "FL Manager",
+            "Governance Manager"
+          ],
+          "feasibility_note": "Not directly supported. Architecture focuses on governance of collaboration rules but doesn't explicitly address resource management, quota enforcement, or usage tracking. Would require resource monitoring, policy enforcement mechanisms, and integration with governance framework.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "System administrators need resource management capabilities to ensure fair usage and prevent system abuse in multi-tenant cross-organizational environments, though this is less critical than core FL functionality."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "An end-user wants to simulate a 'what-if' scenario: predict model performance if 2 additional organizations with specific data characteristics (geographic region, data volume) join an existing 5-organization energy forecasting collaboration. The system should provide estimated convergence time, accuracy improvements, and communication overhead within 30 minutes without actually onboarding the organizations.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "FL Manager",
+            "Governance Manager"
+          ],
+          "feasibility_note": "Not supported. Architecture is designed for actual FL execution, not simulation or predictive analytics. Would require simulation engine, statistical modeling of FL dynamics, and data profiling capabilities - significant architectural additions.",
+          "priority": "Low",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "End-users could benefit from predictive planning tools to optimize collaboration composition, but this is exploratory and not essential for core FL operations."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "A developer needs to implement automated testing for a new FL aggregation algorithm. The system must provide a testing framework that can simulate 3-10 virtual FL clients with configurable data distributions, execute training rounds in an isolated environment, and validate aggregation correctness within 1 hour of code commit.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "FL Manager",
+            "FL Client Model Deployer",
+            "Communicator"
+          ],
+          "feasibility_note": "Not directly supported. Architecture focuses on production FL execution. Testing infrastructure, client simulation, isolated environments, and CI/CD integration are not addressed. Would require significant development tooling additions.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Developers need robust testing capabilities to ensure algorithm correctness and prevent bugs in production cross-organizational settings, though this is development infrastructure rather than core functionality."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "This scenario maps directly to the core workflow described in the architecture. Governance Manager handles governance rule establishment, Client Management authenticates all 5 organizations, FL Manager orchestrates the training round, Communicator enables cross-organization communication, and the architecture explicitly emphasizes traceability of governance decisions and training activities through logging. The 2-hour timeframe is reasonable for the 'few participants' assumption (5 organizations).",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the architecture emphasizes 'complete traceability of governance decisions' and 'immutable governance contracts,' it does not explicitly define audit trail retrieval mechanisms, query interfaces, or reporting capabilities. The Governance Manager stores governance contracts but lacks specified audit query functionality. The 5-minute retrieval requirement suggests need for indexed, queryable audit logs with reporting interfaces not currently defined.",
+          "supporting_components": [
+            "C-01"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "The architecture's asynchronous, pull-based communication model provides some inherent fault tolerance (clients pull when ready), but explicit fault detection, training round pause/resume mechanisms, participant notification workflows, and recovery orchestration are not defined. The Communicator handles network communication but doesn't specify disconnection handling. FL Manager orchestrates training but lacks defined fault recovery protocols.",
+          "supporting_components": [
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "The architecture specifies that Client Management 'authenticates organizations' but does not define whether authentication mechanisms are pluggable or extensible. Supporting multiple authentication providers (OAuth 2.0 with SAML) requires abstraction layers and plugin interfaces not explicitly described. The 3-day timeline suggests need for well-defined extension points that may not currently exist.",
+          "supporting_components": [
+            "C-02"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "While the architecture notes that 'changing aggregation algorithms' is easily supported (contained within FL Manager), the scenario requires algorithm versioning, backward compatibility management, gradual rollout orchestration across 10 organizations, and version tracking - capabilities not explicitly defined. The architecture lacks version management infrastructure and coordination mechanisms for heterogeneous algorithm deployments.",
+          "supporting_components": [
+            "C-03",
+            "C-05"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "FL Manager orchestrates training rounds and the architecture supports 'different ML frameworks at client side,' but parallel execution of multiple experiments with shared governance, experiment management, resource allocation for concurrent training rounds, and comparative analytics are not defined. The architecture describes sequential training orchestration, not parallel experimentation workflows.",
+          "supporting_components": [
+            "C-03",
+            "C-01"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "The architecture emphasizes 'governance-first approach' and 'multi-party negotiation,' but these appear to be pre-training activities. Dynamic governance modification during training (mid-round), voting mechanisms, distributed consensus protocols, and automated policy application are not defined. The Governance Manager stores 'immutable governance contracts,' which suggests contracts are fixed once training begins, contradicting the mid-training modification requirement.",
+          "supporting_components": [
+            "C-01"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "The architecture does not explicitly address privacy-preserving techniques or plugin architectures for FL Manager. While the change impact scenario 'scenario_2' acknowledges differential privacy would require changes to FL Manager, Communicator, and Governance Manager with 'High' impact, there's no indication of existing extension points or privacy policy frameworks. The requirement for pluggable, governance-configurable privacy mechanisms suggests architectural additions needed.",
+          "supporting_components": [
+            "C-03",
+            "C-01"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "While the architecture emphasizes traceability of 'training events,' detailed performance metrics collection (loss per round per client, gradient statistics, communication overhead, data distribution characteristics), aggregation, drill-down capabilities, and diagnostic dashboards are not defined. The architecture describes what is logged (governance decisions, training activities) but not comprehensive performance monitoring infrastructure or analytics tooling.",
+          "supporting_components": [
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "The architecture focuses on governance of collaboration rules (data quality, training parameters) but does not address resource management, quota enforcement, usage tracking, or notification systems. The Governance Manager handles 'participation rules' but resource quotas are not mentioned as part of governance contracts. This represents a new dimension of governance not currently architected.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "The architecture is designed for actual FL execution, not simulation or predictive analytics. What-if scenario analysis requires simulation engines, statistical modeling of FL dynamics, data profiling capabilities, and predictive performance estimation - none of which are present in the current architecture. This represents a fundamentally different capability (planning/simulation) versus execution.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "The architecture focuses on production FL execution across real organizations. Testing infrastructure, client simulation, isolated test environments, CI/CD integration, and automated validation frameworks are development tooling concerns not addressed in the production architecture. This requires parallel testing infrastructure that mimics production components.",
+          "supporting_components": [
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "FL-APU",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. This scenario represents the core use case the architecture was designed to support.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support exists"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01"
+          ],
+          "change_description": "Add audit query and reporting capabilities to Governance Manager: (1) Implement indexed audit log storage for governance decisions with timestamp, actor, action, and affected contracts; (2) Create query API supporting temporal, project-based, and organization-based filtering; (3) Develop reporting interface to generate chronological audit trails; (4) Add data retention and archival policies for compliance.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Audit log schema and indexing strategy not defined",
+            "Query performance requirements (5 minutes) may require database optimization",
+            "Access control for audit queries not specified - who can audit what?",
+            "Audit log immutability and tamper-proofing mechanisms needed for compliance"
+          ],
+          "alternative_approaches": "Implement external audit logging system that subscribes to governance events from Governance Manager, providing separation of concerns between governance execution and audit reporting. This avoids modifying core Governance Manager but requires event streaming infrastructure."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-04",
+            "C-02"
+          ],
+          "change_description": "Implement fault tolerance and recovery mechanisms: (1) Add heartbeat/health check protocol to Communicator for connection monitoring; (2) Extend FL Manager with training round state management (pause/resume capabilities); (3) Create participant notification service for broadcasting training status changes; (4) Implement recovery workflow: detect disconnection \u2192 pause round \u2192 notify participants \u2192 allow reconnection \u2192 resume from last checkpoint; (5) Add fault event logging to traceability system.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Training round checkpointing strategy not defined - what state must be preserved?",
+            "Consensus mechanism needed - do all participants approve pause/resume?",
+            "Timeout policies unclear - how long to wait for reconnection before aborting?",
+            "Partial model updates handling - what happens to updates from clients that completed before pause?",
+            "Notification delivery guarantees - how to ensure all participants receive notifications given pull-based model?"
+          ],
+          "alternative_approaches": "Instead of pause/resume, implement training round timeout with automatic retry. FL Manager declares round failed if not all participants submit updates within timeout window, then restarts the round. This is simpler but wastes computation. Alternatively, use asynchronous aggregation where FL Manager aggregates available updates and continues without waiting for all participants (requires different aggregation algorithm like FedAsync)."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02"
+          ],
+          "change_description": "Refactor Client Management to support pluggable authentication: (1) Define authentication provider interface/abstraction layer; (2) Implement authentication provider registry and configuration system; (3) Create OAuth 2.0/SAML provider implementation; (4) Add provider-specific credential validation and token management; (5) Update governance contracts to specify allowed authentication providers per collaboration; (6) Ensure backward compatibility with existing authentication mechanisms.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Current authentication mechanism not specified - unknown baseline to extend from",
+            "Provider lifecycle management unclear - how to add/remove/update providers?",
+            "Credential mapping between different providers needs design",
+            "Security implications of supporting multiple authentication methods simultaneously",
+            "Testing and validation of new providers requires security audit process"
+          ],
+          "alternative_approaches": "Use external identity federation service (e.g., identity broker) that normalizes different authentication providers to a single interface. Client Management only integrates with the broker, and the broker handles provider-specific logic. This externalizes complexity but adds dependency on third-party service."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-05",
+            "C-02",
+            "C-01"
+          ],
+          "change_description": "Implement algorithm versioning and gradual rollout: (1) Add version metadata to FL Manager for tracking algorithm versions; (2) Extend governance contracts to specify algorithm version requirements and compatibility rules; (3) Implement backward compatibility layer in FL Manager to aggregate updates from mixed algorithm versions (FedAvg + FedProx); (4) Create rollout orchestration in Client Management to track which organizations run which versions; (5) Add version-aware model deployment in FL Client Model Deployer; (6) Implement version tracking in audit logs.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Backward compatibility between FedAvg and FedProx is algorithmically complex - they have different update mechanisms",
+            "Mixed-version aggregation may degrade model quality or convergence",
+            "Rollout coordination across 10 independent organizations is operationally challenging",
+            "Version mismatch detection and handling during training rounds",
+            "Governance implications - do all participants need to approve algorithm changes?",
+            "Testing mixed-version scenarios requires extensive validation"
+          ],
+          "alternative_approaches": "Instead of backward compatibility, implement blue-green deployment: (1) Complete current training rounds with FedAvg; (2) Negotiate new governance contract specifying FedProx; (3) All organizations upgrade simultaneously before starting new training rounds. This avoids mixed-version complexity but requires coordination and downtime. Alternatively, run parallel training rounds (old algorithm + new algorithm) and compare results before full migration."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-01",
+            "C-05"
+          ],
+          "change_description": "Add experiment management capabilities: (1) Extend FL Manager with experiment orchestration to manage multiple parallel training rounds; (2) Implement resource allocation and scheduling for concurrent experiments; (3) Create experiment configuration in Governance Manager to define shared governance with varying model architectures; (4) Add experiment tracking and comparative analytics (performance metrics across experiments); (5) Extend FL Client Model Deployer to handle multiple concurrent model deployments; (6) Implement experiment results aggregation and reporting.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Resource contention - 3 parallel experiments may overwhelm client computational resources",
+            "Governance contract reuse unclear - can one contract govern multiple experiments?",
+            "Experiment isolation - ensuring experiments don't interfere with each other",
+            "Comparative metrics definition - what constitutes 'performance' for energy forecasting?",
+            "Client coordination - do all 7 organizations participate in all 3 experiments?",
+            "6-hour completion constraint may be unrealistic for 3 parallel multi-round training sessions"
+          ],
+          "alternative_approaches": "Run experiments sequentially rather than in parallel, using the same governance contract and participant set. This avoids resource contention and complexity but takes longer (18 hours instead of 6). Alternatively, implement lightweight hyperparameter search within a single training round where FL Manager tests multiple architectures using subsets of data, then selects best performer for full training."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-04",
+            "C-03"
+          ],
+          "change_description": "Implement dynamic governance with voting: (1) Extend Governance Manager with governance proposal workflow (create, distribute, vote, apply); (2) Implement distributed voting protocol using Communicator for vote collection; (3) Add consensus mechanism (>66% threshold) and vote tallying; (4) Create governance versioning to track contract modifications over time; (5) Implement mid-training governance application in FL Manager (apply new data quality standards from round 4 onward); (6) Add voting records to audit trail; (7) Integrate with Client Management for participant notification and vote collection.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Conflicts with 'immutable governance contracts' design principle",
+            "Mid-training rule changes may invalidate previous training rounds - should they be discarded?",
+            "Voting mechanism requires synchronous coordination, conflicting with asynchronous pull-based architecture",
+            "24-hour voting window requires participants to actively monitor and respond",
+            "Minority participants (34%) may be forced to accept rules they disagree with - trust implications",
+            "Applying new data quality standards retroactively to existing data is technically complex",
+            "Legal implications of changing contractual terms mid-execution"
+          ],
+          "alternative_approaches": "Instead of mid-training modification, implement governance amendment process that takes effect in next training round: (1) Pause current training after round completion; (2) Conduct voting on proposed changes; (3) If approved, create new governance contract version; (4) Start new training round with updated rules. This preserves immutability of active contracts and avoids mid-training disruption. Alternatively, allow participants to opt-out of training rounds where they disagree with governance changes."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-01",
+            "C-04"
+          ],
+          "change_description": "Implement pluggable privacy mechanisms: (1) Define privacy policy interface/plugin architecture in FL Manager; (2) Implement differential privacy plugin with configurable \u03b5 parameter; (3) Extend governance contracts to specify privacy requirements (\u03b5=0.1) as part of collaboration terms; (4) Add noise injection mechanisms in FL Manager aggregation or Communicator transmission; (5) Create privacy budget tracking and enforcement; (6) Add privacy guarantees to audit logs; (7) Implement privacy-aware model evaluation.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Differential privacy fundamentally changes aggregation mathematics - not just a plugin",
+            "Privacy budget management across multiple training rounds is complex",
+            "Trade-off between privacy (\u03b5=0.1 is strong privacy) and model utility may be unacceptable",
+            "Where to add noise - client-side before transmission or server-side during aggregation?",
+            "Governance negotiation of privacy parameters requires participant understanding of DP",
+            "Verification that privacy guarantees are actually enforced",
+            "2-week timeline is aggressive for implementing and testing cryptographic privacy mechanisms"
+          ],
+          "alternative_approaches": "Instead of pluggable architecture, implement differential privacy as a first-class feature with fixed integration points: (1) Add DP as mandatory privacy layer in FL Manager; (2) Make \u03b5 configurable via governance contracts; (3) Provide preset privacy profiles (high/medium/low) rather than arbitrary \u03b5 values. This is less flexible but more reliable. Alternatively, use secure aggregation (cryptographic MPC) instead of differential privacy, which provides different privacy guarantees without accuracy trade-offs."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-04",
+            "C-02"
+          ],
+          "change_description": "Implement comprehensive monitoring and diagnostics: (1) Extend FL Manager to collect detailed training metrics (loss, gradients, convergence indicators) per round and per client; (2) Add communication overhead tracking to Communicator; (3) Implement metrics aggregation and storage with time-series database; (4) Create diagnostic dashboard with drill-down capabilities; (5) Add data distribution profiling (requires client-side metadata collection without exposing raw data); (6) Implement anomaly detection for convergence degradation; (7) Add metrics access control via Client Management.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Collecting client-specific metrics may reveal sensitive information about local data",
+            "Gradient statistics could enable gradient inversion attacks - privacy risk",
+            "Data distribution characteristics expose information about client datasets",
+            "Metrics storage and retention policies needed - how long to keep diagnostic data?",
+            "Dashboard access control - should all participants see all metrics or only their own?",
+            "10-minute retrieval requirement suggests need for pre-computed analytics, not on-demand queries",
+            "Balancing observability with privacy is architecturally challenging"
+          ],
+          "alternative_approaches": "Implement privacy-preserving diagnostics: (1) Collect only aggregated metrics (no per-client drill-down); (2) Use differential privacy for metrics reporting; (3) Provide comparative analytics (client performance relative to average) without absolute values. This reduces diagnostic capability but preserves privacy. Alternatively, implement opt-in detailed monitoring where participants explicitly consent to share detailed metrics for troubleshooting."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "change_description": "Implement resource management and quota enforcement: (1) Extend Governance Manager to define resource quotas as part of participation rules; (2) Add resource tracking to FL Manager (training rounds consumed, model storage used); (3) Implement quota enforcement in Client Management (reject registration/training requests exceeding quotas); (4) Create notification service for quota warnings (80% threshold); (5) Implement usage reporting and analytics; (6) Add quota reset mechanisms (monthly cycles).",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Resource measurement granularity - what counts toward quotas (failed rounds, aborted training)?",
+            "Storage quota enforcement requires integration with underlying storage infrastructure",
+            "Notification delivery in pull-based architecture requires polling or separate push channel",
+            "Quota exhaustion mid-training - should ongoing rounds be allowed to complete?",
+            "Fair resource allocation across organizations with different capabilities",
+            "Quota gaming - organizations may split into multiple entities to get more quotas"
+          ],
+          "alternative_approaches": "Instead of hard quotas, implement resource pricing/credits system: (1) Each organization gets monthly credits; (2) Training rounds and storage consume credits; (3) Organizations can trade or purchase additional credits. This provides flexibility and market-based allocation. Alternatively, implement priority-based scheduling where organizations with high usage get lower priority rather than hard rejection."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-01"
+          ],
+          "change_description": "Implement FL simulation and prediction capabilities: (1) Create simulation engine that models FL training dynamics; (2) Implement statistical models for predicting convergence based on participant characteristics; (3) Add data profiling interface for organizations to describe their data without exposing it (volume, distribution statistics); (4) Develop performance prediction algorithms (accuracy, convergence time, communication overhead); (5) Create what-if scenario interface in Governance Manager; (6) Implement simulation execution and results reporting.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "FL simulation accuracy depends on complex factors (data heterogeneity, network conditions, algorithm behavior)",
+            "Predicting performance without access to actual data is inherently uncertain",
+            "30-minute prediction timeline requires pre-trained meta-models or fast heuristics",
+            "Simulation engine is essentially a separate system with different architecture",
+            "Data profiling may reveal sensitive information about potential participants",
+            "Validation of simulation accuracy requires extensive real-world comparison",
+            "Scope creep - this is a planning tool, not core FL execution"
+          ],
+          "alternative_approaches": "Instead of simulation, implement empirical benchmarking: (1) Maintain historical database of past FL collaborations with participant characteristics and outcomes; (2) Use similarity matching to find comparable past collaborations; (3) Provide range estimates based on historical data. This is less sophisticated but more reliable. Alternatively, implement lightweight pilot rounds where new organizations participate in short test training to assess actual impact before full commitment."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-04",
+            "C-05"
+          ],
+          "change_description": "Implement FL testing framework: (1) Create virtual FL client simulator that mimics real client behavior; (2) Implement configurable synthetic data generation with controllable distributions; (3) Build isolated test environment (containerized FL Server + simulated clients); (4) Develop test orchestration for automated execution; (5) Create validation framework for aggregation correctness; (6) Integrate with CI/CD pipeline for automated testing on code commit; (7) Add test reporting and metrics collection.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Testing framework is development infrastructure, separate from production architecture",
+            "Virtual client simulation must accurately replicate real client behavior (network latency, computational constraints)",
+            "Synthetic data generation that reflects real-world data characteristics is challenging",
+            "Isolated environment must mirror production configuration (authentication, encryption, governance)",
+            "1-hour test execution constraint limits test comprehensiveness",
+            "CI/CD integration requires infrastructure not described in architecture",
+            "Maintaining test environment in sync with production as architecture evolves"
+          ],
+          "alternative_approaches": "Instead of full simulation, implement unit testing for aggregation algorithms: (1) Test aggregation logic in isolation with mock data; (2) Use property-based testing to validate mathematical correctness; (3) Implement integration tests with real FL Server but mocked clients. This is faster and simpler but provides less end-to-end validation. Alternatively, use staging environment with real but non-production FL clients from participating organizations for acceptance testing."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-01",
+          "scenario_count": 7,
+          "scenarios": [
+            "S-02",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-10",
+            "S-11"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 9,
+          "scenarios": [
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-04",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-03",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-07",
+            "S-09",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-05",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-05",
+            "S-06",
+            "S-12"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "FL Manager is the most critical hotspot with 9 scenarios. It's central to core training operations (S-03 fault tolerance, S-09 monitoring), algorithmic evolution (S-05 versioning, S-08 privacy), and operational capabilities (S-06 experiments, S-10 resource management, S-12 testing). High-risk scenarios like S-05 (algorithm migration), S-07 (dynamic governance), and S-08 (differential privacy) all require widespread changes here. Failure to address creates operational fragility (training failures), prevents adoption of new privacy requirements (regulatory risk), and blocks multi-organization coordination. All stakeholder roles are impacted: end-users can't get reliable models, developers can't evolve algorithms, maintainers face debugging challenges without monitoring, and administrators can't manage resources."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-02",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-10",
+            "S-11"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "Governance Manager affects 7 scenarios and is critical for trust and compliance. S-02 (audit trails) addresses regulatory compliance - failure creates legal risk. S-07 (dynamic governance) has high risk and conflicts with immutability principles, requiring careful architectural decisions. S-08 (privacy policies) and S-05 (algorithm versioning) require governance contract extensions for multi-organization coordination. S-10 (resource quotas) affects operational fairness. S-11 (simulation) impacts planning capabilities. Without proper governance evolution, the platform cannot adapt to changing regulatory requirements (GDPR, data sovereignty), cannot enforce fair resource usage, and loses auditability. End-users lose trust, administrators can't enforce policies, and maintainers face compliance violations."
+        },
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-07",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "System Administrator",
+            "End-user",
+            "Developer"
+          ],
+          "rationale": "Client Management impacts 6 scenarios spanning authentication, fault tolerance, and resource control. S-04 (pluggable authentication) is medium-risk but critical for enterprise adoption - inability to integrate with existing identity systems blocks organizational onboarding. S-03 (fault tolerance) requires participant notification in pull-based architecture. S-10 (resource quotas) needs enforcement at client registration. S-09 (monitoring) requires metrics access control. S-07 (voting) needs vote collection coordination. While not as architecturally complex as C-03, failure here creates operational barriers: organizations can't join (authentication), can't coordinate during failures (notifications), and face unfair resource allocation. Primarily impacts administrators managing participants and end-users experiencing access issues."
+        },
+        {
+          "component": "C-04",
+          "scenario_ids": [
+            "S-03",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-12"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Communicator affects 5 scenarios focused on reliability, privacy, and observability. S-03 (fault tolerance) requires heartbeat/health monitoring - critical for production reliability. S-08 (differential privacy) may require noise injection during transmission. S-09 (monitoring) needs communication overhead tracking. S-07 (voting) requires distributed vote collection. S-12 (testing) needs realistic network simulation. This component is infrastructure-critical but changes are more localized than C-03/C-01. Failure impacts system reliability (undetected disconnections), privacy guarantees (if noise injection point), and operational visibility. Primarily affects developers implementing protocols, maintainers debugging communication issues, and administrators monitoring network health. Less direct end-user impact but failures cascade to training disruptions."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-05",
+            "S-06",
+            "S-12"
+          ],
+          "priority": "Low",
+          "rank": 5,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator"
+          ],
+          "rationale": "FL Client Model Deployer has lowest scenario count (3) and lowest aggregate risk. S-05 (algorithm versioning) requires version-aware deployment - medium effort but localized. S-06 (experiments) needs concurrent model deployment. S-12 (testing) is development infrastructure. Changes are primarily additive (supporting multiple versions/models) rather than fundamental architectural shifts. Failure impacts are contained: version mismatches cause deployment errors (detectable), experiment limitations slow research (not operational), and testing gaps increase defect risk (development concern). End-users experience delayed model updates, administrators face deployment complexity, but core FL training continues functioning. This is important for operational maturity but not immediately critical for basic platform viability."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strong component separation for core FL workflow: The architecture directly supports the primary use case (S-01) with clear separation between FL Manager (training orchestration), Communicator (secure transmission), and Client components. This foundational design enables localized changes for basic extensions like audit logging (S-02) and resource quotas (S-10).",
+          "Governance-first design enables multi-organization trust: The Governance Manager (C-01) provides a solid foundation for defining collaboration rules, data quality standards, and participation constraints. This architectural decision enables 7 scenarios (S-02, S-05, S-06, S-07, S-08, S-10, S-11) to leverage governance contracts as the coordination mechanism, avoiding ad-hoc trust negotiations.",
+          "Pull-based communication model supports asynchronous collaboration: The Communicator's pull-based architecture allows independent organizations to participate without tight coupling or synchronous coordination requirements. This design choice reduces operational complexity for geographically distributed participants and supports the decentralized nature of federated learning.",
+          "Modular client-side components enable independent deployment: The separation of FL Client Trainer and Model Deployer (C-05) allows organizations to manage their own infrastructure and deployment schedules, supporting scenarios like algorithm versioning (S-05) and experiment participation (S-06) without requiring centralized control."
+        ],
+        "architectural_weaknesses": [
+          "Lack of extensibility mechanisms in core components: FL Manager (C-03) and Governance Manager (C-01) lack plugin architectures or extension points, forcing widespread changes for 9 and 7 scenarios respectively. High-risk scenarios like S-05 (algorithm versioning), S-07 (dynamic governance), and S-08 (differential privacy) require fundamental modifications rather than configuration or extension, indicating rigid component design.",
+          "Immutable governance contracts conflict with operational reality: The 'immutable governance contracts' design principle directly conflicts with S-07 (dynamic governance voting), creating a high-risk architectural tension. 7 scenarios (S-05, S-06, S-07, S-08, S-10, S-11) require governance contract evolution, but the architecture provides no versioning, amendment, or migration mechanisms, forcing workarounds or principle violations.",
+          "Pull-based architecture creates coordination challenges: While supporting asynchrony, the pull-based model creates significant issues for 5 scenarios requiring active coordination: S-03 (fault tolerance notifications), S-07 (voting collection), S-09 (real-time monitoring), and S-10 (quota warnings). The architecture lacks push notification or event streaming capabilities, requiring participants to poll for critical updates or forcing architectural compromises.",
+          "Insufficient observability and diagnostics infrastructure: S-09 reveals that the architecture lacks built-in monitoring, metrics collection, and diagnostic capabilities. The 10-minute retrieval requirement and need for per-client drill-down expose missing time-series storage, analytics infrastructure, and observability patterns. This affects 9 scenarios touching C-03 (FL Manager) where debugging and performance analysis are critical.",
+          "Privacy and security mechanisms are not first-class architectural concerns: S-08 (differential privacy) and S-09 (privacy-preserving diagnostics) reveal that privacy is not architecturally integrated. Adding differential privacy requires widespread changes across C-03, C-01, and C-04 rather than configuration, indicating privacy was an afterthought. The architecture lacks privacy budget tracking, secure aggregation options, or privacy-utility trade-off mechanisms.",
+          "No fault tolerance or resilience patterns: S-03 exposes that the architecture has no built-in fault detection, recovery, or state management capabilities. Implementing pause/resume requires widespread changes across C-03, C-04, and C-02 with medium risk. The lack of checkpointing, heartbeat protocols, and recovery workflows indicates the architecture assumes perfect execution, unsuitable for production multi-organization deployments."
+        ],
+        "modifiability_assessment": "The architecture demonstrates moderate modifiability for localized extensions (audit logging, authentication providers, resource quotas) but struggles with cross-cutting concerns and fundamental capability additions. The concentration of 9 scenarios on FL Manager and 7 on Governance Manager, combined with 5 high-risk/high-effort scenarios (S-05, S-06, S-07, S-08, S-11), indicates architectural rigidity in core components that will impede evolution as federated learning requirements mature."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement plugin architecture for FL Manager with well-defined extension points for aggregation algorithms, privacy mechanisms, and training orchestration policies. Create interfaces for: (1) AggregationStrategy (supporting FedAvg, FedProx, custom algorithms), (2) PrivacyPolicy (differential privacy, secure aggregation, homomorphic encryption), (3) TrainingOrchestrator (standard, fault-tolerant, experimental modes).",
+          "rationale": "Addresses the root cause affecting 9 scenarios on C-03. Converts high-risk widespread changes (S-05 algorithm versioning, S-08 privacy mechanisms) into medium-risk localized plugin implementations. Enables S-06 (experiments) and S-12 (testing) through pluggable components. Reduces future modification effort from High to Low-Medium for algorithmic evolution, which is critical for research-oriented federated learning platforms.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce governance contract versioning and lifecycle management with explicit migration paths. Implement: (1) Semantic versioning for governance contracts, (2) Backward compatibility rules and validation, (3) Amendment proposal workflow (separate from S-07's voting), (4) Contract migration orchestration (complete current training \u2192 negotiate new version \u2192 start fresh training), (5) Version history and audit trail integration.",
+          "rationale": "Resolves the fundamental conflict between immutability principle and 7 scenarios requiring governance evolution. Provides structured approach for S-05 (algorithm version requirements), S-08 (privacy policy specification), S-10 (quota definitions) without violating immutability during active training. Reduces risk of S-07 (dynamic governance) by providing alternative migration path. Enables governance to evolve with regulatory requirements (GDPR, data sovereignty) without architectural violations.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Add event-driven notification layer alongside pull-based communication. Implement lightweight event bus for critical notifications: (1) Training state changes (pause/resume for S-03), (2) Governance proposals and voting (S-07), (3) Resource quota warnings (S-10), (4) System alerts. Use WebSocket or Server-Sent Events for push delivery with fallback to polling. Keep bulk data transfer (model updates) on existing pull-based Communicator.",
+          "rationale": "Resolves coordination challenges in 5 scenarios without abandoning pull-based benefits for data transfer. Enables S-03 fault tolerance notifications, S-07 voting coordination, and S-10 quota warnings with appropriate latency. Hybrid push/pull model balances asynchronous independence with timely coordination. Low risk because it's additive (doesn't modify existing Communicator) and can be implemented incrementally.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement comprehensive fault tolerance and state management in FL Manager. Add: (1) Training round checkpointing with state persistence, (2) Heartbeat/health monitoring protocol, (3) Pause/resume workflow with participant consensus, (4) Timeout policies and automatic recovery, (5) Partial update handling strategies. Design as pluggable FaultTolerancePolicy to align with plugin architecture recommendation.",
+          "rationale": "S-03 is medium-risk but critical for production viability. Without fault tolerance, multi-organization training rounds will fail due to network issues, client crashes, or operational disruptions, undermining platform reliability. Affects all stakeholder roles: end-users get incomplete models, administrators face operational firefighting, developers can't debug failures. This is a prerequisite for enterprise adoption and directly supports the business goal of reliable multi-organization collaboration.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Design and implement observability framework with privacy-preserving metrics collection. Create: (1) Metrics collection API in FL Manager for training dynamics (loss, convergence, round duration), (2) Time-series storage for historical analysis, (3) Aggregated metrics reporting (no per-client drill-down by default), (4) Differential privacy for sensitive metrics, (5) Configurable retention policies, (6) Dashboard with role-based access control.",
+          "rationale": "Addresses S-09 monitoring needs while respecting privacy concerns identified in issues. Enables debugging of S-03 (fault scenarios), S-05 (algorithm migration validation), S-06 (experiment comparison), and S-11 (simulation calibration). Balances observability with privacy by defaulting to aggregated metrics with opt-in detailed monitoring. Improves maintainability and reduces mean-time-to-resolution for production issues. Medium priority because system can function without it, but operational maturity requires it.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Refactor Client Management (C-02) to use provider pattern for authentication and implement federated identity integration. Create: (1) AuthenticationProvider interface, (2) Provider registry and lifecycle management, (3) Built-in providers (OAuth 2.0, SAML, API keys), (4) Credential mapping and token management, (5) Provider-specific configuration in governance contracts.",
+          "rationale": "Directly addresses S-04 with localized changes instead of widespread modifications. Enables enterprise adoption by supporting existing identity systems (Active Directory, Okta, etc.). Provider pattern is proven architectural approach with low risk. Affects 6 scenarios on C-02 but most are localized. Quick win that removes organizational onboarding barrier and aligns with governance-first design (authentication requirements specified in contracts).",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement resource management framework with quota enforcement and usage tracking. Add: (1) Resource quota specification in governance contracts, (2) Usage tracking in FL Manager (training rounds, computation time, storage), (3) Enforcement in Client Management (registration/participation gates), (4) Warning notifications via event bus, (5) Usage analytics and reporting, (6) Configurable quota reset cycles.",
+          "rationale": "S-10 has widespread extent but low risk and addresses operational fairness critical for multi-organization trust. Prevents resource monopolization and enables sustainable platform operation. Leverages governance contracts (aligns with strength) and event bus (if implemented). Relatively straightforward implementation with clear business value. Medium priority because platform can operate without it initially, but needed for scaling beyond pilot organizations.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Defer S-07 (dynamic governance voting) and S-11 (FL simulation) as they represent scope expansion beyond core platform capabilities. For S-07, use governance versioning with between-training-round migration instead of mid-training voting. For S-11, recommend external simulation tools or empirical benchmarking using historical data rather than building simulation engine.",
+          "rationale": "Both scenarios have high risk and high effort with questionable architectural fit. S-07 conflicts with immutability principles and creates legal/trust issues. S-11 is essentially a separate planning system with uncertain accuracy. Deferring allows focus on higher-priority modifiability improvements (plugin architecture, fault tolerance, observability) that enable core platform evolution. Can revisit after architectural foundation is strengthened and real-world usage patterns are established.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Establish architectural governance process for evaluating future extensions. Create: (1) Extension proposal template requiring architectural impact analysis, (2) Review criteria emphasizing plugin-based implementation over core modifications, (3) Privacy-by-design checklist for new features, (4) Backward compatibility requirements, (5) Regular architecture review cadence.",
+          "rationale": "Meta-recommendation to prevent future architectural drift. The 12 scenarios reveal tension between feature requests and architectural principles (immutability, privacy, asynchrony). Formal governance process ensures new capabilities align with architectural vision and leverage extension points rather than forcing widespread changes. Low implementation effort (process, not code) but high long-term value for maintaining modifiability as stakeholder needs evolve.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

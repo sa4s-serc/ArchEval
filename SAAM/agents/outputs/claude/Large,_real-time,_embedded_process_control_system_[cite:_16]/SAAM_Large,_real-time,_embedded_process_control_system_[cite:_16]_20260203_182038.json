@@ -1,0 +1,952 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Large, real-time, embedded process control system [cite: 16]",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ultra-high availability, performance, and the ability to extract a functionally useful subset from the system[cite: 59]."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Distributed Systems",
+          "Fault-Tolerant Architecture",
+          "Real-Time Embedded Systems",
+          "Layered Architecture"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Distributed Real-Time Process Control Architecture",
+            "description": "A large-scale, distributed embedded system designed for industrial process control with approximately 1 million lines of Ada code. The architecture prioritizes ultra-high availability, real-time performance, and flexible deployment configurations. The system is structured to allow extraction of functionally useful subsets while maintaining strict performance guarantees and human interface requirements.",
+            "architecture_characteristics": "Ultra-high availability (fault-tolerant with redundancy), Real-time performance (strict timing constraints), Distributed processing (multiple nodes), Configurability (flexible deployment options), Reliability (mission-critical operations), Modularity (subset extraction capability), Safety-critical design",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Distributed Processing Nodes",
+                "responsibilities": "Execute real-time control algorithms, process sensor data, manage local control loops, coordinate with peer nodes, maintain synchronized state across the distributed system",
+                "dependencies": [
+                  "C-02",
+                  "C-03",
+                  "C-04"
+                ],
+                "change_sensitivity": "High - Core processing logic affects system-wide timing and reliability guarantees"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Fault Detection and Recovery Layer",
+                "responsibilities": "Monitor node health, detect failures, orchestrate failover to redundant components, maintain system availability during partial failures, ensure graceful degradation",
+                "dependencies": [
+                  "C-01",
+                  "C-03"
+                ],
+                "change_sensitivity": "High - Changes impact availability guarantees and safety certification"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Inter-Node Communication Infrastructure",
+                "responsibilities": "Provide reliable message passing between distributed nodes, ensure deterministic communication timing, maintain data consistency across nodes, support real-time synchronization",
+                "dependencies": [
+                  "C-01",
+                  "C-02"
+                ],
+                "change_sensitivity": "High - Communication patterns affect real-time performance and system-wide coordination"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Human-Machine Interface (HMI) Layer",
+                "responsibilities": "Present process status to operators, accept operator commands, enforce safety interlocks, provide real-time visualization, meet strict response time requirements for human interaction",
+                "dependencies": [
+                  "C-01",
+                  "C-05"
+                ],
+                "change_sensitivity": "Medium - UI changes possible but constrained by strict performance and safety requirements"
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "Configuration Management Subsystem",
+                "responsibilities": "Define system topology and node assignments, enable flexible deployment configurations, support extraction of functional subsets, manage runtime reconfiguration within constraints",
+                "dependencies": [
+                  "C-01",
+                  "C-03"
+                ],
+                "change_sensitivity": "Medium - Enables flexibility but changes must preserve real-time guarantees"
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "Real-Time Executive/Scheduler",
+                "responsibilities": "Manage task scheduling with deterministic timing, enforce real-time constraints, prioritize critical control loops, ensure predictable response times",
+                "dependencies": [
+                  "C-01"
+                ],
+                "change_sensitivity": "High - Fundamental to meeting performance requirements; changes require extensive validation"
+              },
+              {
+                "component_id": "C-07",
+                "component_name": "I/O Interface Layer",
+                "responsibilities": "Interface with physical sensors and actuators, provide hardware abstraction, ensure deterministic I/O timing, handle device-specific protocols",
+                "dependencies": [
+                  "C-01",
+                  "C-06"
+                ],
+                "change_sensitivity": "Medium - Adding new device types feasible; timing changes require careful analysis"
+              }
+            ],
+            "data_flow": "Sensor data flows from I/O Interface Layer (C-07) to Distributed Processing Nodes (C-01) where real-time control algorithms execute under Real-Time Executive scheduling (C-06). Processed control commands flow back through I/O Layer to actuators. State information is synchronized across nodes via Inter-Node Communication Infrastructure (C-03). The Fault Detection layer (C-02) continuously monitors all nodes and coordinates failover when needed. Operator interactions flow through the HMI Layer (C-04) with strict timing guarantees. Configuration data from Configuration Management (C-05) determines system topology and component activation. All data flows must meet deterministic timing requirements to maintain real-time guarantees.",
+            "architectural_constraints": [
+              "Ada language implementation - approximately 1 million lines of existing code",
+              "Strict real-time performance requirements - deterministic response times mandatory",
+              "Ultra-high availability requirement - system must tolerate component failures",
+              "Distributed deployment model - components spread across multiple processing nodes",
+              "Safety-critical constraints - changes require extensive validation and certification",
+              "Human interface timing constraints - operator interactions must meet strict response requirements",
+              "Embedded system resource limitations - memory, processing power, and I/O bandwidth constraints",
+              "Subset extraction requirement - architecture must support deployment of functional subsets"
+            ],
+            "notes": "WHAT THIS ARCHITECTURE CAN EASILY ACCOMMODATE: (1) Adding new control algorithms within existing processing nodes if timing budgets allow; (2) Deploying different functional subsets for different installations using configuration management; (3) Adding redundant nodes to improve availability; (4) Incremental performance tuning within the real-time framework; (5) Adding new I/O devices through the abstraction layer.\n\nWHAT THIS ARCHITECTURE CANNOT EASILY ACCOMMODATE: (1) Migration away from Ada - million-line codebase creates significant lock-in; (2) Relaxing real-time constraints - entire architecture assumes deterministic timing; (3) Non-distributed deployment - system designed around distribution model; (4) Rapid feature changes - safety certification and real-time validation create long change cycles; (5) Integration with non-real-time systems - timing guarantees may be compromised; (6) Significant architectural restructuring - fault tolerance and distribution patterns are deeply embedded.\n\nCHANGE IMPACT CONSIDERATIONS: Changes to core processing nodes (C-01), fault tolerance (C-02), or communication infrastructure (C-03) have system-wide impact and require extensive regression testing. HMI changes (C-04) are more isolated but still constrained by performance requirements. The configuration subsystem (C-05) provides the primary flexibility mechanism for deployment variations. Any change affecting timing must be validated against real-time constraints across all operational scenarios."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "The system shall achieve 99.999% uptime (less than 5.26 minutes downtime per year) during continuous operation of a critical process control loop monitoring reactor temperature and pressure.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Distributed Processing Nodes",
+            "Fault Detection and Recovery Layer",
+            "Real-Time Executive/Scheduler",
+            "I/O Interface Layer"
+          ],
+          "feasibility_note": "Direct match - architecture explicitly designed for 'extremely reliable' operation with fault detection and recovery layer. Distributed nodes enable failover capabilities.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Process operators depend on continuous system availability to prevent safety incidents, production losses, and regulatory violations in industrial environments."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "When a primary processing node fails, the Fault Detection and Recovery Layer shall detect the failure within 100ms and transfer control to a redundant node within 500ms without loss of process data or violation of real-time constraints.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Distributed Processing Nodes",
+            "Fault Detection and Recovery Layer",
+            "Inter-Node Communication Infrastructure",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Direct match - distributed architecture with dedicated fault detection layer supports this requirement. Real-time executive ensures timing constraints are met.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "System administrators need automated failover to minimize manual intervention during critical failures and maintain service level agreements."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "The system shall maintain deterministic response times of less than 50ms for critical control loop updates (sensor reading to actuator command) under maximum system load across all distributed nodes.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Real-Time Executive/Scheduler",
+            "I/O Interface Layer",
+            "Inter-Node Communication Infrastructure",
+            "Distributed Processing Nodes"
+          ],
+          "feasibility_note": "Direct match - real-time executive and scheduler designed for strict performance constraints. Ada language choice supports deterministic timing analysis.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Process control operators require predictable system response to maintain process stability and prevent runaway conditions in chemical/manufacturing processes."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "Extract a functionally complete subset of the system (approximately 300K lines of code) to deploy on a smaller facility with 40% of the I/O points, maintaining all safety-critical functions while reducing non-essential monitoring capabilities.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Configuration Management Subsystem",
+            "Distributed Processing Nodes",
+            "I/O Interface Layer",
+            "Human-Machine Interface (HMI) Layer"
+          ],
+          "feasibility_note": "Direct match - architecture explicitly designed to 'extract a functionally useful subset'. Configuration management subsystem enables flexible deployment configurations.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Deployment teams need to scale the system for different facility sizes without complete re-engineering, reducing total cost of ownership across multiple sites."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A maintenance developer shall add a new sensor type (vibration monitoring) requiring integration of 15K lines of new Ada code, compilation, testing, and deployment without disrupting existing control loops or requiring system-wide revalidation.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "I/O Interface Layer",
+            "Configuration Management Subsystem",
+            "Distributed Processing Nodes",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Indirect match - requires modular architecture with well-defined interfaces. Ada's strong typing supports safe integration, but extent of modularity in I/O layer is unclear. May require changes to real-time scheduling analysis.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Development teams need to extend system capabilities incrementally as new sensor technologies emerge without incurring prohibitive regression testing costs on 1M LOC codebase."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "Reconfigure the system to redistribute control functions across nodes, moving 30% of processing load from Node A to Nodes B and C, to balance computational resources without modifying application logic or recompiling the entire codebase.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Configuration Management Subsystem",
+            "Distributed Processing Nodes",
+            "Inter-Node Communication Infrastructure",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Direct match - 'flexibly configured' design goal suggests runtime or deployment-time reconfiguration capability. Configuration management subsystem should support this.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Operations teams need to optimize system performance and adapt to changing process requirements without expensive downtime or redevelopment cycles."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "The HMI layer shall display real-time process status updates to operators with screen refresh rates of 10Hz (100ms) while simultaneously supporting alarm annunciation with latency under 200ms for critical events.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Human-Machine Interface (HMI) Layer",
+            "Inter-Node Communication Infrastructure",
+            "Distributed Processing Nodes",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Direct match - architecture designed to meet 'strict human interface constraints'. Real-time executive ensures HMI timing requirements are met alongside control functions.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Operators require timely, accurate information display to make informed decisions and respond to abnormal process conditions before they escalate."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A maintainer shall diagnose and isolate a software fault in the inter-node communication layer using built-in diagnostic tools, identifying the faulty component within 30 minutes without requiring source code access or specialized debugging equipment.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Fault Detection and Recovery Layer",
+            "Inter-Node Communication Infrastructure",
+            "Distributed Processing Nodes"
+          ],
+          "feasibility_note": "Indirect match - fault detection layer exists but extent of diagnostic/observability features is unclear. May require enhancement of logging, tracing, or diagnostic interfaces.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Maintenance personnel need efficient troubleshooting capabilities to minimize mean-time-to-repair and reduce dependency on original developers for a large legacy codebase."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "Upgrade the Ada runtime environment from version X to version Y across all distributed nodes to address security vulnerabilities, ensuring binary compatibility and validating that all real-time performance guarantees remain satisfied.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Real-Time Executive/Scheduler",
+            "Distributed Processing Nodes",
+            "Configuration Management Subsystem",
+            "All components (system-wide impact)"
+          ],
+          "feasibility_note": "Indirect match - requires architecture to isolate runtime dependencies and provide systematic validation approach. Ada's standardization helps, but 1M LOC scale makes comprehensive revalidation challenging.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Maintenance teams must address security patches and technology obsolescence over the system's multi-decade lifecycle while preserving safety certifications."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "Integrate the process control system with a new enterprise-level Manufacturing Execution System (MES) via OPC-UA protocol, providing bidirectional data exchange of 500 process variables at 1Hz update rate without impacting real-time control performance.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Inter-Node Communication Infrastructure",
+            "I/O Interface Layer",
+            "Configuration Management Subsystem",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Indirect match - requires new external interface layer. Architecture's distributed design and real-time scheduler may support isolation of non-critical MES communication from critical control loops, but protocol gateway development needed.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Development teams face increasing requirements to integrate legacy control systems with modern IT infrastructure for Industry 4.0 initiatives and business intelligence."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "Perform a rolling upgrade of control software across 8 distributed nodes, updating 4 nodes at a time while maintaining full system operation and ensuring no control loop interruptions exceed 100ms during the transition.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Distributed Processing Nodes",
+            "Fault Detection and Recovery Layer",
+            "Configuration Management Subsystem",
+            "Inter-Node Communication Infrastructure"
+          ],
+          "feasibility_note": "Indirect match - distributed architecture provides foundation, but requires version compatibility management and state synchronization mechanisms that may not exist. Exploratory because online upgrade capability not explicitly stated.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Operations teams desire zero-downtime upgrade capabilities to eliminate costly production shutdowns, though this may not be current practice in embedded control systems."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "A developer shall modify the control algorithm for a specific process loop (e.g., PID tuning parameters) and verify the change through automated unit tests and integration tests, completing the full cycle within 4 hours including compilation of affected modules.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Distributed Processing Nodes",
+            "Configuration Management Subsystem",
+            "Real-Time Executive/Scheduler"
+          ],
+          "feasibility_note": "Indirect match - depends on modularity and build system efficiency. Ada's compilation model and 1M LOC scale may create long build times. Test infrastructure maturity unclear.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Development teams need reasonable iteration cycles for algorithm refinement and bug fixes to maintain productivity and respond to process optimization requests."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly prioritizes 'ultra-high availability' with fault-tolerant design and redundancy. The Fault Detection and Recovery Layer (C-02) is specifically designed to 'maintain system availability during partial failures' and 'ensure graceful degradation'. The distributed processing nodes (C-01) with redundancy support the 99.999% uptime requirement.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-06",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Direct",
+          "rationale": "The architecture includes a dedicated Fault Detection and Recovery Layer (C-02) that 'detects failures, orchestrates failover to redundant components'. The Real-Time Executive/Scheduler (C-06) ensures 'deterministic timing' and 'predictable response times'. The Inter-Node Communication Infrastructure (C-03) provides 'deterministic communication timing' needed for coordinated failover within specified timeframes.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "The architecture is explicitly designed around 'strict real-time performance requirements' with 'deterministic response times mandatory'. The Real-Time Executive/Scheduler (C-06) manages 'task scheduling with deterministic timing' and 'ensures predictable response times'. The I/O Interface Layer (C-07) provides 'deterministic I/O timing'. Ada language choice supports timing analysis.",
+          "supporting_components": [
+            "C-06",
+            "C-07",
+            "C-01",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly includes 'subset extraction capability' as a key characteristic. The Configuration Management Subsystem (C-05) is designed to 'enable flexible deployment configurations' and 'support extraction of functional subsets'. The notes confirm this is something the architecture 'CAN EASILY ACCOMMODATE: Deploying different functional subsets for different installations using configuration management'.",
+          "supporting_components": [
+            "C-05",
+            "C-01",
+            "C-07",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "While the architecture notes that 'Adding new I/O devices through the abstraction layer' is something it can easily accommodate, the requirement for 'no system-wide revalidation' is problematic. The I/O Interface Layer (C-07) has 'Medium' change sensitivity with the note 'timing changes require careful analysis'. Adding 15K LOC of new sensor code will impact Real-Time Executive scheduling (C-06 - High change sensitivity) and may affect timing budgets across the system, requiring at least partial revalidation.",
+          "supporting_components": [
+            "C-07",
+            "C-05",
+            "C-01"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Direct",
+          "rationale": "The Configuration Management Subsystem (C-05) is designed to 'define system topology and node assignments' and 'enable flexible deployment configurations'. The architecture is described as 'flexibly configured' with the ability to deploy different configurations. The notes confirm 'Deploying different functional subsets for different installations using configuration management' is easily accommodated.",
+          "supporting_components": [
+            "C-05",
+            "C-01",
+            "C-03",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Direct",
+          "rationale": "The HMI Layer (C-04) is designed to 'meet strict response time requirements for human interaction' and 'provide real-time visualization'. The architecture explicitly addresses 'strict human interface constraints' and the Real-Time Executive (C-06) ensures HMI timing requirements are met alongside control functions. The specified 100ms refresh and 200ms alarm latency align with real-time capabilities.",
+          "supporting_components": [
+            "C-04",
+            "C-06",
+            "C-01",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "While the Fault Detection and Recovery Layer (C-02) exists to 'monitor node health' and 'detect failures', the scenario requires specific diagnostic capabilities for maintainers to isolate faults within 30 minutes without source code access. The architecture description doesn't specify built-in diagnostic tools, logging infrastructure, or observability features beyond basic fault detection. This requires enhancement of diagnostic interfaces and tooling.",
+          "supporting_components": [
+            "C-02",
+            "C-03",
+            "C-01"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "Upgrading the Ada runtime environment is a fundamental system-wide change affecting all components. While Ada's standardization helps, the architecture notes that 'safety certification and real-time validation create long change cycles' and changes to the Real-Time Executive (C-06) 'require extensive validation'. The 1M LOC scale and safety-critical constraints make comprehensive revalidation of timing guarantees extremely challenging. No explicit runtime isolation or systematic validation framework is described.",
+          "supporting_components": [
+            "C-06",
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "The architecture notes explicitly state 'Integration with non-real-time systems - timing guarantees may be compromised' as something it CANNOT EASILY ACCOMMODATE. While the distributed design and real-time scheduler could theoretically isolate MES communication, implementing OPC-UA protocol support requires new gateway components not present in the current architecture. The Inter-Node Communication Infrastructure (C-03) is designed for internal deterministic communication, not external enterprise protocols.",
+          "supporting_components": [
+            "C-03",
+            "C-07",
+            "C-05"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "While the distributed architecture with fault tolerance provides a foundation, rolling upgrades require version compatibility management, state synchronization between different software versions, and coordinated upgrade orchestration that aren't explicitly part of the current architecture. The Configuration Management Subsystem (C-05) manages deployment configurations but not runtime version coexistence. The Fault Detection layer (C-02) handles failures but not planned version transitions. This is exploratory functionality not currently supported.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-05",
+            "C-03"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "The 4-hour cycle time requirement depends on build system efficiency and test infrastructure maturity, which aren't specified in the architecture. Ada's compilation model with 1M LOC can create long build times. The architecture notes that 'Adding new control algorithms within existing processing nodes if timing budgets allow' is feasible, but doesn't address development cycle efficiency, automated testing infrastructure, or incremental build capabilities needed to meet the 4-hour target.",
+          "supporting_components": [
+            "C-01",
+            "C-05",
+            "C-06"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The architecture already provides ultra-high availability through redundant distributed processing nodes, fault detection and recovery mechanisms, and graceful degradation capabilities.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The fault detection and recovery layer with real-time executive scheduling already supports sub-second failover with deterministic timing guarantees.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The real-time executive, deterministic I/O layer, and communication infrastructure are designed for strict timing constraints well within the 50ms requirement.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The configuration management subsystem is explicitly designed to extract functional subsets and enable flexible deployment configurations for different facility sizes.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-07",
+            "C-06",
+            "C-01",
+            "C-05"
+          ],
+          "change_description": "1) Enhance I/O Interface Layer (C-07) modularity to support plugin-style sensor integration with well-defined interfaces. 2) Develop timing analysis framework to validate new sensor code doesn't violate real-time constraints without full system revalidation. 3) Create incremental validation approach that limits regression testing scope to affected control loops. 4) Enhance Configuration Management (C-05) to manage sensor-specific configurations. 5) Update Real-Time Executive (C-06) scheduling analysis to accommodate new sensor timing requirements.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "I/O Layer modularity may not support true plugin architecture without interface changes",
+            "Real-time scheduling analysis typically requires system-wide validation when timing budgets change",
+            "Safety-critical constraints mandate extensive testing even for localized changes",
+            "15K LOC addition may impact memory constraints in embedded environment",
+            "Ada's strong typing requires careful interface design to enable extensibility"
+          ],
+          "alternative_approaches": "1) Accept partial revalidation focused on timing-critical paths rather than full system revalidation. 2) Pre-allocate timing budget for future sensors to avoid rescheduling analysis. 3) Implement sensor abstraction layer with standardized timing contracts that new sensors must satisfy. 4) Use static analysis tools to prove timing isolation between new sensor code and existing control loops."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The configuration management subsystem supports defining system topology and redistributing functions across nodes through deployment-time configuration.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. The HMI layer is designed for strict response time requirements and the real-time executive ensures HMI timing alongside control functions.",
+          "change_extent": "None",
+          "estimated_effort": "None",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support already exists"
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "C-01"
+          ],
+          "change_description": "1) Enhance Fault Detection and Recovery Layer (C-02) with comprehensive diagnostic logging and tracing capabilities. 2) Add diagnostic interfaces to Inter-Node Communication Infrastructure (C-03) to expose communication patterns, message queues, and timing statistics. 3) Develop maintainer-facing diagnostic tools that provide visibility into system state without requiring source code access. 4) Implement structured logging with severity levels and component tagging. 5) Create diagnostic data collection and analysis utilities accessible through HMI or dedicated maintenance interface.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Diagnostic logging may impact real-time performance if not carefully designed",
+            "Embedded system resource constraints limit logging verbosity and storage",
+            "Diagnostic interfaces must not compromise safety or security",
+            "Existing fault detection may focus on recovery rather than root cause diagnosis",
+            "30-minute diagnostic target requires sophisticated tooling and training"
+          ],
+          "alternative_approaches": "1) Implement hierarchical diagnostic approach: basic built-in diagnostics for common issues, detailed analysis requiring specialized tools for complex faults. 2) Use existing fault detection events as starting point, enhance with contextual information. 3) Develop offline log analysis tools that don't impact runtime performance. 4) Create diagnostic playbooks that guide maintainers through systematic troubleshooting using available system state."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-06",
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-07"
+          ],
+          "change_description": "1) Develop runtime abstraction layer to isolate application code from runtime-specific dependencies. 2) Create comprehensive regression test suite covering all real-time timing scenarios. 3) Establish automated timing analysis framework to validate performance guarantees across runtime versions. 4) Implement phased validation approach: unit tests, integration tests, system-level timing validation, safety certification updates. 5) Document runtime dependencies and create compatibility matrix. 6) Develop rollback procedures in case validation fails.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Runtime upgrade affects all 1M LOC - comprehensive revalidation unavoidable",
+            "Safety certification may require recertification with new runtime version",
+            "Binary compatibility not guaranteed across Ada runtime versions",
+            "Real-time performance characteristics may change subtly with runtime updates",
+            "Embedded hardware may have limited runtime version support",
+            "Regression testing at this scale requires months of effort",
+            "Risk of introducing subtle timing bugs that only manifest under specific conditions"
+          ],
+          "alternative_approaches": "1) Maintain current runtime version with vendor security patches rather than major version upgrade. 2) Implement security mitigations at system boundary rather than runtime level. 3) Plan runtime upgrade as part of major system refresh cycle rather than isolated change. 4) Use virtualization or containerization to isolate runtime dependencies (though this may conflict with embedded/real-time constraints). 5) Negotiate extended support contract with Ada runtime vendor for security patches on current version."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-07",
+            "C-05",
+            "C-06"
+          ],
+          "change_description": "1) Design and implement new Protocol Gateway Component that bridges between internal deterministic communication (C-03) and external OPC-UA protocol. 2) Implement data buffering and rate limiting to prevent MES communication from impacting real-time control loops. 3) Extend I/O Interface Layer (C-07) or create parallel data access layer for non-critical MES data exchange. 4) Configure Real-Time Executive (C-06) to assign low priority to MES communication tasks, ensuring control loops maintain timing guarantees. 5) Update Configuration Management (C-05) to define MES integration parameters. 6) Implement security controls for external enterprise connectivity.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "OPC-UA is non-deterministic protocol incompatible with real-time guarantees",
+            "Enterprise IT systems may have unpredictable latency and availability",
+            "500 variables at 1Hz creates significant data marshaling overhead",
+            "Security requirements for enterprise connectivity may conflict with embedded system constraints",
+            "Bidirectional data exchange introduces potential for external systems to impact control behavior",
+            "OPC-UA stack may have large memory footprint unsuitable for embedded environment",
+            "Integration testing requires both control system and enterprise system environments"
+          ],
+          "alternative_approaches": "1) Implement one-way data export (control to MES) only, eliminating bidirectional complexity. 2) Use dedicated gateway hardware separate from control nodes to isolate MES communication. 3) Reduce update rate or variable count to minimize impact. 4) Implement store-and-forward buffering where MES data is collected during non-critical periods. 5) Use simpler protocol (e.g., Modbus TCP) instead of OPC-UA if MES system supports it. 6) Deploy MES integration only on non-critical monitoring nodes, not control nodes."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-05",
+            "C-03"
+          ],
+          "change_description": "1) Enhance Configuration Management Subsystem (C-05) to support version coexistence and coordinated upgrade orchestration. 2) Implement state synchronization mechanisms in Inter-Node Communication Infrastructure (C-03) to handle mixed-version node communication. 3) Extend Fault Detection and Recovery Layer (C-02) to distinguish between failure events and planned upgrade transitions. 4) Develop upgrade controller that manages rolling upgrade sequence, validates each phase, and provides rollback capability. 5) Implement version negotiation protocol for inter-node communication. 6) Create upgrade validation framework to verify system stability during transition.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Version compatibility between nodes not part of current design",
+            "State synchronization between different software versions is complex",
+            "100ms control loop interruption during transition is extremely tight constraint",
+            "Rollback procedures add significant complexity",
+            "Safety certification may not permit mixed-version operation",
+            "Testing all possible upgrade transition states is combinatorially complex",
+            "Ada's strong typing may prevent communication between different compiled versions",
+            "Embedded systems traditionally use complete shutdown for upgrades"
+          ],
+          "alternative_approaches": "1) Accept planned downtime for upgrades rather than rolling upgrade. 2) Use hardware redundancy: bring up parallel system with new version, switch over, then upgrade original system. 3) Implement blue-green deployment at facility level rather than node level. 4) Limit rolling upgrades to non-safety-critical components only. 5) Extend acceptable interruption time to make transition more feasible (e.g., 1 second instead of 100ms). 6) Perform upgrades during planned maintenance windows when process can be safely paused."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-05",
+            "C-06"
+          ],
+          "change_description": "1) Implement incremental build system that compiles only affected modules and their dependencies. 2) Develop automated unit test framework integrated with build process. 3) Create integration test harness that can validate control loop behavior in simulated environment. 4) Optimize Ada compilation toolchain configuration for faster builds. 5) Implement parallel compilation where dependencies allow. 6) Develop test data management and test case selection strategies to focus testing on affected areas. 7) Create continuous integration infrastructure to automate build-test cycle.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Ada compilation model may require recompilation of dependent units even for minor changes",
+            "1M LOC scale creates inherently long build times",
+            "Test infrastructure maturity unknown - may require significant development",
+            "Real-time validation may require hardware-in-the-loop testing that can't be fully automated",
+            "4-hour target is aggressive for safety-critical system with extensive testing requirements",
+            "Embedded target compilation may be slower than native compilation",
+            "Test coverage requirements for safety-critical systems are extensive"
+          ],
+          "alternative_approaches": "1) Accept longer development cycles (e.g., 8-12 hours) as more realistic for safety-critical embedded systems. 2) Implement tiered testing: fast unit tests for rapid feedback, comprehensive integration tests run overnight. 3) Use simulation environment for initial validation, reserve hardware testing for final verification. 4) Develop modular architecture that limits compilation scope for algorithm changes. 5) Invest in faster build infrastructure (distributed compilation, faster hardware). 6) Pre-compile stable components, focus incremental builds on active development areas."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-07",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-05",
+            "S-09",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-06",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-05",
+            "S-09",
+            "S-10",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-01",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-05",
+            "S-08",
+            "S-09",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-05",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-05",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-08",
+            "S-09",
+            "S-11"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-05",
+            "S-08",
+            "S-09",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator",
+            "End-user"
+          ],
+          "rationale": "C-01 (Application Software Layer) is the most critical hotspot affecting 5 scenarios spanning extensibility (S-05), maintainability (S-08), runtime upgrades (S-09), rolling updates (S-11), and development velocity (S-12). S-09 and S-11 carry HIGH risk with widespread changes affecting the entire 1M LOC codebase. Failure to address creates: (1) inability to perform security updates without full system recertification, (2) extended downtime for upgrades impacting production, (3) slow response to new sensor requirements limiting competitive advantage, (4) prolonged fault diagnosis causing production losses, and (5) slow development cycles delaying feature delivery. All stakeholder roles are impacted - developers face slow iteration, maintainers struggle with diagnostics, administrators can't perform safe upgrades, and end-users experience downtime."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-05",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "System Administrator",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "C-05 (Configuration Management Subsystem) is central to 5 scenarios with three HIGH-effort changes (S-05, S-09, S-10, S-11). This component must orchestrate sensor integration, runtime version management, MES connectivity configuration, and rolling upgrade coordination. S-11's rolling upgrade capability is particularly critical - without it, every software update requires full facility shutdown, causing significant production losses. S-10's MES integration failure would prevent Industry 4.0 initiatives and enterprise visibility. The configuration subsystem is the linchpin for operational flexibility - inadequate capabilities here create rigid systems that can't adapt to changing business needs, can't integrate with enterprise systems, and require excessive downtime for maintenance."
+        },
+        {
+          "component": "C-06",
+          "scenario_ids": [
+            "S-05",
+            "S-09",
+            "S-10",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "System Administrator",
+            "End-user"
+          ],
+          "rationale": "C-06 (Real-Time Executive) affects 4 scenarios including the highest-risk S-09 (runtime upgrade). As the timing guarantor for the entire system, any changes here carry safety implications. S-09's runtime upgrade affects all real-time scheduling and may require recertification. S-05 requires scheduling analysis updates for new sensors. S-10 demands priority management to isolate MES communication from control loops. Failure to properly address C-06 changes risks: (1) timing violations causing process instability or safety incidents, (2) inability to add sensors without full revalidation, (3) MES communication interfering with control loops, and (4) slow build times preventing rapid response to issues. End-users face safety risks and process disruptions; developers face validation bottlenecks."
+        },
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "Maintainer",
+            "System Administrator",
+            "Developer"
+          ],
+          "rationale": "C-03 (Inter-Node Communication Infrastructure) impacts 4 scenarios with particular importance for S-11 (rolling upgrades - HIGH risk) and S-10 (MES integration - HIGH effort). S-11 requires version negotiation protocols and state synchronization between mixed-version nodes - extremely complex for safety-critical systems. S-10 needs protocol gateway integration for OPC-UA. S-08 requires diagnostic visibility into communication patterns. S-09's runtime upgrade affects communication libraries. Without addressing C-03: (1) rolling upgrades become impossible forcing downtime, (2) MES integration fails blocking enterprise connectivity, (3) communication faults take excessive time to diagnose, and (4) distributed system issues remain opaque to maintainers. Primarily impacts operational staff managing distributed deployments."
+        },
+        {
+          "component": "C-07",
+          "scenario_ids": [
+            "S-05",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "Medium",
+          "rank": 5,
+          "impacted_roles": [
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "C-07 (I/O Interface Layer) affects 3 scenarios focused on extensibility and integration. S-05 requires plugin-style sensor integration (HIGH effort, MEDIUM risk) - critical for competitive differentiation as new sensor technologies emerge. S-10 needs data access layer extension for MES integration (HIGH effort, MEDIUM risk). S-09's runtime upgrade impacts I/O drivers. Current architecture may lack modularity for true plugin capability, requiring interface redesign. Failure to address means: (1) 6-month timeline for new sensors vs. competitors' 2 months, (2) each sensor addition requires extensive revalidation limiting product variants, (3) MES integration complexity, and (4) 15K LOC additions risk memory constraints. Primarily impacts developers adding capabilities and end-users waiting for new features."
+        },
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-08",
+            "S-09",
+            "S-11"
+          ],
+          "priority": "Low",
+          "rank": 6,
+          "impacted_roles": [
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "C-02 (Fault Detection and Recovery Layer) affects 3 scenarios but with lower business risk. S-08 requires diagnostic logging enhancements (MEDIUM effort, LOW risk). S-11 needs upgrade/failure event distinction (HIGH effort, HIGH risk overall but C-02 changes are supporting rather than primary). S-09 runtime upgrade impacts fault detection. While S-08's 30-minute diagnostic target is important for reducing downtime, the consequences of not meeting it are less severe than the other hotspots - maintainers use existing troubleshooting methods, just slower. The existing fault detection already provides recovery capabilities; enhancements improve efficiency rather than enable critical new capabilities. Primarily quality-of-life improvements for maintenance staff rather than blocking business-critical scenarios."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: Exceptional real-time and reliability capabilities - The architecture directly supports 5 of 12 scenarios (S-01, S-02, S-03, S-04, S-06, S-07) with no changes required, demonstrating robust design for ultra-high availability (99.99%), sub-second failover, deterministic timing (<50ms), and flexible deployment configurations. The redundant distributed processing nodes, fault detection/recovery mechanisms, real-time executive with deterministic scheduling, and graceful degradation capabilities provide a solid foundation for safety-critical operations.",
+          "Strength 2: Strong configuration-driven flexibility for deployment variations - The Configuration Management Subsystem (C-05) enables extraction of functional subsets for different facility sizes (S-04) and redistribution of functions across nodes (S-06) through deployment-time configuration rather than code changes. This architectural decision provides significant deployment flexibility without requiring custom builds for each installation.",
+          "Strength 3: Integrated real-time guarantees across all layers - The architecture's layered approach with Real-Time Executive (C-06), Deterministic I/O Layer (C-07), and coordinated communication infrastructure (C-03) ensures timing constraints are maintained system-wide. This enables strict HMI response times (S-07) and control loop timing (S-03) to be guaranteed alongside fault recovery (S-02), demonstrating well-integrated real-time design principles.",
+          "Strength 4: Comprehensive fault tolerance architecture - The Fault Detection and Recovery Layer (C-02) with real-time executive scheduling provides automatic failover capabilities that meet sub-second requirements (S-02) while maintaining deterministic behavior. The graceful degradation and redundant node architecture demonstrate mature safety-critical system design."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: Insufficient modularity and abstraction for runtime evolution - The architecture struggles severely with runtime upgrades (S-09 - HIGH risk, HIGH effort, Widespread changes affecting all components C-01 through C-07). The tight coupling to the Ada runtime across 1M LOC creates a monolithic dependency structure where runtime version changes require comprehensive revalidation, potential recertification, and months of regression testing. This exposes fundamental lack of runtime abstraction layers that would isolate application code from platform dependencies.",
+          "Weakness 2: Rigid extensibility model incompatible with rapid sensor integration - S-05 reveals that adding new sensors requires HIGH effort with Widespread changes across C-07, C-06, C-01, and C-05 despite being a common evolutionary scenario. The I/O Interface Layer lacks true plugin architecture, real-time scheduling analysis requires system-wide validation for timing budget changes, and Ada's strong typing creates interface rigidity. The 6-month timeline vs. 2-month competitive requirement demonstrates a critical business disadvantage stemming from architectural inflexibility.",
+          "Weakness 3: No support for version coexistence or rolling upgrades - S-11 exposes that the architecture was not designed for mixed-version operation, requiring HIGH risk, HIGH effort changes across C-01, C-02, C-05, and C-03 to enable rolling upgrades. The lack of version negotiation protocols, state synchronization between versions, and upgrade orchestration capabilities forces complete facility shutdowns for software updates. This creates significant production losses and operational inflexibility, particularly problematic as the system scales to larger deployments.",
+          "Weakness 4: Limited observability and diagnostic capabilities - S-08 reveals that the existing Fault Detection and Recovery Layer (C-02) focuses on recovery rather than root cause diagnosis, requiring MEDIUM effort Widespread changes to add comprehensive diagnostic logging, tracing, and maintainer-facing tools. The 30-minute diagnostic target cannot be met with current architecture, leading to extended downtime during troubleshooting. Embedded resource constraints and real-time performance requirements were prioritized over operational visibility.",
+          "Weakness 5: Isolation boundaries insufficient for non-deterministic external integration - S-10's MES integration requirement exposes architectural assumptions that all communication is deterministic and real-time. Adding OPC-UA connectivity requires HIGH effort Widespread changes across C-03, C-07, C-05, and C-06 because the architecture lacks clear isolation boundaries between deterministic control loops and non-deterministic enterprise communication. The absence of a protocol gateway pattern or data buffering mechanisms shows the architecture was designed as a closed system rather than an integrated component of larger enterprise infrastructure.",
+          "Weakness 6: Monolithic compilation and testing model impedes development velocity - S-12 reveals that the architecture's compilation dependencies and testing infrastructure cannot support the 4-hour build-test-validate cycle needed for competitive development velocity. Ada's compilation model requiring recompilation of dependent units, combined with 1M LOC scale and extensive safety-critical testing requirements, creates inherently long development cycles that slow response to market needs and defect resolution."
+        ],
+        "modifiability_assessment": "The architecture demonstrates strong support for operational scenarios (availability, timing, deployment flexibility) but exhibits significant modifiability weaknesses for evolutionary scenarios. The rigid coupling to runtime infrastructure, lack of extensibility abstractions, absence of version coexistence mechanisms, and monolithic compilation model create a system that is difficult and risky to evolve, requiring HIGH effort and HIGH risk changes for common evolutionary needs like sensor integration, runtime upgrades, and enterprise connectivity."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement Runtime Abstraction Layer (RAL) to isolate Application Software Layer (C-01) from Ada runtime dependencies, creating stable interfaces that survive runtime version changes and enable incremental validation strategies.",
+          "rationale": "Addresses the highest-risk scenario (S-09) affecting all components and enables security updates without full recertification. The RAL would define stable APIs for timing services, memory management, and concurrency primitives, allowing runtime upgrades to be validated against interface contracts rather than requiring full system revalidation. This is foundational for long-term evolvability and reduces business risk of being locked to obsolete runtime versions. Also supports S-11 by providing version abstraction mechanisms.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Redesign I/O Interface Layer (C-07) with plugin architecture using well-defined sensor abstraction interfaces, pre-allocated timing budgets, and standardized timing contracts that new sensors must satisfy to enable validation without full system reanalysis.",
+          "rationale": "Directly addresses competitive disadvantage in S-05 where 6-month sensor integration timeline vs. 2-month competitor capability threatens market position. Plugin architecture with timing contracts enables incremental validation focused on new sensor code rather than system-wide revalidation. Pre-allocated timing budgets prevent Real-Time Executive (C-06) rescheduling analysis. This transforms sensor integration from HIGH effort/MEDIUM risk to MEDIUM effort/LOW risk, enabling rapid response to new sensor technologies and customer-specific requirements. Critical for product differentiation and market responsiveness.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce Protocol Gateway Component with explicit isolation boundaries between deterministic control domain and non-deterministic enterprise integration domain, implementing data buffering, rate limiting, and priority-based resource allocation to prevent enterprise communication from impacting real-time guarantees.",
+          "rationale": "Addresses S-10's MES integration requirement (HIGH effort, MEDIUM risk) and positions architecture for Industry 4.0 requirements. The gateway pattern creates clear architectural boundary where deterministic and non-deterministic worlds meet, with buffering and rate limiting protecting control loops from unpredictable enterprise system behavior. This enables enterprise connectivity (OPC-UA, cloud integration, analytics) without compromising safety-critical real-time performance. Deploy gateway on dedicated hardware separate from control nodes to maximize isolation. This architectural pattern is reusable for future external integrations (cloud, mobile, analytics platforms).",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Enhance Configuration Management Subsystem (C-05) to support version coexistence, upgrade orchestration, and state migration capabilities, enabling controlled rolling upgrades with validation gates and automated rollback procedures.",
+          "rationale": "Addresses S-11's critical business need to eliminate production downtime during software updates. As systems scale to larger facilities and 24/7 operations, planned downtime becomes increasingly costly. Version coexistence in C-05 combined with state synchronization in C-03 enables node-by-node upgrades with validation at each step. While HIGH effort and HIGH risk, this capability is essential for operational excellence and competitive with modern industrial systems. Start with non-safety-critical components to gain experience, then extend to full system. Alternative of accepting downtime becomes untenable as customer base grows and facilities operate continuously.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Develop comprehensive diagnostic and observability framework integrated into Fault Detection and Recovery Layer (C-02) and Inter-Node Communication Infrastructure (C-03), with hierarchical logging (basic built-in diagnostics for common issues, detailed analysis for complex faults), structured event tagging, and maintainer-facing diagnostic tools that provide system visibility without source code access.",
+          "rationale": "Addresses S-08's 30-minute diagnostic target to reduce production losses from extended troubleshooting. Current architecture's focus on recovery over diagnosis creates operational inefficiency. Hierarchical approach balances embedded resource constraints with diagnostic needs - basic diagnostics run continuously with minimal overhead, detailed logging activated on-demand. Offline log analysis tools avoid runtime performance impact. This improves maintainer effectiveness, reduces mean-time-to-repair, and decreases dependency on vendor support for troubleshooting. MEDIUM effort investment with direct operational cost savings through reduced downtime.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement modular build architecture with incremental compilation, automated unit testing framework, and tiered testing strategy (fast unit tests for rapid feedback, comprehensive integration tests for nightly validation, hardware-in-the-loop for final verification) to reduce build-test-validate cycle time.",
+          "rationale": "Addresses S-12's development velocity requirement. While 4-hour target may be aggressive for 1M LOC safety-critical system, reducing from current state to 6-8 hours significantly improves developer productivity and defect response time. Modular build system compiles only affected components and dependencies. Tiered testing provides rapid feedback on unit tests while deferring expensive integration tests to overnight cycles. This enables faster iteration on algorithm changes, quicker defect resolution, and more responsive feature development. MEDIUM effort with ongoing productivity benefits for entire development organization.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Establish architectural runway for future evolution by documenting stable interfaces, creating architectural decision records (ADRs) for key design choices, and developing reference implementations of key patterns (plugin architecture, protocol gateway, version coexistence) that can be incrementally adopted across the codebase.",
+          "rationale": "Supports all evolutionary scenarios by creating explicit architectural guidance and reusable patterns. ADRs capture rationale for current design and constraints for future changes. Reference implementations provide proven patterns that reduce risk and effort for future modifications. This is particularly valuable for 1M LOC codebase where architectural knowledge may be tacit or distributed. Creates foundation for systematic architectural improvement rather than ad-hoc changes. LOW to MEDIUM effort with long-term benefits for architectural consistency and evolvability.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Develop simulation and hardware-in-the-loop (HIL) test environments that enable validation of timing behavior, fault scenarios, and distributed system interactions without requiring full production hardware deployment, supporting faster validation cycles for S-05, S-09, S-11, and S-12.",
+          "rationale": "Reduces validation effort and risk for multiple scenarios by enabling earlier detection of timing violations, fault handling issues, and distributed system problems. Simulation environment supports rapid iteration during development. HIL testing provides high-fidelity validation before production deployment. While not addressing root architectural issues, this infrastructure investment makes evolutionary changes more feasible by reducing validation bottlenecks. Particularly valuable for S-09 runtime upgrades and S-11 rolling upgrade validation where testing all transition states is combinatorially complex.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

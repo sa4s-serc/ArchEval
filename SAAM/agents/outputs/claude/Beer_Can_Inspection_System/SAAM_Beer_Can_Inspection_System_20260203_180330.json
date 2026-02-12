@@ -1,0 +1,951 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Beer Can Inspection System",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "To define a domain-specific software architecture (DSSA) that provides a reusable and flexible basis for instantiating measurement systems."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Object-Oriented",
+          "Layered",
+          "Strategy Pattern",
+          "Abstract Factory Pattern"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Measurement Systems Domain-Specific Software Architecture (DSSA)",
+            "description": "The system has evolved from a monolithic, tightly-coupled design (Iteration 0) to a flexible, pattern-based architecture (Iteration 5) that supports reusability across different measurement system contexts. The architecture separates concerns into three logical layers: triggering/control, measurement item abstraction, and hardware abstraction (sensors/actuators). Design patterns enable runtime configuration and easy adaptation to different measurement scenarios beyond beer can inspection.",
+            "architecture_characteristics": "High modularity and reusability through abstraction; Flexible configuration via factory and strategy patterns; Extensibility for new measurement item types; Maintainability through separation of concerns; Trade-off: Increased complexity compared to initial simple design",
+            "key_components": [
+              {
+                "component_id": "C-05",
+                "component_name": "ItemFactory",
+                "responsibilities": "Central factory responsible for creating and configuring all system components including sensors (Camera), actuators (Lever), and measurement items (BeerCan). Encapsulates instantiation logic and manages component dependencies. Enables runtime configuration of different measurement system variants.",
+                "dependencies": [
+                  "C-06",
+                  "C-07",
+                  "Sensor implementations",
+                  "Actuator implementations"
+                ],
+                "change_sensitivity": "Medium - Adding new component types requires factory modification, but existing components remain unaffected. Changes to instantiation logic are localized here."
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "MeasurementItem",
+                "responsibilities": "Abstract representation of any item being measured (beer cans, bottles, packages, etc.). Coordinates measurement workflow: triggering sensors, applying calibration strategies, evaluating results, and invoking actuators for item handling. Acts as the central orchestrator for the measurement process.",
+                "dependencies": [
+                  "C-07",
+                  "Sensor abstractions",
+                  "Actuator abstractions"
+                ],
+                "change_sensitivity": "Low - Well-abstracted interface means new measurement item types can be added through inheritance without modifying existing code. Changes to measurement workflow logic would impact all item types."
+              },
+              {
+                "component_id": "C-07",
+                "component_name": "CalibrationStrategy",
+                "responsibilities": "Implements calibration algorithms as pluggable strategies. Stores ideal/reference values using prototype pattern for comparison during measurement. Allows different calibration approaches (baseline comparison, threshold-based, machine learning models) to be swapped without changing measurement items.",
+                "dependencies": [
+                  "Sensor data sources"
+                ],
+                "change_sensitivity": "Low - New calibration algorithms can be added as new strategy implementations. Switching strategies at runtime or configuration time is straightforward."
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Camera (Sensor Implementation)",
+                "responsibilities": "Hardware abstraction for vision sensor. Provides damagedLine() method to detect defects and calibrate() method for system calibration. Implements sensor interface defined by the DSSA framework.",
+                "dependencies": [
+                  "Hardware drivers",
+                  "C-07 for calibration"
+                ],
+                "change_sensitivity": "Low - Sensor implementations are pluggable. Different sensor types (infrared, weight sensors, etc.) can be substituted through the factory without affecting measurement logic."
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Lever (Actuator Implementation)",
+                "responsibilities": "Hardware abstraction for mechanical actuator. Executes remove() operation to physically eject defective cans from the production line. Implements actuator interface defined by the DSSA framework.",
+                "dependencies": [
+                  "Hardware drivers"
+                ],
+                "change_sensitivity": "Low - Actuator implementations are pluggable. Different removal mechanisms (air jets, diverters, robotic arms) can be substituted through the factory."
+              },
+              {
+                "component_id": "C-01",
+                "component_name": "BeerCanTrigger (System Controller)",
+                "responsibilities": "Entry point and system lifecycle manager. Detects when beer cans enter the inspection zone, creates BeerCan measurement items via ItemFactory, and initiates the inspection workflow. Manages system activation and shutdown.",
+                "dependencies": [
+                  "C-05",
+                  "C-06"
+                ],
+                "change_sensitivity": "Medium - Trigger logic is specific to the production line integration. Changes to how items are detected or workflow is initiated would require modifications here."
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "BeerCan (Concrete MeasurementItem)",
+                "responsibilities": "Specific implementation of MeasurementItem for beer can inspection. Orchestrates the complete inspection workflow: sensing defects via Camera, applying CalibrationStrategy to determine if can is acceptable, and commanding Lever to remove defective cans.",
+                "dependencies": [
+                  "C-06",
+                  "C-03",
+                  "C-04",
+                  "C-07"
+                ],
+                "change_sensitivity": "Low - This is a concrete implementation. New product types (bottles, boxes) would be parallel implementations, not modifications to BeerCan."
+              }
+            ],
+            "data_flow": "1) BeerCanTrigger detects can arrival \u2192 2) ItemFactory instantiates BeerCan (MeasurementItem) with configured Camera (Sensor) and Lever (Actuator) \u2192 3) BeerCan requests measurement from Camera \u2192 4) Camera captures image and returns damage assessment \u2192 5) BeerCan applies CalibrationStrategy to compare against ideal prototype values \u2192 6) If defect detected, BeerCan commands Lever to remove can \u2192 7) Process repeats for next can. Data flows from sensors through measurement items (which apply business logic and calibration) to actuators.",
+            "architectural_constraints": [
+              "Hardware abstraction layer requires sensors and actuators to implement standard interfaces",
+              "Factory pattern requires all component types to be known at compile time (though instances are created at runtime)",
+              "Calibration strategies must be established before measurement begins (prototype pattern requires reference data)",
+              "Single-threaded sequential processing model (one can inspected at a time)",
+              "Tight coupling between trigger mechanism and production line timing"
+            ],
+            "what_architecture_supports": {
+              "easily_accommodated": [
+                "Adding new measurement item types (bottles, packages) - just create new MeasurementItem subclass",
+                "Swapping sensor technologies (infrared, X-ray, weight) - implement sensor interface and configure factory",
+                "Changing calibration algorithms - create new CalibrationStrategy implementation",
+                "Replacing actuator mechanisms - implement actuator interface",
+                "Reusing architecture for completely different measurement domains (quality control, sorting, grading)"
+              ],
+              "difficult_to_accommodate": [
+                "Multi-item parallel processing - architecture assumes sequential single-item workflow",
+                "Real-time streaming analytics - current design is synchronous request-response",
+                "Complex multi-sensor fusion requiring coordination - sensors operate independently",
+                "Dynamic runtime discovery of new component types - factory requires compile-time knowledge",
+                "Distributed processing across multiple machines - architecture assumes co-located components",
+                "Undo/rollback of actuator actions - no transaction or compensation mechanism",
+                "Learning/adaptive calibration that evolves over time - prototype pattern assumes static reference values"
+              ]
+            },
+            "notes": "This architecture represents a significant evolution from Iteration 0 (monolithic) to Iteration 5 (pattern-based DSSA). The trade-off is increased upfront complexity for long-term flexibility. Stakeholders should understand that while adding NEW types of components is easy (new sensors, new items), changing FUNDAMENTAL assumptions (parallel processing, distributed deployment, adaptive learning) would require architectural rework. The architecture excels at product-line scenarios where multiple similar measurement systems need to be deployed with different configurations."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A dirty beer can enters the inspection system at 600 cans/minute production speed. The Camera sensor detects contamination within 50ms, the BeerCanTrigger processes the measurement, and the Lever actuator removes the dirty can from the stream within 100ms total cycle time, allowing clean cans to pass unimpeded.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Camera (Sensor Implementation)",
+            "BeerCanTrigger (System Controller)",
+            "Lever (Actuator Implementation)",
+            "BeerCan (Concrete MeasurementItem)",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Direct match - current architecture supports this core use case through the three-layer separation (control, measurement abstraction, hardware abstraction). The BeerCanTrigger coordinates sensor input and actuator response.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Production line operators need reliable, fast inspection to maintain throughput and product quality. System downtime or missed dirty cans directly impacts production efficiency and brand reputation."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A developer needs to instantiate a new measurement system for inspecting glass bottles (different size, material, and defect types) by reusing 80% of existing components. The new system must be configured and deployed within 2 weeks using the ItemFactory and CalibrationStrategy patterns without modifying core measurement logic.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "ItemFactory",
+            "MeasurementItem",
+            "CalibrationStrategy",
+            "Camera (Sensor Implementation)",
+            "Lever (Actuator Implementation)"
+          ],
+          "feasibility_note": "Direct match - the DSSA goal is explicitly supported. ItemFactory enables creation of new measurement item types, CalibrationStrategy allows different measurement approaches, and hardware abstraction supports sensor/actuator reuse.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Developers need to leverage the DSSA to rapidly create new measurement systems without reinventing core functionality. Reusability reduces development time, cost, and maintenance burden across product lines."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "When a Camera sensor requires firmware update or replacement with a different model (e.g., higher resolution), a maintainer can swap the sensor implementation within 30 minutes without modifying BeerCanTrigger, MeasurementItem logic, or requiring system recompilation - only configuration changes are needed.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Camera (Sensor Implementation)",
+            "BeerCanTrigger (System Controller)",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Direct match - hardware abstraction layer decouples sensors from control logic. The pattern-based architecture (likely Strategy or Adapter patterns for sensors) supports runtime configuration and component substitution.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Maintenance teams need to minimize production downtime during hardware upgrades or repairs. Loose coupling between hardware and logic reduces system fragility and maintenance complexity."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A system administrator needs to recalibrate the inspection sensitivity threshold (e.g., adjusting what constitutes 'dirty') during a production shift change without stopping the line. The CalibrationStrategy allows loading new parameters via configuration file, taking effect within 5 seconds with zero downtime.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "CalibrationStrategy",
+            "BeerCanTrigger (System Controller)",
+            "Camera (Sensor Implementation)"
+          ],
+          "feasibility_note": "Direct match - CalibrationStrategy pattern explicitly supports runtime configuration changes. The separation of calibration logic from measurement execution enables dynamic adjustment without system restart.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Operators need flexibility to adjust system parameters based on production conditions (different can batches, lighting changes, quality standards) without halting production or requiring developer intervention."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "The system must be extended to support multi-stage inspection (e.g., check for dents, then check for contamination, then verify label presence) requiring coordination of 3 different sensors and 2 actuators in sequence, with each stage having independent calibration and pass/fail criteria.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "BeerCanTrigger (System Controller)",
+            "Camera (Sensor Implementation)",
+            "Lever (Actuator Implementation)",
+            "CalibrationStrategy",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Requires architectural extension - current BeerCanTrigger likely handles single-stage inspection. Would need Pipeline or Chain of Responsibility pattern to coordinate multiple inspection stages. Hardware abstraction supports multiple sensors/actuators, but control flow needs enhancement.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Production managers want comprehensive quality control without deploying multiple separate systems. Multi-stage inspection improves defect detection while maintaining single integration point in production line."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "Developers need to create a measurement system for continuous monitoring (temperature sensors in a brewery tank) rather than discrete item inspection, requiring the architecture to support streaming data and time-series analysis instead of individual item pass/fail decisions.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "ItemFactory",
+            "MeasurementItem",
+            "CalibrationStrategy",
+            "BeerCanTrigger (System Controller)"
+          ],
+          "feasibility_note": "Requires significant adaptation - current architecture is optimized for discrete item inspection (BeerCan as MeasurementItem). Would need new abstractions for continuous measurement streams, possibly new controller types beyond BeerCanTrigger. ItemFactory and CalibrationStrategy patterns remain applicable.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Expanding the DSSA to cover continuous monitoring scenarios increases reusability across broader brewery automation contexts, maximizing ROI on the architecture investment."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "When a critical bug is discovered in the Camera sensor driver, a maintainer must be able to identify all measurement systems using that specific sensor implementation across 5 different production lines within 15 minutes using architecture documentation and dependency tracking.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Camera (Sensor Implementation)",
+            "ItemFactory"
+          ],
+          "feasibility_note": "Partially supported - hardware abstraction creates clear component boundaries, but scenario depends on documentation and configuration management practices beyond the code architecture itself. ItemFactory may track instantiated configurations.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Rapid impact analysis during incidents is critical for maintaining production uptime. Clear component boundaries and dependency tracking reduce mean-time-to-resolution for system-wide issues."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "System administrators need to monitor real-time performance metrics (inspection throughput, false positive rate, sensor response times) via a dashboard and receive alerts when metrics deviate from baseline by >15%, enabling proactive maintenance before system failures occur.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "BeerCanTrigger (System Controller)",
+            "Camera (Sensor Implementation)",
+            "Lever (Actuator Implementation)",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Requires new cross-cutting concern - current architecture focuses on measurement logic, not observability. Would need instrumentation/monitoring layer (Observer pattern, metrics collection) integrated with existing components without coupling them to specific monitoring tools.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Proactive monitoring reduces unplanned downtime and enables data-driven optimization of inspection parameters. Visibility into system health is essential for maintaining production SLAs."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A developer wants to unit test a new CalibrationStrategy implementation in isolation, with mock sensors providing simulated measurement data, achieving >90% code coverage without requiring physical hardware or integration environment.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "CalibrationStrategy",
+            "Camera (Sensor Implementation)",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Direct match - hardware abstraction and strategy pattern enable dependency injection and mocking. The layered architecture with clear interfaces supports isolated testing of calibration logic independently from hardware.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Testability reduces development cycle time and improves code quality. Developers need to validate logic changes quickly without waiting for hardware availability or risking production system stability."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "The system should support AI-based image classification for defect detection, where a machine learning model (running on edge GPU) replaces rule-based inspection logic, while maintaining the same sensor input and actuator output interfaces and allowing A/B testing between traditional and ML approaches.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "CalibrationStrategy",
+            "Camera (Sensor Implementation)",
+            "BeerCanTrigger (System Controller)",
+            "MeasurementItem"
+          ],
+          "feasibility_note": "Architecturally feasible with extensions - CalibrationStrategy could be extended to ML model strategy. Hardware abstraction already decouples sensors. Would need new component for ML inference engine and strategy for model versioning/switching. A/B testing requires enhanced controller logic.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Future-proofing the architecture for AI/ML capabilities positions the system for next-generation quality control. Exploratory investment in ML could significantly improve detection accuracy and reduce false positives."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "During a production line reconfiguration, a maintainer needs to relocate the inspection system to a different position in the filling process (after labeling instead of before filling) requiring only changes to trigger timing configuration, with no code modifications to measurement or control logic.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "BeerCanTrigger (System Controller)",
+            "MeasurementItem",
+            "Camera (Sensor Implementation)",
+            "Lever (Actuator Implementation)"
+          ],
+          "feasibility_note": "Depends on trigger abstraction - if BeerCanTrigger is configurable for different timing/positioning scenarios, this is feasible. Hardware abstraction supports physical relocation. May require new trigger strategies if timing requirements differ significantly from current implementation.",
+          "priority": "Low",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Production line flexibility allows manufacturers to optimize workflows without software redevelopment. Reducing reconfiguration costs and time improves operational agility."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "System administrators must ensure the inspection system maintains 99.9% uptime during a 24/7 production schedule, with automatic failover to backup sensors if primary Camera fails, completing failover within 2 seconds without losing more than 3 cans from inspection.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Camera (Sensor Implementation)",
+            "BeerCanTrigger (System Controller)",
+            "CalibrationStrategy"
+          ],
+          "feasibility_note": "Requires new reliability mechanisms - current architecture doesn't explicitly address redundancy or failover. Would need health monitoring, redundant sensor support, and failover logic in controller. Hardware abstraction makes multiple sensor instances feasible, but coordination logic is new.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "High availability is critical for continuous production environments. Unplanned downtime costs thousands per hour; automatic failover protects against single points of failure and maintains production targets."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "This is the core use case the architecture was designed for. BeerCanTrigger detects can arrival, creates BeerCan via ItemFactory, Camera sensor detects contamination, CalibrationStrategy evaluates against thresholds, and Lever removes defective cans. The three-layer architecture (control/measurement/hardware) directly supports this sequential workflow. Performance requirements (100ms cycle time) are implementation details, not architectural constraints.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-06",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Direct",
+          "rationale": "This scenario exemplifies the DSSA's primary goal: reusability across measurement contexts. Developer creates new GlassBottle class inheriting from MeasurementItem (C-06), implements bottle-specific CalibrationStrategy (C-07), and configures ItemFactory (C-05) to instantiate bottle inspection systems. Camera and Lever can be reused or substituted. The architecture explicitly supports 'adding new measurement item types' as an easily accommodated change.",
+          "supporting_components": [
+            "C-05",
+            "C-06",
+            "C-07",
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "Hardware abstraction layer decouples sensor implementations from measurement logic. Camera (C-03) implements a sensor interface, allowing different camera models to be swapped via ItemFactory (C-05) configuration. BeerCanTrigger (C-01) and MeasurementItem (C-06) depend on sensor abstractions, not concrete implementations. The architecture explicitly lists 'swapping sensor technologies' as easily accommodated. No recompilation needed if factory uses configuration-driven instantiation.",
+          "supporting_components": [
+            "C-03",
+            "C-05",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "CalibrationStrategy (C-07) pattern explicitly enables runtime parameter changes. The strategy encapsulates calibration algorithms and reference values, allowing new thresholds to be loaded without affecting MeasurementItem (C-06) orchestration logic. The architecture notes strategies can be 'swapped at runtime or configuration time.' Zero downtime depends on implementation (hot-reload capability), but architecturally supported.",
+          "supporting_components": [
+            "C-07",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "Current architecture assumes single-stage inspection per MeasurementItem. BeerCanTrigger (C-01) initiates one measurement workflow, and BeerCan (C-02) orchestrates one sensor-calibration-actuator sequence. Multi-stage inspection requires coordinating multiple sensors with independent calibration strategies and conditional actuator logic (e.g., only remove if fails ANY stage). This needs architectural extension to support pipeline/workflow composition, not just component substitution.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "Architecture is fundamentally designed for discrete item inspection (MeasurementItem abstraction represents individual cans/bottles). Continuous monitoring requires different abstractions: streaming data sources instead of triggered measurements, time-series analysis instead of pass/fail decisions, and persistent monitoring instead of transient item lifecycle. BeerCanTrigger (C-01) assumes discrete arrival events. This represents a different measurement paradigm requiring new controller and measurement abstractions.",
+          "supporting_components": [
+            "C-01",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "While hardware abstraction creates clear component boundaries (Camera C-03 is isolated), the architecture itself doesn't mandate dependency tracking or configuration management systems. ItemFactory (C-05) may instantiate components, but tracking which factory configurations are deployed across production lines is an operational concern beyond code architecture. Requires external tooling (configuration database, deployment registry) integrated with architectural documentation.",
+          "supporting_components": [
+            "C-03",
+            "C-05"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "Current architecture focuses on measurement workflow, not observability. Real-time metrics collection requires instrumentation across BeerCanTrigger (C-01), Camera (C-03), Lever (C-04), and MeasurementItem (C-06) without coupling them to specific monitoring tools. This is a cross-cutting concern requiring new architectural layer (Observer pattern, metrics facade) that doesn't exist in current design. Architecture constraints note 'single-threaded sequential processing' which may complicate async metrics collection.",
+          "supporting_components": [
+            "C-01",
+            "C-03",
+            "C-04",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Direct",
+          "rationale": "Strategy pattern and hardware abstraction explicitly enable testability. CalibrationStrategy (C-07) can be tested with mock sensor data since it depends on 'sensor data sources' abstraction, not concrete Camera implementation. MeasurementItem (C-06) can be tested with mock sensors/actuators. The layered architecture with clear interfaces supports dependency injection and isolation. This is a direct benefit of the pattern-based design.",
+          "supporting_components": [
+            "C-07",
+            "C-06",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "While CalibrationStrategy (C-07) could theoretically be extended to ML model inference, the architecture has constraints that complicate this: 'prototype pattern requires reference data' suggests static calibration, and 'difficult to accommodate: learning/adaptive calibration that evolves over time' is explicitly listed. ML requires new components (inference engine, model versioning) and A/B testing requires enhanced controller logic to route items to different strategies. Architecturally feasible but requires significant extensions beyond current design.",
+          "supporting_components": [
+            "C-07",
+            "C-01",
+            "C-06"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "BeerCanTrigger (C-01) has 'medium change sensitivity' and 'trigger logic is specific to production line integration.' Relocating inspection position may require different timing, different item detection mechanisms, or different workflow initiation. While hardware abstraction supports physical relocation of sensors/actuators, the trigger's coupling to 'production line timing' (architectural constraint) means configuration-only changes may not suffice if timing requirements fundamentally differ. Depends on trigger abstraction level not fully specified.",
+          "supporting_components": [
+            "C-01"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "Architecture has no explicit redundancy, failover, or health monitoring mechanisms. While hardware abstraction allows multiple Camera instances, coordinating primary/backup sensors, detecting failures, and executing failover within 2 seconds requires new reliability infrastructure. BeerCanTrigger (C-01) would need health monitoring and failover orchestration logic. CalibrationStrategy (C-07) would need synchronization between redundant sensors. This is a new quality attribute (availability) not addressed in current design focused on flexibility/reusability.",
+          "supporting_components": [
+            "C-03",
+            "C-01",
+            "C-07"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. This is the primary use case the architecture was designed to support. Implementation must ensure performance requirements (50ms sensor response, 100ms total cycle) are met through efficient sensor drivers and calibration algorithms, but architecture provides necessary structure.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - scenario directly supported"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-05"
+          ],
+          "change_description": "Minor configuration changes to ItemFactory to support GlassBottle instantiation. Create new GlassBottle class (inherits from MeasurementItem C-06), implement bottle-specific CalibrationStrategy, potentially configure different sensor parameters. Core measurement logic in MeasurementItem remains unchanged. This is the intended use of the DSSA.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - scenario directly supported by DSSA design goals"
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-05"
+          ],
+          "change_description": "Update ItemFactory configuration to instantiate new Camera implementation. New camera must implement sensor interface (damagedLine(), calibrate() methods). No changes to BeerCanTrigger, MeasurementItem, or other components. If factory uses configuration files, no recompilation needed; if hardcoded, requires recompilation but no logic changes.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - hardware abstraction directly supports this"
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-07"
+          ],
+          "change_description": "Implement configuration loading mechanism in CalibrationStrategy to read new threshold parameters from file. May require thread-safe parameter update if system continues processing during reload. No changes to MeasurementItem or other components. Strategy pattern isolates this change.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Thread safety for hot-reload if system processes items during recalibration"
+          ],
+          "alternative_approaches": "N/A - CalibrationStrategy pattern directly supports runtime configuration"
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-06",
+            "C-05",
+            "C-07"
+          ],
+          "change_description": "Introduce InspectionPipeline component to coordinate multiple inspection stages. Each stage would have its own sensor, CalibrationStrategy, and pass/fail criteria. MeasurementItem (C-06) would need to support pipeline composition instead of single sensor-calibration-actuator sequence. BeerCanTrigger (C-01) would initiate pipeline instead of single measurement. ItemFactory (C-05) must instantiate pipeline configurations. Requires Chain of Responsibility or Pipeline pattern.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Current MeasurementItem assumes single measurement workflow",
+            "Need to define pipeline composition semantics (sequential, parallel, conditional)",
+            "Actuator logic becomes more complex (when to remove? after first failure or all stages?)",
+            "Calibration strategies must be independently manageable per stage",
+            "Performance impact of multiple sensor operations within cycle time budget"
+          ],
+          "alternative_approaches": "Create MultiStageMeasurementItem subclass that internally manages pipeline, keeping single-stage items unchanged. Use Composite pattern to treat single and multi-stage items uniformly. This localizes changes to new subclass while preserving existing architecture for simple cases."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-06",
+            "C-05",
+            "C-07"
+          ],
+          "change_description": "Create new abstractions for continuous monitoring: StreamingMeasurementSource (replaces discrete MeasurementItem), ContinuousMonitorController (replaces BeerCanTrigger), and TimeSeriesCalibrationStrategy (extends CalibrationStrategy for trend analysis). ItemFactory must support both discrete and continuous system types. Sensors remain reusable through hardware abstraction. This is a parallel architecture variant, not modification of existing discrete-item architecture.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Fundamental paradigm shift from discrete items to continuous streams",
+            "MeasurementItem abstraction doesn't fit streaming data model",
+            "Trigger concept doesn't apply to continuous monitoring",
+            "Calibration strategies need time-series analysis capabilities",
+            "Data storage and buffering requirements not addressed in current architecture",
+            "No actuator equivalent for continuous monitoring (alerts instead of physical actions?)"
+          ],
+          "alternative_approaches": "Treat continuous monitoring as a different product line within the DSSA framework. Reuse sensor abstractions and CalibrationStrategy pattern concepts, but create parallel controller and measurement abstractions optimized for streaming. Use ItemFactory as a higher-level system factory that can instantiate either discrete-inspection or continuous-monitoring systems. This preserves existing architecture while extending DSSA scope."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-05",
+            "C-03"
+          ],
+          "change_description": "Implement configuration management system that tracks ItemFactory instantiation parameters and deployment metadata. Add component registry that records which sensor implementations are used in each factory configuration. Enhance architecture documentation to include dependency graphs. This is primarily tooling/process, not code architecture changes, but requires integration points in ItemFactory to log configuration decisions.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Architecture provides component boundaries but not deployment tracking",
+            "Requires external configuration management database",
+            "Dependency tracking is operational concern, not architectural feature",
+            "15-minute identification target depends on tooling quality, not just architecture"
+          ],
+          "alternative_approaches": "Implement ItemFactory logging that records all instantiated components and their versions to a central registry. Use configuration-as-code approach where factory configurations are version-controlled, enabling grep/search for Camera usage. Add metadata annotations to components for automated dependency scanning. These are lightweight additions that leverage existing architectural boundaries."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-03",
+            "C-04",
+            "C-06",
+            "C-07"
+          ],
+          "change_description": "Introduce MetricsCollector component (Observer pattern) that instruments key components without coupling them to specific monitoring tools. BeerCanTrigger publishes throughput events, Camera publishes response time metrics, MeasurementItem publishes false positive/negative rates, CalibrationStrategy publishes calibration drift. Add MetricsFacade to aggregate and expose metrics to dashboard. Implement AlertingService to evaluate thresholds and trigger notifications.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Cross-cutting concern affecting all major components",
+            "Metrics collection may impact performance in single-threaded sequential model",
+            "No existing observability infrastructure in architecture",
+            "Need to define what constitutes 'baseline' for deviation detection",
+            "Alert thresholds (15% deviation) require statistical analysis capabilities",
+            "Dashboard integration requires external system interface"
+          ],
+          "alternative_approaches": "Use Decorator pattern to wrap components with metrics-collecting decorators, avoiding modification of core component logic. Implement async metrics buffering to minimize performance impact. Create MetricsStrategy as extension of CalibrationStrategy to reuse pattern infrastructure. Use ItemFactory to optionally instantiate instrumented vs. non-instrumented components based on deployment configuration."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. Use dependency injection to provide mock sensor implementations to CalibrationStrategy during testing. MeasurementItem can be tested with mock sensors and actuators. The layered architecture with clear interfaces (sensor abstraction, actuator abstraction) directly enables this testing approach. This is a key benefit of the pattern-based design.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - architecture directly supports isolated unit testing through abstraction layers"
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-07",
+            "C-01",
+            "C-06",
+            "C-05"
+          ],
+          "change_description": "Create MLCalibrationStrategy that wraps ML inference engine. Add ModelRegistry component for model versioning and loading. Extend BeerCanTrigger or create ExperimentController to support A/B testing by routing items to different calibration strategies based on experiment configuration. Add MLInferenceEngine component to handle GPU communication and model execution. ItemFactory must support instantiation of ML-enabled vs. traditional systems.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Architecture notes 'learning/adaptive calibration that evolves over time' is difficult to accommodate",
+            "Prototype pattern in CalibrationStrategy assumes static reference values, not evolving models",
+            "ML inference latency may not meet 100ms cycle time requirement",
+            "GPU integration introduces new hardware dependency beyond current sensor/actuator abstraction",
+            "Model versioning and rollback not addressed in current architecture",
+            "A/B testing requires experiment management infrastructure not present",
+            "Need to handle model training pipeline integration (online learning vs. offline retraining)"
+          ],
+          "alternative_approaches": "Treat ML as a specialized CalibrationStrategy implementation that encapsulates inference complexity. Use Strategy pattern to make ML vs. traditional approaches swappable. Implement A/B testing at ItemFactory level by creating different factory configurations for experimental vs. control groups. Pre-compute ML inferences if latency is issue, or use ML for offline analysis while keeping traditional logic for real-time decisions. This minimizes architectural disruption while exploring ML capabilities."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-05"
+          ],
+          "change_description": "Abstract BeerCanTrigger into configurable TriggerStrategy that can be parameterized for different production line positions and timing requirements. ItemFactory must support instantiation of different trigger strategies. If timing/positioning requirements are significantly different (e.g., after labeling requires label verification, not just can detection), may need new trigger implementations. Configuration-only approach requires trigger to be highly parameterized.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "BeerCanTrigger has 'tight coupling between trigger mechanism and production line timing' (architectural constraint)",
+            "Trigger logic is noted as 'specific to production line integration'",
+            "Different line positions may have fundamentally different triggering requirements",
+            "Uncertainty about whether timing differences are parametric or require new logic",
+            "May need different sensor types at different positions (e.g., label sensor vs. can sensor)"
+          ],
+          "alternative_approaches": "Create TriggerFactory that instantiates position-specific triggers based on configuration. Use Template Method pattern in abstract Trigger class to define common workflow while allowing position-specific customization. If timing is purely parametric, use Strategy pattern for timing policies. This allows configuration-driven relocation for simple cases while supporting custom triggers for complex position requirements."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-01",
+            "C-07",
+            "C-05"
+          ],
+          "change_description": "Implement HealthMonitor component to track sensor health. Create RedundantSensorManager to coordinate primary/backup Camera instances. Extend BeerCanTrigger with failover logic to switch sensors on failure detection. CalibrationStrategy must support synchronization between redundant sensors (both calibrated identically). ItemFactory must instantiate redundant sensor configurations. Add heartbeat/watchdog mechanisms for failure detection within 2-second window.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No existing redundancy or failover mechanisms in architecture",
+            "2-second failover requirement is aggressive for failure detection and sensor initialization",
+            "Calibration synchronization between primary/backup sensors adds complexity",
+            "Need to define failure detection criteria (missed measurements, error responses, latency spikes)",
+            "Losing 3 cans during failover requires precise timing coordination",
+            "Single-threaded sequential processing model may complicate async health monitoring",
+            "Cost/complexity of redundant hardware not addressed in architecture trade-offs"
+          ],
+          "alternative_approaches": "Use Proxy pattern to create FailoverSensorProxy that wraps primary/backup sensors and handles switching transparently to MeasurementItem. Implement Circuit Breaker pattern for failure detection. Use hot-standby approach where backup sensor is always running and calibrated, minimizing failover time. Consider graceful degradation (reduced inspection thoroughness) instead of full failover if backup sensor has different capabilities. This adds reliability layer without fundamentally restructuring measurement architecture."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-05",
+          "scenario_count": 8,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-07",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-01",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-06",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-07",
+            "S-08",
+            "S-12"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-05 (ItemFactory)",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Critical architectural pivot point affecting 8 scenarios spanning product line extensibility (S-02, S-03), complex system evolution (S-05, S-06, S-10, S-11), operational visibility (S-07), and reliability (S-12). Factory is the instantiation mechanism for all system variants - failures here cascade to inability to deploy new product types, configure ML experiments, support multi-stage inspection, or implement redundancy. High-effort scenarios (S-06, S-10, S-12) all require factory modifications, indicating this component gates major business capabilities. Not addressing factory flexibility limits DSSA reusability goals and creates deployment bottlenecks."
+        },
+        {
+          "component": "C-07 (CalibrationStrategy)",
+          "scenario_ids": [
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Core quality determination logic affecting 6 scenarios including operational reconfiguration (S-04), multi-stage inspection (S-05), continuous monitoring paradigm shift (S-06), performance monitoring (S-08), ML integration (S-10), and sensor redundancy (S-12). This component directly impacts false positive/negative rates that drive end-user business value. S-10 specifically notes current Prototype pattern 'assumes static reference values, not evolving models' - a fundamental limitation for ML adoption (High risk, High effort). S-12 requires calibration synchronization across redundant sensors within 2-second failover window. Inflexibility here blocks quality improvement initiatives and adaptive inspection capabilities critical for competitive differentiation."
+        },
+        {
+          "component": "C-01 (BeerCanTrigger)",
+          "scenario_ids": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "Production line integration point affecting 6 scenarios, but with more localized impact than factory/calibration. Critical for pipeline orchestration (S-05), continuous monitoring paradigm (S-06), throughput metrics (S-08), A/B testing coordination (S-10), multi-position deployment (S-11), and failover logic (S-12). Architectural constraint notes 'tight coupling between trigger mechanism and production line timing' - this creates deployment friction for S-11 (Medium risk, Medium effort). However, most scenarios treat trigger as coordination layer rather than core logic, making it less architecturally risky than calibration or factory. S-12 failover requirements (2-second detection) add complexity but don't fundamentally challenge trigger abstraction."
+        },
+        {
+          "component": "C-06 (MeasurementItem)",
+          "scenario_ids": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "Central workflow orchestrator for 4 scenarios, but current design adequately supports direct scenarios (S-02 requires no changes). Primary concern is S-05 where 'MeasurementItem assumes single measurement workflow' - multi-stage inspection requires pipeline composition (Medium risk, Medium effort). S-06 notes 'MeasurementItem abstraction doesn't fit streaming data model' for continuous monitoring (High effort, Medium risk), but alternative approach suggests parallel architecture preserving existing item-based design. S-08 metrics collection and S-10 ML integration can use Decorator pattern to avoid core modifications. Risk is moderate because workarounds exist (Composite pattern for S-05, parallel architecture for S-06), but not addressing limits inspection sophistication."
+        },
+        {
+          "component": "C-03 (Camera/Sensor Abstraction)",
+          "scenario_ids": [
+            "S-07",
+            "S-08",
+            "S-12"
+          ],
+          "priority": "Low",
+          "rank": 5,
+          "impacted_roles": [
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Hardware abstraction layer affecting 3 scenarios, all with manageable risk profiles. S-07 dependency tracking is operational tooling (Low risk, Low effort) requiring 'integration points in ItemFactory to log configuration decisions' rather than sensor changes. S-08 metrics collection needs sensor instrumentation but can use Decorator pattern to avoid core modifications. S-12 redundancy requires RedundantSensorManager wrapper (High effort, High risk) but sensor interface itself remains stable - complexity is in coordination layer, not abstraction. Current sensor abstraction successfully isolates hardware changes (S-03 camera swap is Direct/Low effort), indicating robust design. Lower priority because existing abstraction handles most scenarios; improvements are additive rather than corrective."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strong hardware abstraction enables seamless sensor/actuator substitution: S-03 (camera replacement) and S-09 (mock sensor testing) are Direct scenarios with Low effort/risk, demonstrating that the sensor abstraction layer successfully isolates hardware dependencies. This directly supports DSSA goals of reusability across product variants.",
+          "Strategy pattern for calibration provides effective quality logic variability: S-02 (glass bottle support) and S-04 (runtime recalibration) are Direct/Localized scenarios with Low effort, showing CalibrationStrategy successfully encapsulates product-specific measurement logic. This is the core DSSA mechanism for product line extensibility.",
+          "Factory-based instantiation supports configuration-driven product variants: S-02 and S-03 demonstrate ItemFactory can instantiate different product types (GlassBottle vs. BeerCan) and hardware configurations without core logic changes. This enables the DSSA to support multiple product lines from a single codebase.",
+          "Clear component boundaries enable isolated unit testing: S-09 requires no architectural changes because layered design with explicit interfaces (sensor abstraction, actuator abstraction, calibration strategy) directly supports dependency injection and mocking. This reduces testing effort and improves maintainability.",
+          "Pattern-based design provides conceptual framework for extensions: Even complex scenarios (S-05 multi-stage inspection, S-08 metrics collection, S-10 ML integration) identify viable extension approaches using existing patterns (Composite, Decorator, Strategy), indicating the architecture provides good conceptual scaffolding for evolution."
+        ],
+        "architectural_weaknesses": [
+          "Single-measurement workflow assumption limits inspection sophistication: S-05 (multi-stage inspection) identifies that 'MeasurementItem assumes single measurement workflow' requiring Widespread changes with Medium effort/risk. This constrains ability to implement complex quality checks (e.g., dent detection + fill level + label verification) that are increasingly important for competitive differentiation.",
+          "Static calibration model incompatible with adaptive/ML-based quality determination: S-10 (ML integration) notes 'Prototype pattern in CalibrationStrategy assumes static reference values, not evolving models' and 'learning/adaptive calibration that evolves over time is difficult to accommodate.' This is a High effort/High risk scenario that blocks a key innovation pathway for improving inspection accuracy and reducing false positives.",
+          "Discrete-item paradigm doesn't extend to continuous monitoring use cases: S-06 (continuous monitoring) requires Widespread changes with High effort because 'MeasurementItem abstraction doesn't fit streaming data model' and 'Trigger concept doesn't apply to continuous monitoring.' This limits architecture applicability to adjacent market opportunities (process monitoring, environmental sensing).",
+          "Tight trigger-to-production-line coupling creates deployment inflexibility: S-11 (multi-position deployment) identifies 'tight coupling between trigger mechanism and production line timing' as an architectural constraint requiring Medium effort/risk to address. This creates friction for deploying inspection systems at different line positions or integrating with different conveyor systems.",
+          "No built-in observability or reliability mechanisms: S-08 (performance monitoring) and S-12 (sensor redundancy) both require Widespread changes with Medium-High effort/risk because architecture lacks cross-cutting infrastructure for metrics collection, health monitoring, and failover. S-12's 2-second failover requirement is particularly challenging given 'no existing redundancy or failover mechanisms.'",
+          "ItemFactory is an architectural bottleneck affecting 8 scenarios: C-05 appears in 67% of scenarios (8/12) spanning Low to High effort, indicating factory has become a central coupling point. While this enables configuration-driven instantiation (a strength), it also means factory modifications are required for nearly every significant evolution, creating deployment and testing bottlenecks."
+        ],
+        "modifiability_assessment": "The architecture demonstrates strong modifiability for its designed scope (discrete-item inspection with static calibration across product variants) but exhibits structural rigidity when extending to adjacent paradigms (multi-stage workflows, adaptive calibration, continuous monitoring, operational resilience). The pattern-based design provides good conceptual extension points, but core abstractions (MeasurementItem, CalibrationStrategy, BeerCanTrigger) encode assumptions that require Widespread changes for 50% of evaluated scenarios (6/12), indicating moderate-to-low evolvability for emerging business needs."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Refactor CalibrationStrategy to support stateful/adaptive calibration models: Introduce AdaptiveCalibrationStrategy interface that extends base CalibrationStrategy with updateModel() and getModelVersion() methods. Implement ModelRegistry component for versioning and rollback. Preserve existing Prototype-based strategies for static calibration while enabling ML integration (S-10) and continuous improvement workflows.",
+          "rationale": "Addresses the #2 hotspot (C-07, 6 scenarios) and unblocks High-risk/High-effort S-10 ML integration, which is critical for competitive differentiation through improved accuracy. Also supports S-12 calibration synchronization and S-08 calibration drift monitoring. This is the highest-impact architectural limitation blocking innovation.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce InspectionPipeline abstraction using Composite pattern: Create Pipeline interface that treats single-stage MeasurementItem and multi-stage InspectionPipeline uniformly. Pipeline coordinates multiple inspection stages (each with sensor, calibration, pass/fail logic) while preserving existing single-stage architecture. ItemFactory instantiates appropriate pipeline configuration based on product requirements.",
+          "rationale": "Directly addresses S-05 (Medium effort/risk) multi-stage inspection, which is essential for sophisticated quality checks. Composite pattern localizes changes to new pipeline subclass while preserving existing MeasurementItem for simple cases. Also provides foundation for S-11 position-specific inspection configurations. Improves inspection sophistication without disrupting proven single-stage design.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement cross-cutting observability layer using Decorator pattern: Create MetricsDecorator, HealthMonitorDecorator, and LoggingDecorator that wrap components (sensors, triggers, calibration strategies) without modifying core logic. Add MetricsFacade to aggregate metrics and AlertingService for threshold-based notifications. ItemFactory optionally instantiates instrumented vs. non-instrumented components based on deployment configuration.",
+          "rationale": "Addresses S-08 (Medium effort/risk) performance monitoring and provides foundation for S-12 (High effort/risk) sensor redundancy through health monitoring. Decorator pattern minimizes performance impact and avoids coupling components to monitoring infrastructure. This is essential operational capability for production deployments and enables data-driven quality improvement.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Decouple trigger mechanism using TriggerStrategy abstraction: Extract BeerCanTrigger into abstract Trigger interface with concrete implementations (ConveyorTrigger, TimedTrigger, SensorBasedTrigger). Use Template Method pattern for common workflow with position-specific customization. TriggerFactory instantiates appropriate trigger based on production line configuration.",
+          "rationale": "Addresses S-11 (Medium effort/risk) multi-position deployment by breaking 'tight coupling between trigger mechanism and production line timing.' Enables configuration-driven relocation for simple timing differences while supporting custom triggers for complex position requirements. Also supports S-10 A/B testing through ExperimentTrigger that routes items to different calibration strategies.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Add configuration management and dependency tracking infrastructure: Implement ItemFactory logging that records instantiated components, versions, and configuration parameters to central registry. Use configuration-as-code approach where factory configurations are version-controlled. Add metadata annotations to components for automated dependency scanning.",
+          "rationale": "Addresses S-07 (Low effort/risk) dependency tracking with minimal architectural disruption. Leverages existing ItemFactory boundaries to provide operational visibility into deployed configurations. This is a quick win that improves maintainability and supports the 15-minute identification target without requiring component modifications.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement sensor redundancy using Proxy and Circuit Breaker patterns: Create FailoverSensorProxy that wraps primary/backup sensor instances and handles switching transparently to MeasurementItem. Implement HealthMonitor with heartbeat/watchdog mechanisms for failure detection. Use hot-standby approach where backup sensor is always calibrated to minimize failover time.",
+          "rationale": "Addresses S-12 (High effort/risk) sensor redundancy requirement for 2-second failover. Proxy pattern adds reliability layer without restructuring measurement architecture. This is critical for production uptime but can be implemented incrementally (start with manual failover, evolve to automatic). Builds on observability infrastructure from S-08 recommendation.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Create parallel architecture variant for continuous monitoring: Develop StreamingMeasurementSource, ContinuousMonitorController, and TimeSeriesCalibrationStrategy as separate abstractions optimized for streaming data. Reuse sensor abstractions and CalibrationStrategy pattern concepts. Treat as different product line within DSSA framework rather than modifying discrete-item architecture.",
+          "rationale": "Addresses S-06 (High effort/risk) continuous monitoring without disrupting proven discrete-item design. Recognizes fundamental paradigm difference ('MeasurementItem abstraction doesn't fit streaming data model') and creates appropriate abstractions rather than forcing fit. This is lower priority because it's a new market opportunity rather than core product evolution, but provides long-term extensibility.",
+          "estimated_effort": "High"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

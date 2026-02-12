@@ -1,0 +1,398 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Achieve Net-Ready Key Performance Parameter (NR-KPP) compliance",
+      "Establish an Open Software Architecture design with layered interfaces",
+      "Create an integration model for legacy code, new code, and COTS products"
+    ],
+    "technical_constraints": [
+      "Heavy reliance on legacy code",
+      "Limited access to electronic CASE tool data",
+      "Short timeline and limited resources for assessment (necessitating a hybrid ATAM)"
+    ],
+    "architectural_drivers": [
+      "Flexibility",
+      "Scalability",
+      "Modularity",
+      "Interoperability",
+      "Extensibility",
+      "Reliability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Standard contract documents (CONOPS, SRS, SSDD) were available in paper/electronic document format. However, native electronic design data (Rational Rose, Requisite Pro) was not accessible, making the hierarchical architecture difficult to browse.",
+      "evaluator_inquiry_questions": [
+        "What are the driving architectural constraints, and where are they documented?",
+        "What component types are defined?",
+        "How do components communicate and synchronize?",
+        "What are the styles of architectural approaches?",
+        "What constitutes the system infrastructure?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "System must support portability across Linux and Windows NT platforms",
+        "Low-level I/O interface layer defined in N-tier architecture to handle platform differences"
+      ],
+      "runtime_constraints": [
+        "System has a statically set limit for the number of simultaneous connections (links)",
+        "Legacy code imposes single-threaded control models on many components"
+      ]
+    },
+    "quantitative_model_parameters": {
+      "growth_factor_requirement": "200% growth in key performance attributes",
+      "scalability_limit": "Pre-defined number of simultaneous connections"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "N-Tier / Hybrid Legacy",
+        "questions": [
+          "What is the process/thread model of the architecture?",
+          "What are the system states and modes?",
+          "What variability points are included in the architecture?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Introduction of a Net-Ready Key Performance Parameter (NR-KPP) for data sharing and enterprise services."
+      },
+      {
+        "id": "RS-02",
+        "description": "System needs to support a number of links beyond the currently anticipated statically set limit."
+      },
+      {
+        "id": "RS-03",
+        "description": "Integration of Web Service (WS) based modules across system components."
+      },
+      {
+        "id": "RS-04",
+        "description": "Replacement of a current component with a known external interface."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "N-tier / Layered Architecture",
+        "description": "The system utilizes an N-tier structure with a dedicated low-level I/O interface layer to separate platform-specific hardware logic from application-level logic.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Portability",
+            "rationale": "The low-level I/O layer abstracts differences between Linux and Windows NT, allowing higher layers to remain platform-agnostic."
+          },
+          {
+            "quality_attribute": "Modularity",
+            "rationale": "Logical separation of concerns into tiers allows for the independent evolution of the user interface, business logic, and data access components."
+          }
+        ]
+      },
+      {
+        "approach_name": "Open Software Architecture (OSA) with Standardized Interfaces",
+        "description": "A design approach focused on layered interfaces to facilitate the integration of new code, legacy code, and COTS products while meeting Net-Ready Key Performance Parameter (NR-KPP) standards.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Standardized, layered interfaces are specifically designed to meet NR-KPP requirements for communicating with external systems and COTS software."
+          },
+          {
+            "quality_attribute": "Flexibility",
+            "rationale": "The open architecture allows for the replacement or upgrade of individual components (legacy or COTS) without redesigning the entire system."
+          }
+        ]
+      },
+      {
+        "approach_name": "Legacy Wrapper / Adapter Pattern",
+        "description": "Encapsulation of legacy code segments, which are constrained by single-threaded control models, to integrate them into the broader multi-tiered environment.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Extensibility",
+            "rationale": "Wrapping legacy code allows new system features to interact with old logic through modernized, compatible interfaces."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Isolating single-threaded legacy control models within wrappers prevents legacy-specific execution constraints from causing failures in the concurrent parts of the N-tier system."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Portability",
+          "children": [
+            {
+              "refinement": "Migration across OS platforms",
+              "scenario_id": "P1",
+              "scenario_description": "Migrate the system from Linux to Windows NT using the low-level I/O interface layer.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "External COTS integration",
+              "scenario_id": "I1",
+              "scenario_description": "Integrate a new COTS product via standardized OSA interfaces to meet NR-KPP standards.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "Fault isolation in legacy code",
+              "scenario_id": "R1",
+              "scenario_description": "Isolate a failure in a single-threaded legacy component within its wrapper to prevent system-wide deadlock.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modularity",
+          "children": [
+            {
+              "refinement": "Independent tier evolution",
+              "scenario_id": "M1",
+              "scenario_description": "Replace the User Interface tier with a new framework without modifying the business logic tier.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Migrate the system from Linux to Windows NT using the low-level I/O interface layer while maintaining full functional parity.",
+        "primary_quality_attribute": [
+          "Portability"
+        ]
+      },
+      {
+        "scenario_text": "Integrate a new external COTS product via standardized OSA interfaces to meet Net-Ready Key Performance Parameter (NR-KPP) standards without modifying core business logic.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "Isolate a runtime failure within a single-threaded legacy code component using its wrapper to ensure the multi-threaded N-tier system remains responsive.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "Replace the existing User Interface tier with a modern web-based framework without necessitating any changes to the underlying business logic tier.",
+        "primary_quality_attribute": [
+          "Modularity"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Migrate the system from Linux to Windows NT using the low-level I/O interface layer while maintaining full functional parity.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Portability",
+        "environment": "Deployment Migration",
+        "stimulus": "Porting request from Linux to Windows NT",
+        "response_measure": "Minimal code changes in upper tiers; 100% functional parity",
+        "architectural_decisions": [
+          "Dedicated low-level I/O interface layer",
+          "N-tier / Layered Architecture"
+        ],
+        "reasoning": "By abstracting OS-specific calls into a dedicated layer, upper tiers remain agnostic of the underlying kernel. However, this creates a dependency on the completeness of the abstraction layer mapping.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Incomplete API Mapping",
+              "rationale": "Differences in asynchronous I/O models between Linux and Windows NT may not be fully captured by the abstraction layer, leading to runtime errors."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Business Logic Isolation",
+              "rationale": "The N-tier separation ensures that business logic is completely decoupled from hardware-specific logic."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "I/O Interface API Coverage",
+              "correlated_attribute": "Portability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Abstraction Layer Granularity",
+              "conflicting_attributes": [
+                "Portability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "I1",
+          "text": "Integrate a new external COTS product via standardized OSA interfaces to meet Net-Ready Key Performance Parameter (NR-KPP) standards without modifying core business logic.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Interoperability",
+        "environment": "Normal Operation / Integration",
+        "stimulus": "Integration of a new COTS component",
+        "response_measure": "Successful data exchange; NR-KPP compliance",
+        "architectural_decisions": [
+          "Open Software Architecture (OSA)",
+          "Standardized layered interfaces"
+        ],
+        "reasoning": "Standardized interfaces facilitate plug-and-play capability for external components, provided the components adhere to the interface specifications.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "COTS Interface Mismatch",
+              "rationale": "COTS products often use proprietary data formats that may require complex translation logic to fit OSA standards."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Vendor Independence",
+              "rationale": "OSA allows for the replacement of COTS products without rewriting the entire system."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Interface Compliance Verification",
+              "correlated_attribute": "Interoperability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Standardization Strictness",
+              "conflicting_attributes": [
+                "Interoperability",
+                "Development Effort"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "Isolate a runtime failure within a single-threaded legacy code component using its wrapper to ensure the multi-threaded N-tier system remains responsive.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Fault Condition",
+        "stimulus": "Legacy component execution failure",
+        "response_measure": "System-wide responsiveness maintained; no deadlock",
+        "architectural_decisions": [
+          "Legacy Wrapper / Adapter Pattern",
+          "Encapsulation of single-threaded code"
+        ],
+        "reasoning": "The wrapper acts as a protective boundary, managing the synchronization between the multi-threaded environment and the single-threaded legacy execution.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Wrapper Synchronization Deadlock",
+              "rationale": "If the wrapper's internal locking mechanism is not robust, a failure in the legacy code could hold a lock indefinitely, blocking the main system."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "Legacy Code Reuse",
+              "rationale": "The wrapper allows the reuse of validated legacy logic without rewriting it for multi-threading."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Wrapper Timeout Settings",
+              "correlated_attribute": "Reliability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Thread Synchronization Complexity",
+              "conflicting_attributes": [
+                "Reliability",
+                "Latency"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "Replace the existing User Interface tier with a modern web-based framework without necessitating any changes to the underlying business logic tier.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Modularity",
+        "environment": "System Upgrade",
+        "stimulus": "UI Framework Replacement",
+        "response_measure": "Zero changes to the Business Logic tier",
+        "architectural_decisions": [
+          "N-tier / Layered Architecture",
+          "Separation of UI and Business Logic"
+        ],
+        "reasoning": "The layered approach isolates the presentation logic from the domain logic, allowing the UI to evolve independently.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-04",
+              "description": "Leaky Abstractions",
+              "rationale": "If the business logic tier expects specific UI-related data structures, replacing the UI will force changes in the BL tier."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-04",
+              "description": "Independent Tier Scaling",
+              "rationale": "Layering allows the UI and BL tiers to be scaled independently on different hardware if needed."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-04",
+              "parameter": "Inter-tier API Granularity",
+              "correlated_attribute": "Modularity"
+            }
+          ],
+          "tradeoff_points": []
+        }
+      }
+    ]
+  }
+}

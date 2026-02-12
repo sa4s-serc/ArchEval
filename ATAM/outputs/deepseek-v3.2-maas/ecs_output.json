@@ -1,0 +1,841 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The EOSDIS Core System (ECS) is a large-scale, distributed data management system for NASA's Earth Observing System (EOS). Its primary purpose is to ingest, process, archive, and distribute massive amounts of earth science data collected from satellites (such as Terra, Aqua, and Landsat) and other sensors. The system is designed to operate 24/7, handling hundreds of gigabytes of raw data daily, processing it into higher-level data products using science algorithms, and making this information searchable and available to the worldwide scientific community. It features a distributed architecture spanning four major data centers in the U.S., integrating custom code with numerous COTS products.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already fielded and supported by volumes of documentation, including architecture documents provided by the client. The evaluation team reviewed these materials beforehand to understand the system's broad details and concept of operations.",
+        "evaluator_inquiry_questions": [
+          "What are the driving architectural constraints, and where are they documented?",
+          "How do components communicate and synchronize? (Mechanisms used, Restrictions on use)",
+          "What are the system partitions? (Composition, Restrictions on use and visibility)",
+          "What constitutes the system infrastructure? (Supplied functionality, Resource management)",
+          "What are the system interfaces? (Identification, Participants, Coordination mechanisms)",
+          "What is the process/thread model of the architecture?",
+          "What is the deployment model of the system?",
+          "What are the system states and modes?",
+          "What variability mechanisms and variation points are included in the architecture?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system is distributed at four data centers across the United States.",
+          "Deployed on about 20 Unix servers from multiple vendors at each site.",
+          "Supported by a communications infrastructure pictured as a ring connecting the subsystems."
+        ],
+        "runtime_constraints": [
+          "Must support concurrent ingest, production, and distribution of high data volumes.",
+          "Must operate 24 hours a day, 7 days a week, 365 days a year.",
+          "Must process data from 24 sensors on ten spacecraft.",
+          "Must compute about 250 standard data products."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "data_volume": "Ingest ~1.5 TB/day; Distribute ~2 TB/day",
+        "system_scale": {
+          "custom_code": "1.2 million lines",
+          "cots_products": "~50 products",
+          "external_interfaces": "34 systems"
+        },
+        "distribution_targets": "2,000 sites (Scenario Sc4)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Distributed Object / Client-Server",
+          "questions": [
+            "How does the system ensure backward compatibility of interfaces?",
+            "What are the impacts of static linkage of client stubs on deployment?",
+            "How does the distribution of data type information affect modifiability?",
+            "What are the performance costs of location independence via name servers?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "13 (O15.1)",
+          "description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request."
+        },
+        {
+          "id": "Brainstorm_Generic_1",
+          "description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists)."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Support for interdisciplinary earth science",
+          "Concurrent ingest, production, and distribution of high data volumes",
+          "One-stop shopping (location transparency of system components and data)",
+          "Support for externally developed science algorithms/applications",
+          "Science data reprocessing (lineage, version management, processing)",
+          "Assurance of data integrity for archive",
+          "Automated operations to minimize operational costs"
+        ],
+        "technical_constraints": [
+          "Must use specific COTS products (~50 used)",
+          "Must interoperate with other systems",
+          "Must reuse legacy code where applicable",
+          "Distributed deployment across four specific data centers"
+        ],
+        "architectural_drivers": [
+          "Maintainability",
+          "Operability",
+          "Reliability",
+          "Scalability",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Distributed Object / Client-Server",
+          "description": "System components are distributed across four data centers, communicating via client-server interactions, likely using remote procedure calls or object request brokers for location transparency.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Scalability",
+              "rationale": "Distribution across multiple servers and sites allows horizontal scaling to handle high data volumes and concurrent operations."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Localized processing at data centers reduces latency for data ingest and distribution, though name server lookups may add overhead."
+            }
+          ]
+        },
+        {
+          "approach_name": "Layered Architecture",
+          "description": "Integration of custom code with numerous COTS products implies a layered structure where higher-level science algorithms interact with lower-level data management and infrastructure services.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Maintainability",
+              "rationale": "Separation of concerns between custom and COTS components allows independent updates and modifications."
+            },
+            {
+              "quality_attribute": "Operability",
+              "rationale": "Clear layers facilitate monitoring and management of distinct system functions (ingest, processing, distribution)."
+            }
+          ]
+        },
+        {
+          "approach_name": "Data Replication and Archiving",
+          "description": "Data is ingested, processed, and archived across distributed data centers, ensuring redundancy and availability for the scientific community.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Replication across multiple sites provides fault tolerance and data durability against site failures."
+            },
+            {
+              "quality_attribute": "Scalability",
+              "rationale": "Distributed archiving supports growth in data volume and user access."
+            }
+          ]
+        },
+        {
+          "approach_name": "Pipe-and-Filter (for Data Processing)",
+          "description": "Likely used in science algorithm pipelines where raw data flows through sequential processing stages to produce higher-level data products.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Pipeline parallelism can accelerate batch processing of large datasets."
+            },
+            {
+              "quality_attribute": "Maintainability",
+              "rationale": "Modular filters allow individual science algorithms to be updated or replaced independently."
+            }
+          ]
+        },
+        {
+          "approach_name": "Load Balancing (implied)",
+          "description": "Distribution across about 20 Unix servers per site suggests load balancing to manage concurrent ingest, production, and distribution workloads.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Balances computational and I/O loads across servers to meet response time goals."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Prevents single-server overloads, enhancing system stability."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Data processing throughput meets ingest volume",
+                "scenario_id": "P1",
+                "scenario_description": "During peak ingest, the system processes incoming data streams without backlog, maintaining data availability for algorithms.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Algorithm execution completes within operational time windows",
+                "scenario_id": "P2",
+                "scenario_description": "A science algorithm run on a standard dataset completes within its allocated processing slot to meet distribution schedules.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "System maintains data integrity across replication",
+                "scenario_id": "R1",
+                "scenario_description": "Data replicated across four data centers remains consistent and uncorrupted after a site network partition is resolved.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Continuous operation during single server failure",
+                "scenario_id": "R2",
+                "scenario_description": "If a Unix server fails at a data center, its workload is redistributed without loss of ingested data or interruption to active algorithm runs.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Scalability",
+            "children": [
+              {
+                "refinement": "System scales to handle 20% annual data volume growth",
+                "scenario_id": "S1",
+                "scenario_description": "The archive and processing infrastructure can accommodate a 20% year-over-year increase in data volume without degrading performance for standard user queries.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Support for increasing concurrent algorithm executions",
+                "scenario_id": "S2",
+                "scenario_description": "The system supports a 50% increase in concurrently executing external science algorithms without modification to core orchestration services.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Operability",
+            "children": [
+              {
+                "refinement": "Report generation within 2 hours of operator request",
+                "scenario_id": "13 (O15.1)",
+                "scenario_description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Minimal manual intervention for routine failures",
+                "scenario_id": "O1",
+                "scenario_description": "Common failures in data ingest or COTS product communication are detected and remediated automatically, alerting operators only for escalation.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "Seamless integration with specified COTS products",
+                "scenario_id": "I1",
+                "scenario_description": "A new version of a mandated COTS product is integrated into the production pipeline within one development cycle without breaking existing data formats.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Data exchange with external scientific systems",
+                "scenario_id": "Brainstorm_Generic_1",
+                "scenario_description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists).",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During peak ingest, the system processes incoming data streams without backlog, maintaining data availability for algorithms.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A science algorithm run on a standard dataset completes within its allocated processing slot to meet distribution schedules.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Data replicated across four data centers remains consistent and uncorrupted after a site network partition is resolved.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "If a Unix server fails at a data center, its workload is redistributed without loss of ingested data or interruption to active algorithm runs.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "The archive and processing infrastructure can accommodate a 20% year-over-year increase in data volume without degrading performance for standard user queries.",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "The system supports a 50% increase in concurrently executing external science algorithms without modification to core orchestration services.",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request.",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "Common failures in data ingest or COTS product communication are detected and remediated automatically, alerting operators only for escalation.",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "A new version of a mandated COTS product is integrated into the production pipeline within one development cycle without breaking existing data formats.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists).",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During peak ingest, the system processes incoming data streams without backlog, maintaining data availability for algorithms.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations, peak ingest load",
+          "stimulus": "High-volume data stream arrival",
+          "response_measure": "Zero processing backlog; data remains available for algorithms",
+          "architectural_decisions": [
+            "Distributed Object / Client-Server architecture across four data centers",
+            "Load Balancing across ~20 Unix servers per site",
+            "Pipe-and-Filter for data processing pipelines"
+          ],
+          "reasoning": "The distributed architecture and load balancing allow horizontal scaling to handle peak ingest by spreading the load. The pipe-and-filter pattern enables parallel processing stages. However, the performance depends on the ingest rate vs. aggregate processing capacity. Without specific data rates and server capacities, a bottleneck risk exists if the peak rate exceeds planned capacity.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Peak ingest data rate may exceed the aggregate processing capacity of the distributed servers, causing backlog.",
+                "rationale": "Without quantitative data on peak ingest rate and per-server processing throughput, the system's ability to meet the 'no backlog' goal cannot be verified. The architecture scales horizontally, but there may be a maximum ingest rate the current deployment can handle."
+              },
+              {
+                "id": "R-02",
+                "description": "Network bandwidth between data centers could become a bottleneck for data replication during peak ingest, affecting availability for algorithms at other sites.",
+                "rationale": "Data replication is critical for availability. If ingest volume saturates inter-data-center links, replication latency increases, potentially making data 'unavailable' at remote sites for algorithms that require the latest data."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Single server failure during peak ingest will not cause system-wide backlog due to load balancing and redundancy.",
+                "rationale": "The load balancing approach and distribution across multiple servers ensure that if one server fails, its load can be redistributed to others, maintaining overall processing throughput."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Peak ingest data rate (GB/s)",
+                "correlated_attribute": "Performance (throughput, latency)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Number of active processing servers per data center",
+                "correlated_attribute": "Performance (throughput)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Data replication aggressiveness (sync vs. async)",
+                "conflicting_attributes": [
+                  "Reliability (data consistency)",
+                  "Performance (ingest latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "A science algorithm run on a standard dataset completes within its allocated processing slot to meet distribution schedules.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations, scheduled algorithm execution",
+          "stimulus": "Initiation of a science algorithm run on a standard dataset",
+          "response_measure": "Algorithm completion within its allocated time slot",
+          "architectural_decisions": [
+            "Pipe-and-Filter for data processing",
+            "Load Balancing across servers",
+            "Layered Architecture isolating algorithm execution"
+          ],
+          "reasoning": "The pipe-and-filter pattern allows modular, potentially parallel execution of algorithm stages. Load balancing ensures computational resources are allocated efficiently. The layered architecture helps manage dependencies. The key risk is algorithm complexity or data size causing overruns, especially if multiple algorithms run concurrently competing for resources.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Unbounded algorithm execution time due to variable dataset sizes or computational complexity may cause missed schedules.",
+                "rationale": "Without a defined 'standard dataset size' and known algorithm performance profiles, it is unclear if the allocated slots are sufficient. Concurrent executions could also lead to resource contention."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "The layered architecture promotes maintainability, allowing performance-optimized replacements for slow algorithm components without system-wide changes.",
+                "rationale": "Separation of concerns means a poorly performing algorithm module can be refactored or replaced independently, mitigating long-term performance risk."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Standard dataset size (GB)",
+                "correlated_attribute": "Performance (execution time)"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Number of concurrent algorithm executions",
+                "correlated_attribute": "Performance (individual completion time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Resource allocation per algorithm (CPU, memory)",
+                "conflicting_attributes": [
+                  "Performance (individual algorithm speed)",
+                  "Scalability (number of concurrent runs)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "Data replicated across four data centers remains consistent and uncorrupted after a site network partition is resolved.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "System experiencing a network partition between one or more data centers",
+          "stimulus": "Network partition occurs and is later resolved",
+          "response_measure": "Data consistency and integrity are maintained across all data centers post-recovery",
+          "architectural_decisions": [
+            "Data Replication and Archiving across four data centers",
+            "Distributed Object / Client-Server architecture"
+          ],
+          "reasoning": "Data replication provides redundancy. However, maintaining consistency during a partition requires a reconciliation strategy (e.g., conflict resolution). The client-server model may rely on synchronous or asynchronous replication. Without details on the replication protocol, there is a risk of divergence or data loss.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Network partitions can lead to split-brain scenarios where conflicting updates are made at different sites, causing data inconsistency upon reconnection.",
+                "rationale": "The architectural description does not specify the consistency model (e.g., strong vs. eventual) or conflict resolution mechanisms. This is a classic risk in distributed, replicated systems."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "The multi-site replication inherently provides durability against a single site failure, protecting data from physical loss.",
+                "rationale": "Even with temporary inconsistency, the data is not lost; it exists in at least one other site. The architecture provides a strong foundation for recovery."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Network partition duration",
+                "correlated_attribute": "Reliability (data divergence magnitude)"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Replication latency (synchronous/asynchronous)",
+                "correlated_attribute": "Reliability (consistency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Replication consistency level",
+                "conflicting_attributes": [
+                  "Reliability (data consistency)",
+                  "Performance (write latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R2",
+            "text": "If a Unix server fails at a data center, its workload is redistributed without loss of ingested data or interruption to active algorithm runs.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations, single server failure",
+          "stimulus": "A Unix server fails",
+          "response_measure": "Workload redistributed; no data loss or interruption to active algorithms",
+          "architectural_decisions": [
+            "Load Balancing (implied)",
+            "Data Replication and Archiving"
+          ],
+          "reasoning": "Load balancing allows traffic to be redirected to healthy servers. For no data loss, ingested data must be persisted before the failure (e.g., via replication or durable queues). Active algorithm runs may be checkpointed or restarted on another server. The architecture supports this, but implementation details (e.g., stateless vs. stateful components) are critical.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Loss of in-memory, unpersisted data from the failed server if ingest buffers or algorithm state are not checkpointed.",
+                "rationale": "If servers hold transient data during processing and fail before persisting to shared storage, that data may be lost unless a replication/checkpointing mechanism is in place."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "The distributed nature and multiple servers per site make workload redistribution technically feasible and a standard practice.",
+                "rationale": "The architecture explicitly includes about 20 servers per site, providing a pool for failover. Load balancers can detect failure and redirect requests."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Server failure detection time",
+                "correlated_attribute": "Reliability (interruption duration)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Data persistence interval (checkpoint frequency)",
+                "correlated_attribute": "Reliability (data loss window)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Checkpointing frequency",
+                "conflicting_attributes": [
+                  "Reliability (data loss risk)",
+                  "Performance (algorithm overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "The archive and processing infrastructure can accommodate a 20% year-over-year increase in data volume without degrading performance for standard user queries.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Steady state with annual 20% data volume growth",
+          "stimulus": "Data volume increases by 20% per year",
+          "response_measure": "No degradation in performance for standard user queries",
+          "architectural_decisions": [
+            "Data Replication and Archiving",
+            "Distributed Object / Client-Server",
+            "Layered Architecture"
+          ],
+          "reasoning": "The distributed architecture is designed for horizontal scaling\u2014adding more servers or storage nodes can handle increased volume. However, scaling must be planned and may require additional hardware investment. The layered architecture helps isolate query performance from archive growth. Risks include unforeseen bottlenecks in network or metadata management.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Centralized components (e.g., name servers, metadata catalogs) may become bottlenecks as data volume grows, impacting query performance.",
+                "rationale": "While data storage scales, the services that index and locate data (common in client-server architectures) might not scale linearly and could become a performance limiter."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "The use of distributed data centers and archiving provides a clear path for capacity expansion by adding storage nodes or entire sites.",
+                "rationale": "The architectural style is inherently scalable by adding more nodes to the network, a proven approach for handling data growth."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Metadata catalog scalability (entries/sec)",
+                "correlated_attribute": "Scalability (query performance)"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Inter-data-center network bandwidth growth rate",
+                "correlated_attribute": "Scalability (data distribution performance)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Data indexing depth/completeness",
+                "conflicting_attributes": [
+                  "Scalability (index size and query speed)",
+                  "Operability (query flexibility and richness)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "The system supports a 50% increase in concurrently executing external science algorithms without modification to core orchestration services.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Normal operations, increased algorithm concurrency",
+          "stimulus": "Number of concurrent external algorithm executions increases by 50%",
+          "response_measure": "Core orchestration services require no modification to support the increase",
+          "architectural_decisions": [
+            "Layered Architecture",
+            "Pipe-and-Filter",
+            "Load Balancing"
+          ],
+          "reasoning": "Layered architecture decouples orchestration services from algorithm execution. Pipe-and-filter allows parallel pipelines. Load balancing distributes the increased load. The core risk is that orchestration services (e.g., job schedulers, resource managers) may have internal limits (e.g., number of concurrent jobs tracked) that are exceeded.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Orchestration service capacity limits (e.g., max concurrent jobs, thread pools, database connections) may be reached before the 50% increase, requiring reconfiguration or code changes.",
+                "rationale": "Even with a layered design, the orchestration component itself has finite resources. Its scalability limits are not specified in the architectural approaches."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "The pipe-and-filter pattern allows new algorithm instances to be added as independent processes/containers, scaling horizontally.",
+                "rationale": "The pattern supports adding more filter instances to handle increased concurrency, aligning with the scalability goal."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Orchestration service's maximum concurrent job limit",
+                "correlated_attribute": "Scalability (algorithm concurrency)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Resource pool size (CPU, memory) available for algorithms",
+                "correlated_attribute": "Scalability (algorithm concurrency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Orchestration service complexity (feature richness)",
+                "conflicting_attributes": [
+                  "Scalability (throughput of job management)",
+                  "Operability (management capabilities)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "13 (O15.1)",
+            "text": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Operability",
+          "environment": "Normal operations, operator request",
+          "stimulus": "Operator requests a report for a specific algorithm run",
+          "response_measure": "Report generated and delivered within 2 hours",
+          "architectural_decisions": [
+            "Layered Architecture",
+            "Data Replication and Archiving"
+          ],
+          "reasoning": "Layered architecture likely separates reporting functions, allowing efficient querying of archived results. Data replication ensures result data is available. The 2-hour deadline depends on report complexity, data retrieval speed, and system load. A risk is if generating the report requires computationally expensive reprocessing.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Report generation may require aggregating large volumes of data from distributed archives, exceeding the 2-hour window if network or query performance is poor.",
+                "rationale": "Without knowing the size of typical result datasets and the performance of the reporting query layer, the time constraint may be at risk."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "The layered architecture isolates reporting tools, allowing them to be optimized for performance without affecting core processing pipelines.",
+                "rationale": "Separation of concerns means the reporting layer can be independently scaled or tuned to meet its specific performance requirements."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Size of algorithm result dataset (GB)",
+                "correlated_attribute": "Operability (report generation time)"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Reporting query service performance (queries/sec)",
+                "correlated_attribute": "Operability (report generation time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Data aggregation for reporting (pre-computation vs. on-demand)",
+                "conflicting_attributes": [
+                  "Operability (report generation speed)",
+                  "Scalability (storage overhead for pre-computed aggregates)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "O1",
+            "text": "Common failures in data ingest or COTS product communication are detected and remediated automatically, alerting operators only for escalation.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Operability",
+          "environment": "Normal operations, occurrence of a common failure",
+          "stimulus": "A common failure (e.g., ingest stream interruption, COTS heartbeat loss) occurs",
+          "response_measure": "Failure is automatically detected and remediated; operator alerted only if escalation needed",
+          "architectural_decisions": [
+            "Layered Architecture",
+            "Integration with numerous COTS products"
+          ],
+          "reasoning": "Layered architecture facilitates monitoring and management at layer boundaries. However, automatic remediation requires pre-defined failure modes and recovery actions. Integration with many COTS products increases complexity\u2014each may have unique failure signatures and recovery procedures.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "COTS product failures may be opaque or lack APIs for automated remediation, forcing manual operator intervention and violating the 'automatic' goal.",
+                "rationale": "COTS products are black-box components; their internal failures may not be detectable or recoverable via external automation, increasing operability burden."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "The layered structure provides clear points for inserting health checks and monitoring agents for custom components.",
+                "rationale": "Standard interfaces between layers are natural places to implement fault detection and recovery logic for the custom parts of the system."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "COTS product monitoring API completeness",
+                "correlated_attribute": "Operability (automation coverage)"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Mean Time To Repair (MTTR) for common failures",
+                "correlated_attribute": "Operability (system availability)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Automation complexity (number of failure scenarios handled)",
+                "conflicting_attributes": [
+                  "Operability (reduction in manual effort)",
+                  "Maintainability (complexity of automation code)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "I1",
+            "text": "A new version of a mandated COTS product is integrated into the production pipeline within one development cycle without breaking existing data formats.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "System maintenance, COTS product upgrade",
+          "stimulus": "A new version of a mandated COTS product is released",
+          "response_measure": "Integrated into production pipeline within one development cycle; existing data formats remain unchanged",
+          "architectural_decisions": [
+            "Layered Architecture",
+            "Integration with numerous COTS products"
+          ],
+          "reasoning": "Layered architecture isolates COTS dependencies, ideally behind adapters or interfaces, allowing replacement with minimal impact. However, if COTS products are tightly coupled or directly define data formats, an upgrade may force format changes. The 'one development cycle' timeline depends on the complexity of integration testing.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "COTS product upgrade may introduce incompatible changes to its APIs or output data formats, requiring modifications to custom code and potentially breaking existing data flows.",
+                "rationale": "Even with a layered design, if the COTS product is the originator of a critical data format, a version change may force a format change, violating the scenario goal."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "The layered architecture principle of separation allows the COTS product to be wrapped, limiting the blast radius of changes to its specific layer.",
+                "rationale": "Good practice of using abstraction layers (e.g., adapters) minimizes the impact of COTS changes on the rest of the system."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "COTS product backward compatibility policy",
+                "correlated_attribute": "Interoperability (integration effort)"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Development cycle duration (months)",
+                "correlated_attribute": "Interoperability (timeline risk)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Adapter layer generality (thick vs. thin wrapper)",
+                "conflicting_attributes": [
+                  "Interoperability (ease of COTS replacement)",
+                  "Performance (overhead of abstraction layer)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

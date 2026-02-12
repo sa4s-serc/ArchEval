@@ -1,0 +1,912 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "An online credit-card transaction system that receives credit information from terminals, delivers transaction requests to credit-card companies, and transmits responses back to terminals. It requires continuous 24/7 operation and real-time synchronization with backup systems and external databases.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Non-functional requirements were not defined, and stakeholders lacked sufficient knowledge and experience in the system's specific technologies to generate a utility tree via standard brainstorming.",
+        "evaluator_inquiry_questions": [
+          "Do the standard non-functional requirements derived from financial system experience apply to this system?",
+          "Can we confirm these prioritized requirements: Performance, Operability, Security, and Usability?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Uses TANDEM receiving interface.",
+          "Interacts with credit-card terminals and credit-card companies.",
+          "Connects to a backup system.",
+          "Connects to the NIBS database."
+        ],
+        "runtime_constraints": [
+          "Must operate 24 hours a day, 365 days a year.",
+          "Must complete all internal processing within one second.",
+          "Must synchronize in real-time with the backup system."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "internal_processing_deadline": "1 second",
+        "availability_target": "24 hours/day, 365 days/year",
+        "risk_probability_high": "> 70%",
+        "risk_management_mid_term": "within 4 months"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Financial System Architectural Style Pool",
+          "questions": [
+            "How does hard-coding message transformations affect maintainability versus performance?",
+            "How does the common component definition affect system availability during updates?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "System should be operational 24 hours a day and 365 days a year."
+        },
+        {
+          "id": "RS-02",
+          "description": "Credit-card terminal is supposed to request transaction processing at any time including peak-time and system should proceed all internal processing within one second besides external transaction processing with credit-card company."
+        },
+        {
+          "id": "RS-03",
+          "description": "System should ensure the information integrity with credit-card company."
+        },
+        {
+          "id": "RS-04",
+          "description": "System should be synchronized in real-time with backup system and database of NIBS."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Run 24 hours a day, 365 days a year",
+          "Provide online credit card transaction services",
+          "Establish risk mitigation strategies for identified risks",
+          "Suggest and evaluate new architectural alternatives"
+        ],
+        "technical_constraints": [
+          "System should be operational 24 hours a day and 365 days a year",
+          "System should be synchronized in real-time with backup system and database of NIBS"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Operability",
+          "Security and Safety",
+          "Usability",
+          "Reliability",
+          "Availability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Financial System Architectural Style Pool",
+          "description": "Domain-specific architectural patterns for financial transaction systems with emphasis on reliability and real-time processing. Includes hard-coded message transformations and common component definitions.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Hard-coded message transformations optimize processing speed to meet the strict 1-second internal processing deadline for transaction handling"
+            },
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Real-time synchronization with backup system and TANDEM interface support the 24/7/365 continuous operation requirement"
+            }
+          ]
+        },
+        {
+          "approach_name": "Real-time Synchronization Pattern",
+          "description": "Continuous synchronization mechanism with backup system and NIBS database to ensure data consistency and immediate failover capability",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Ensures data integrity and system continuity through redundant synchronized systems, preventing data loss during failures"
+            },
+            {
+              "quality_attribute": "Operability",
+              "rationale": "Enables seamless failover and recovery operations without manual intervention or service disruption"
+            }
+          ]
+        },
+        {
+          "approach_name": "TANDEM Receiving Interface",
+          "description": "Fault-tolerant hardware interface architecture for receiving and processing credit card terminal transactions with built-in redundancy",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "TANDEM systems are specifically designed for continuous operation and high availability through hardware-level fault tolerance"
+            },
+            {
+              "quality_attribute": "Security and Safety",
+              "rationale": "Provides secure transaction reception from terminals with built-in protection mechanisms for financial data"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Internal processing time < 1 second",
+                "scenario_id": "P1",
+                "scenario_description": "Transaction processing must complete within 1 second internal deadline",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Peak-time transaction handling",
+                "scenario_id": "P2",
+                "scenario_description": "System handles peak transaction volumes without degradation",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "24/7/365 continuous operation",
+                "scenario_id": "A1",
+                "scenario_description": "System maintains continuous operation without planned downtime",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Failover capability",
+                "scenario_id": "A2",
+                "scenario_description": "System fails over to backup without service interruption",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Real-time backup synchronization",
+                "scenario_id": "R1",
+                "scenario_description": "Backup system maintains real-time synchronization with primary",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "NIBS database synchronization",
+                "scenario_id": "R2",
+                "scenario_description": "NIBS database remains synchronized for data consistency",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security and Safety",
+            "children": [
+              {
+                "refinement": "Data integrity with credit-card company",
+                "scenario_id": "S1",
+                "scenario_description": "Transaction data integrity maintained across credit-card company interfaces",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Secure terminal communication",
+                "scenario_id": "S2",
+                "scenario_description": "Credit card terminal communications are secure and protected",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Operability",
+            "children": [
+              {
+                "refinement": "Seamless failover operations",
+                "scenario_id": "O1",
+                "scenario_description": "Failover and recovery occur without manual intervention",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "System monitoring capabilities",
+                "scenario_id": "O2",
+                "scenario_description": "Operators can monitor system health and performance",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Usability",
+            "children": [
+              {
+                "refinement": "Terminal interface responsiveness",
+                "scenario_id": "U1",
+                "scenario_description": "Terminal interfaces provide responsive user experience",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_id": "P1",
+          "scenario_text": "Source: Credit card terminal. Stimulus: Transaction processing request arrives during normal operations. Artifact: Transaction processing subsystem with hard-coded message transformations. Environment: System operating under normal load conditions. Response: System completes all internal processing (message transformation, validation, routing). Response Measure: Internal processing completes within 1 second, excluding external credit-card company communication time.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_id": "P2",
+          "scenario_text": "Source: Multiple credit card terminals. Stimulus: High volume of concurrent transaction requests during peak business hours. Artifact: TANDEM receiving interface and transaction processing pipeline. Environment: Peak load conditions with maximum expected transaction volume. Response: System processes all transactions without queuing delays or performance degradation. Response Measure: Transaction throughput maintains baseline performance levels with <1 second internal processing time per transaction.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_id": "A1",
+          "scenario_text": "Source: Business operations requirement. Stimulus: Continuous operation demand over 24-hour period across all calendar days. Artifact: Entire credit card transaction system including TANDEM interface. Environment: Production environment with no planned maintenance windows. Response: System remains operational and accepts transaction requests. Response Measure: System uptime of 99.9%+ with 24/7/365 availability, zero planned downtime.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_id": "A2",
+          "scenario_text": "Source: Primary system component. Stimulus: Hardware or software failure occurs in primary transaction processing system. Artifact: Primary system, backup system, and real-time synchronization mechanism. Environment: Active transaction processing during failure event. Response: Backup system assumes processing responsibilities without service interruption. Response Measure: Failover completes with zero transaction loss and service interruption <5 seconds.",
+          "primary_quality_attribute": [
+            "Availability",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_id": "R1",
+          "scenario_text": "Source: Primary transaction processing system. Stimulus: Transaction data updates occur continuously during normal operations. Artifact: Real-time synchronization pattern between primary and backup systems. Environment: Normal operational state with active transaction processing. Response: Backup system receives and applies all data changes in real-time. Response Measure: Synchronization lag <100 milliseconds, zero data loss during synchronization.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_id": "R2",
+          "scenario_text": "Source: Transaction processing system. Stimulus: Transaction records and state changes generated during processing. Artifact: NIBS database synchronization interface and mechanism. Environment: Continuous operation with ongoing transactions. Response: NIBS database reflects current system state accurately. Response Measure: Database synchronization maintains consistency with <500 millisecond lag, zero data inconsistencies.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_id": "S1",
+          "scenario_text": "Source: Credit card company interface. Stimulus: Bidirectional transaction data exchange during authorization and settlement. Artifact: Message transformation layer and credit-card company communication interface. Environment: Production environment with active financial transactions. Response: System ensures data accuracy and prevents corruption during transmission. Response Measure: 100% data integrity verification, zero transaction data corruption or loss, cryptographic validation of all exchanges.",
+          "primary_quality_attribute": [
+            "Security and Safety"
+          ]
+        },
+        {
+          "scenario_id": "S2",
+          "scenario_text": "Source: Credit card terminal. Stimulus: Terminal initiates transaction request with sensitive cardholder data. Artifact: TANDEM receiving interface with built-in security mechanisms. Environment: Public-facing terminal network with potential security threats. Response: System receives and processes terminal data securely with encryption and authentication. Response Measure: All terminal communications encrypted, authentication successful for 100% of legitimate requests, zero unauthorized access incidents.",
+          "primary_quality_attribute": [
+            "Security and Safety"
+          ]
+        },
+        {
+          "scenario_id": "O1",
+          "scenario_text": "Source: System monitoring component. Stimulus: Primary system failure detected requiring failover. Artifact: Automated failover mechanism and real-time synchronization pattern. Environment: Production environment with active transactions and no operator intervention available. Response: System automatically initiates failover to backup without manual intervention. Response Measure: Failover completes automatically within 5 seconds, zero manual steps required, operators notified post-failover.",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        },
+        {
+          "scenario_id": "O2",
+          "scenario_text": "Source: System operator. Stimulus: Operator needs to assess system health and transaction processing status. Artifact: System monitoring and management interface. Environment: Normal operations with operator workstation access. Response: System provides real-time visibility into performance metrics, transaction volumes, and system health. Response Measure: Monitoring dashboard updates within 2 seconds, displays key metrics (transaction rate, processing time, system status, error rates).",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        },
+        {
+          "scenario_id": "U1",
+          "scenario_text": "Source: Terminal operator (cashier/merchant). Stimulus: Operator initiates transaction through credit card terminal interface. Artifact: Terminal user interface and transaction processing feedback mechanism. Environment: Point-of-sale environment during customer checkout. Response: Terminal provides immediate feedback and responsive interaction. Response Measure: Terminal acknowledges input within 200 milliseconds, displays transaction status updates in real-time, provides clear success/failure indication.",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Source: Credit card terminal. Stimulus: Transaction processing request arrives during normal operations. Artifact: Transaction processing subsystem with hard-coded message transformations. Environment: System operating under normal load conditions. Response: System completes all internal processing (message transformation, validation, routing). Response Measure: Internal processing completes within 1 second, excluding external credit-card company communication time.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal load conditions with active transaction processing",
+          "stimulus": "Transaction processing request from credit card terminal",
+          "response_measure": "Internal processing time < 1 second",
+          "architectural_decisions": [
+            "Hard-coded message transformations for optimized processing speed",
+            "Financial System Architectural Style Pool with domain-specific patterns",
+            "TANDEM receiving interface for fault-tolerant transaction reception"
+          ],
+          "reasoning": "Hard-coded transformations eliminate runtime interpretation overhead, directly supporting the 1-second processing deadline. The domain-specific architectural style pool provides pre-optimized patterns for financial transactions. However, the tight coupling between transformation logic and system components creates maintainability challenges and potential performance bottlenecks if message formats change.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Hard-coded message transformations may become performance bottleneck if message formats evolve or increase in complexity",
+                "rationale": "Any change to message structure requires code modification, recompilation, and redeployment, potentially causing service disruption and failing to meet the 1-second deadline during transition periods"
+              },
+              {
+                "id": "R-02",
+                "description": "Processing pipeline may not scale efficiently under unexpected load spikes beyond normal conditions",
+                "rationale": "The architecture is optimized for normal load; sudden spikes could saturate the hard-coded transformation pipeline, causing queue buildup and deadline violations"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Hard-coded transformations adequately support the 1-second deadline under normal load",
+                "rationale": "Domain-specific optimization and elimination of runtime interpretation overhead provide sufficient performance margin for the specified response measure"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Message transformation complexity (number of fields, validation rules)",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "CPU allocation to transformation processing threads",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Hard-coded vs. configurable message transformations",
+                "conflicting_attributes": [
+                  "Performance (positive: hard-coding optimizes speed)",
+                  "Modifiability (negative: hard-coding reduces flexibility)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Source: Multiple credit card terminals. Stimulus: High volume of concurrent transaction requests during peak business hours. Artifact: TANDEM receiving interface and transaction processing pipeline. Environment: Peak load conditions with maximum expected transaction volume. Response: System processes all transactions without queuing delays or performance degradation. Response Measure: Transaction throughput maintains baseline performance levels with <1 second internal processing time per transaction.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak load conditions with maximum expected transaction volume",
+          "stimulus": "High volume of concurrent transaction requests",
+          "response_measure": "Throughput maintains <1 second per transaction without degradation",
+          "architectural_decisions": [
+            "TANDEM fault-tolerant hardware interface for high-volume transaction reception",
+            "Transaction processing pipeline with parallel processing capability",
+            "Hard-coded transformations for consistent processing time"
+          ],
+          "reasoning": "TANDEM architecture provides hardware-level parallelism and fault tolerance to handle high transaction volumes. The processing pipeline must distribute load effectively across available resources. Critical dependency on accurate capacity planning and load distribution mechanisms to prevent bottlenecks during peak periods.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Transaction queue saturation during peak loads may cause processing delays exceeding 1-second deadline",
+                "rationale": "If peak volume exceeds designed capacity, queue buildup will introduce delays that violate the performance requirement, even if individual transaction processing remains fast"
+              },
+              {
+                "id": "R-04",
+                "description": "Resource contention between transaction processing and real-time backup synchronization during peak loads",
+                "rationale": "Synchronization overhead competes for CPU, memory, and I/O resources during high transaction volumes, potentially degrading transaction processing performance"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "TANDEM hardware architecture provides sufficient parallel processing capacity for expected peak loads",
+                "rationale": "TANDEM systems are specifically designed for high-volume transaction processing with built-in parallelism and load distribution"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Transaction arrival rate (transactions per second)",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Processing pipeline buffer size",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Number of parallel processing threads/workers",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Synchronization frequency during peak loads",
+                "conflicting_attributes": [
+                  "Reliability (positive: frequent sync ensures data consistency)",
+                  "Performance (negative: frequent sync consumes processing resources)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "Source: Business operations requirement. Stimulus: Continuous operation demand over 24-hour period across all calendar days. Artifact: Entire credit card transaction system including TANDEM interface. Environment: Production environment with no planned maintenance windows. Response: System remains operational and accepts transaction requests. Response Measure: System uptime of 99.9%+ with 24/7/365 availability, zero planned downtime.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Production environment with continuous operation requirement",
+          "stimulus": "24/7/365 continuous operation demand",
+          "response_measure": "99.9%+ uptime with zero planned downtime",
+          "architectural_decisions": [
+            "TANDEM fault-tolerant hardware architecture for continuous operation",
+            "Real-time synchronization with backup system for failover capability",
+            "Redundant component design eliminating single points of failure"
+          ],
+          "reasoning": "TANDEM architecture provides hardware-level fault tolerance supporting continuous operation. Real-time backup synchronization enables immediate failover without service interruption. The 99.9% uptime target allows approximately 8.76 hours of downtime per year, which must accommodate only unplanned failures since planned downtime is prohibited.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Software updates and patches cannot be applied without violating zero planned downtime requirement",
+                "rationale": "Without hot-swap or rolling update capability, critical security patches and bug fixes may require service interruption, creating a conflict between availability and security/reliability"
+              },
+              {
+                "id": "R-06",
+                "description": "Cascading failure between primary and backup systems could violate availability target",
+                "rationale": "If a common-mode failure (e.g., software bug, network partition) affects both primary and backup simultaneously, the system loses redundancy and may experience extended downtime"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "TANDEM hardware architecture adequately supports 99.9%+ availability requirement",
+                "rationale": "TANDEM systems are proven for high-availability applications with built-in redundancy at hardware level, well-suited for the 99.9% uptime target"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Mean Time Between Failures (MTBF) of TANDEM hardware components",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Mean Time To Repair (MTTR) for component failures",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Backup system synchronization lag",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Update deployment strategy",
+                "conflicting_attributes": [
+                  "Availability (positive: zero downtime requires hot-swap capability)",
+                  "Complexity (negative: hot-swap increases architectural complexity)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A2",
+            "text": "Source: Primary system component. Stimulus: Hardware or software failure occurs in primary transaction processing system. Artifact: Primary system, backup system, and real-time synchronization mechanism. Environment: Active transaction processing during failure event. Response: Backup system assumes processing responsibilities without service interruption. Response Measure: Failover completes with zero transaction loss and service interruption <5 seconds.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Active transaction processing during failure event",
+          "stimulus": "Hardware or software failure in primary system",
+          "response_measure": "Failover <5 seconds with zero transaction loss",
+          "architectural_decisions": [
+            "Real-time synchronization pattern maintaining backup system currency",
+            "Automated failover mechanism for rapid transition",
+            "TANDEM interface redundancy for continuous transaction reception"
+          ],
+          "reasoning": "Real-time synchronization ensures backup system maintains current state, enabling rapid failover. The 5-second failover window requires automated detection and transition mechanisms. Zero transaction loss depends on synchronization lag being minimal and in-flight transaction handling during failover.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "In-flight transactions during failover may be lost if not properly handled by synchronization mechanism",
+                "rationale": "Transactions being processed at the moment of failure may not be fully synchronized to backup, violating the zero transaction loss requirement unless explicit transaction journaling and replay mechanisms exist"
+              },
+              {
+                "id": "R-08",
+                "description": "Failover detection time may exceed budget if failure is subtle or gradual",
+                "rationale": "The 5-second failover window includes detection time; slow-developing failures (e.g., performance degradation, partial failures) may not trigger failover quickly enough"
+              },
+              {
+                "id": "R-09",
+                "description": "Network partition between primary and backup could cause split-brain scenario",
+                "rationale": "If synchronization link fails but both systems remain operational, both may attempt to process transactions independently, causing data inconsistency and potential transaction duplication"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Real-time synchronization adequately supports zero transaction loss for committed transactions",
+                "rationale": "Synchronization pattern ensures backup system has current state for all completed transactions, enabling seamless continuation after failover"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Synchronization lag between primary and backup",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Failure detection threshold and timeout values",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Network bandwidth for synchronization link",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Failure detection sensitivity",
+                "conflicting_attributes": [
+                  "Availability (positive: aggressive detection enables faster failover)",
+                  "Stability (negative: aggressive detection may cause false-positive failovers)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "Source: Primary transaction processing system. Stimulus: Transaction data updates occur continuously during normal operations. Artifact: Real-time synchronization pattern between primary and backup systems. Environment: Normal operational state with active transaction processing. Response: Backup system receives and applies all data changes in real-time. Response Measure: Synchronization lag <100 milliseconds, zero data loss during synchronization.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operational state with active transaction processing",
+          "stimulus": "Continuous transaction data updates",
+          "response_measure": "Synchronization lag <100ms with zero data loss",
+          "architectural_decisions": [
+            "Real-time synchronization pattern with continuous data replication",
+            "Dedicated synchronization channel between primary and backup",
+            "Transaction-level consistency guarantees"
+          ],
+          "reasoning": "The 100ms synchronization lag requirement ensures backup system remains current enough to support the 5-second failover target with minimal data loss. Synchronization must handle peak transaction volumes without falling behind. Network bandwidth and processing overhead are critical constraints.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "Synchronization lag may exceed 100ms during peak transaction volumes",
+                "rationale": "High transaction rates generate large volumes of synchronization data; if network bandwidth or backup system processing capacity is insufficient, synchronization will fall behind the 100ms target"
+              },
+              {
+                "id": "R-11",
+                "description": "Synchronization mechanism failure creates single point of failure for data consistency",
+                "rationale": "If the synchronization channel or mechanism fails, backup system becomes stale, violating the zero data loss requirement and potentially causing extended recovery time during failover"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Real-time synchronization pattern adequately supports 100ms lag target under normal load",
+                "rationale": "Dedicated synchronization mechanism with sufficient bandwidth and processing capacity can maintain sub-100ms lag for expected transaction volumes"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Network bandwidth between primary and backup systems",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Transaction update size (bytes per transaction)",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Backup system write throughput capacity",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Synchronization granularity (transaction-level vs. batch)",
+                "conflicting_attributes": [
+                  "Reliability (positive: transaction-level ensures minimal data loss)",
+                  "Performance (negative: transaction-level increases overhead and network traffic)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R2",
+            "text": "Source: Transaction processing system. Stimulus: Transaction records and state changes generated during processing. Artifact: NIBS database synchronization interface and mechanism. Environment: Continuous operation with ongoing transactions. Response: NIBS database reflects current system state accurately. Response Measure: Database synchronization maintains consistency with <500 millisecond lag, zero data inconsistencies.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Continuous operation with ongoing transactions",
+          "stimulus": "Transaction records and state changes",
+          "response_measure": "Database sync <500ms lag with zero inconsistencies",
+          "architectural_decisions": [
+            "NIBS database synchronization interface for external data consistency",
+            "Asynchronous synchronization mechanism to avoid blocking transaction processing",
+            "Consistency verification and reconciliation procedures"
+          ],
+          "reasoning": "The 500ms synchronization lag for NIBS database is more relaxed than the 100ms backup synchronization, suggesting NIBS serves reporting or secondary functions rather than failover. Asynchronous synchronization prevents database writes from blocking transaction processing, but introduces consistency challenges.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Asynchronous NIBS synchronization may create temporary inconsistencies visible to external systems",
+                "rationale": "The 500ms lag window means NIBS database may show stale data; if external systems query NIBS during this window, they receive inconsistent information that could affect business decisions"
+              },
+              {
+                "id": "R-13",
+                "description": "Database synchronization failures may go undetected, causing persistent inconsistencies",
+                "rationale": "Without robust verification and reconciliation mechanisms, failed synchronization operations could leave NIBS database permanently out of sync with transaction system state"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "500ms synchronization lag is acceptable for NIBS database use cases",
+                "rationale": "The relaxed lag requirement compared to backup synchronization suggests NIBS serves non-critical functions where eventual consistency is sufficient"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Database write throughput capacity",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Synchronization batch size",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Network latency to NIBS database",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Synchronization frequency to NIBS database",
+                "conflicting_attributes": [
+                  "Reliability (positive: frequent sync reduces inconsistency window)",
+                  "Performance (negative: frequent sync increases database load and network overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "Source: Credit card company interface. Stimulus: Bidirectional transaction data exchange during authorization and settlement. Artifact: Message transformation layer and credit-card company communication interface. Environment: Production environment with active financial transactions. Response: System ensures data accuracy and prevents corruption during transmission. Response Measure: 100% data integrity verification, zero transaction data corruption or loss, cryptographic validation of all exchanges.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security and Safety",
+          "environment": "Production environment with active financial transactions",
+          "stimulus": "Bidirectional transaction data exchange with credit card company",
+          "response_measure": "100% data integrity, zero corruption/loss, cryptographic validation",
+          "architectural_decisions": [
+            "Message transformation layer with integrity verification",
+            "Cryptographic validation for all credit-card company exchanges",
+            "End-to-end data integrity checks"
+          ],
+          "reasoning": "Financial transaction data requires absolute integrity; any corruption or loss could result in financial discrepancies, regulatory violations, or fraud. Cryptographic validation ensures authenticity and integrity. Hard-coded transformations must maintain data fidelity during format conversions.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Hard-coded message transformations may introduce data corruption bugs during format conversions",
+                "rationale": "Complex transformation logic, especially when hard-coded, is prone to edge cases and bugs that could corrupt data fields, violating the 100% integrity requirement"
+              },
+              {
+                "id": "R-15",
+                "description": "Cryptographic key management failures could compromise validation integrity",
+                "rationale": "If cryptographic keys are compromised, rotated improperly, or become desynchronized with credit card company, validation may fail or accept invalid data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Cryptographic validation adequately ensures data integrity for credit-card company exchanges",
+                "rationale": "Industry-standard cryptographic mechanisms provide strong guarantees against data corruption and tampering during transmission"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-18",
+                "parameter": "Message transformation complexity and field mapping accuracy",
+                "correlated_attribute": "Security and Safety"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Cryptographic algorithm strength and key length",
+                "correlated_attribute": "Security and Safety"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Cryptographic validation thoroughness",
+                "conflicting_attributes": [
+                  "Security and Safety (positive: comprehensive validation ensures integrity)",
+                  "Performance (negative: extensive cryptographic operations add processing overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "Source: Credit card terminal. Stimulus: Terminal initiates transaction request with sensitive cardholder data. Artifact: TANDEM receiving interface with built-in security mechanisms. Environment: Public-facing terminal network with potential security threats. Response: System receives and processes terminal data securely with encryption and authentication. Response Measure: All terminal communications encrypted, authentication successful for 100% of legitimate requests, zero unauthorized access incidents.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security and Safety",
+          "environment": "Public-facing terminal network with security threats",
+          "stimulus": "Terminal transaction request with sensitive cardholder data",
+          "response_measure": "100% encryption, 100% authentication success, zero unauthorized access",
+          "architectural_decisions": [
+            "TANDEM receiving interface with built-in security mechanisms",
+            "Encryption for all terminal communications",
+            "Authentication for terminal identity verification"
+          ],
+          "reasoning": "Public-facing terminals are vulnerable to interception and spoofing attacks. Encryption protects cardholder data in transit. Authentication prevents unauthorized terminals from submitting fraudulent transactions. TANDEM hardware provides security features at the interface level.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-16",
+                "description": "Terminal authentication mechanism may be vulnerable to replay attacks or credential theft",
+                "rationale": "If authentication credentials are static or poorly protected, attackers could capture and reuse them to impersonate legitimate terminals, violating the zero unauthorized access requirement"
+              },
+              {
+                "id": "R-17",
+                "description": "Encryption implementation weaknesses could expose cardholder data during transmission",
+                "rationale": "Weak cipher suites, improper key exchange, or implementation bugs could allow attackers to decrypt terminal communications, compromising sensitive cardholder data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "TANDEM built-in security mechanisms adequately protect terminal communications",
+                "rationale": "TANDEM systems include hardware-level security features designed for financial transaction processing, providing strong protection for terminal interfaces"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-20",
+                "parameter": "Encryption algorithm strength and key management",
+                "correlated_attribute": "Security and Safety"
+              },
+              {
+                "id": "S-21",
+                "parameter": "Authentication credential complexity and rotation frequency",
+                "correlated_attribute": "Security and Safety"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Authentication mechanism complexity",
+                "conflicting_attributes": [
+                  "Security and Safety (positive: strong authentication prevents unauthorized access)",
+                  "Usability (negative: complex authentication may slow terminal operations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "O1",
+            "text": "Source: System monitoring component. Stimulus: Primary system failure detected requiring failover. Artifact: Automated failover mechanism and real-time synchronization pattern. Environment: Production environment with active transactions and no operator intervention available. Response: System automatically initiates failover to backup without manual intervention. Response Measure: Failover completes automatically within 5 seconds, zero manual steps required, operators notified post-failover.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Operability",
+          "environment": "Production with no operator intervention available",
+          "stimulus": "Primary system failure detection",
+          "response_measure": "Automatic failover <5 seconds, zero manual steps, post-failover notification",
+          "architectural_decisions": [
+            "Automated failover mechanism with no manual intervention requirement",
+            "Real-time synchronization enabling immediate backup activation",
+            "Post-failover operator notification system"
+          ],
+          "reasoning": "Automated failover eliminates human reaction time and potential errors, supporting the 5-second failover window. Operator notification after failover allows for investigation and remediation without blocking the failover process. Requires robust failure detection and decision-making logic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-18",
+                "description": "Automated failover may trigger incorrectly on transient issues, causing unnecessary service disruption",
+                "rationale": "Overly sensitive failure detection could cause false-positive failovers during temporary network glitches or performance spikes, creating instability and potential data inconsistency"
+              },
+              {
+                "id": "R-19",
+                "description": "Operator notification failures could delay problem diagnosis and recovery",
+                "rationale": "If post-failover notifications fail to reach operators, they may remain unaware of the failure, delaying investigation and potential return to primary system"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Automated failover adequately supports 5-second failover requirement without manual intervention",
+                "rationale": "Automation eliminates human reaction time, enabling rapid failover that would be impossible with manual processes"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-22",
+                "parameter": "Failure detection threshold and confidence level",
+                "correlated_attribute": "Operability"
+              },
+              {
+                "id": "S-23",
+                "parameter": "Failover decision logic complexity",
+                "correlated_attribute": "Operability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Failover automation level",
+                "conflicting_attributes": [
+                  "Operability (positive: full automation enables rapid failover)",
+                  "Safety (negative: automation may trigger incorrectly without human judgment)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

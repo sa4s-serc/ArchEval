@@ -1,0 +1,466 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "FL-APU",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ease the use of FL in real-world cross-silo applications, emphasize collaboration between participants, combine governance with authentication, and offer traceability of governance decisions and training processes."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Modular Architecture",
+          "Federated Architecture"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "FL-APU",
+            "name": "FL-APU (Federated Learning Architecture for Practical Use)",
+            "description": "A cross-silo federated learning architecture designed for inter-organizational collaboration. It integrates governance and authentication directly into the machine learning lifecycle to ensure traceability and security in sensitive domains like energy forecasting.",
+            "architecture_characteristics": "High Traceability, Strong Governance, Security-First Communication, Cross-Silo Resource Optimization",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Governance Manager",
+                "responsibilities": "Orchestrates multi-party negotiation processes and records formal agreements into a governance contract; serves as the 'source of truth' for collaboration rules.",
+                "dependencies": [
+                  "Client Management",
+                  "FL Manager"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Client Management",
+                "responsibilities": "Handles participant lifecycle including registration, identity validation, and authentication to ensure only authorized entities participate.",
+                "dependencies": [
+                  "Communicator"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "FL Manager",
+                "responsibilities": "The core engine for the ML lifecycle; manages data validation, preprocessing, training coordination, model aggregation, and global evaluation.",
+                "dependencies": [
+                  "Communicator",
+                  "Governance Manager"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Communicator",
+                "responsibilities": "Provides a secure transport layer using encryption and compression; strictly adheres to HTTP2-based communication protocols.",
+                "dependencies": [],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "FL Client Model Deployer",
+                "responsibilities": "Manages the local deployment of trained models, handles personalization for specific organizational needs, and monitors inference performance.",
+                "dependencies": [
+                  "FL Manager"
+                ],
+                "change_sensitivity": "Medium"
+              }
+            ],
+            "data_flow": "Data flow begins with a negotiation phase via the Governance Manager. Once terms are set, the Client Management system authenticates participants. The FL Manager then coordinates the training loop by sending model parameters through the Communicator. Clients perform local training and send updates back. Finally, the FL Client Model Deployer moves the aggregated model into production.",
+            "architectural_constraints": [
+              "No VPN solutions allowed for inter-organizational connectivity.",
+              "Mandatory HTTP2-based communication (no legacy RPC).",
+              "Strict 'Pull' or Client-Initiated communication; external servers cannot initiate connections into company infrastructure.",
+              "Optimized for few high-resource participants rather than massive scale low-power devices."
+            ],
+            "notes": "The architecture is highly effective for regulated industries where audit trails of 'who agreed to what' are as important as the model accuracy. It CAN easily accommodate new governance rules or encryption standards. It CANNOT easily accommodate millions of mobile IoT devices due to the heavy governance and cross-silo overhead."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "An energy utility company (End-user) joins a cross-silo federation to improve its local load forecasting model; the system must allow the user to initiate a training round and receive a global model update within 30 minutes of round completion without exposing raw data.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "FL Manager",
+            "FL Client Model Deployer",
+            "Communicator"
+          ],
+          "feasibility_note": "Directly supported by the current architecture's cross-silo FL management capabilities and model deployment components.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "End-users need to see tangible improvements in ML model quality through collaboration while maintaining data privacy in sensitive energy sectors."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A System Administrator authenticates a new participating organization and assigns specific data contribution rights; the system must verify the organization's identity and automatically create a permanent, immutable record of this governance decision.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Governance Manager",
+            "Client Management"
+          ],
+          "feasibility_note": "Directly matches the stated requirement of combining governance with authentication and providing traceability.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Administrators require integrated security and governance to manage inter-organizational trust and compliance."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A Maintainer needs to audit a failed training session to identify which client caused a divergence; the system must provide a queryable log of all training process interactions and governance decisions for that specific session.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Governance Manager",
+            "Communicator",
+            "FL Manager"
+          ],
+          "feasibility_note": "Requires the Communicator and FL Manager to feed detailed logs into the Governance Manager's traceability module.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Traceability is essential for debugging decentralized training processes across multiple companies."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A Developer needs to integrate a new heterogeneous model architecture for a specific energy forecasting sub-task; the FL Client Model Deployer must be updated to support the new model format without requiring changes to the core Governance Manager.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "FL Client Model Deployer",
+            "FL Manager"
+          ],
+          "feasibility_note": "Indirectly supported; depends on the modularity of the FL Client Model Deployer and its ability to handle different model serialization formats.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Developers need the system to be extensible to keep up with evolving ML model types in the energy domain."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "To increase security, the system is updated to require a multi-signature approval from three different organizations before the FL Manager can broadcast a new global model version.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Governance Manager",
+            "FL Manager",
+            "Client Management"
+          ],
+          "feasibility_note": "Would require significant changes to the Governance Manager logic to support consensus-based decision making before model deployment.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Explores the limits of inter-organizational collaboration and high-security governance in critical infrastructure."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The FL Manager and Communicator are purpose-built for the cross-silo training loop. The 'Pull' constraint supports the client-initiated training request, and the FL Client Model Deployer manages the handover to production.",
+          "supporting_components": [
+            "C-03",
+            "C-04",
+            "C-05"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly integrates authentication (Client Management) with governance (Governance Manager). The 'source of truth' mandate for the Governance Manager naturally supports immutable record-keeping.",
+          "supporting_components": [
+            "C-01",
+            "C-02"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "Traceability is a core characteristic of FL-APU. The Governance Manager is already designed to record formal agreements and training rules, while the FL Manager manages the execution logs.",
+          "supporting_components": [
+            "C-01",
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "The architecture maintains a clear separation between governance/orchestration and model implementation. Updating the Model Deployer is a localized change that does not violate the dependencies of the Governance Manager.",
+          "supporting_components": [
+            "C-03",
+            "C-05"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "While the Governance Manager handles negotiations, it currently lacks a state-machine logic for multi-party consensus (voting/multi-sig) during the model broadcast phase, which is currently managed by the FL Manager.",
+          "supporting_components": [
+            "C-01",
+            "C-03",
+            "C-02"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "FL-APU",
+          "classification": "Direct",
+          "affected_components": [
+            "C-03",
+            "C-04",
+            "C-05"
+          ],
+          "change_description": "None required; standard operational flow.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": null
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "FL-APU",
+          "classification": "Direct",
+          "affected_components": [
+            "C-01",
+            "C-02"
+          ],
+          "change_description": "None required; aligns with the core responsibility of the Governance Manager as the 'source of truth'.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": null
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "FL-APU",
+          "classification": "Direct",
+          "affected_components": [
+            "C-01",
+            "C-03"
+          ],
+          "change_description": "None required, though implementation must ensure the FL Manager pushes divergent metrics to the Governance Manager's audit log.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Requires specific log-aggregation implementation to ensure 'queryable' status across silos."
+          ],
+          "alternative_approaches": null
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "FL-APU",
+          "classification": "Direct",
+          "affected_components": [
+            "C-05"
+          ],
+          "change_description": "Localized update to the model serialization/deserialization logic within the Client Model Deployer.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Potential compatibility issues if the FL Manager's aggregation logic is strictly tied to a specific tensor format."
+          ],
+          "alternative_approaches": "Use a standardized model exchange format like ONNX to ensure the Deployer remains format-agnostic."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "FL-APU",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-03"
+          ],
+          "change_description": "Modify the Governance Manager to include a 'Consensus' state. The FL Manager must be updated to pause the 'broadcast' event until it receives a 'ConsensusReached' signal from the Governance Manager.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Introduction of potential deadlocks if one organization fails to sign.",
+            "Increases the complexity of the FL lifecycle state machine.",
+            "Requires a UI/API update for participants to perform the 'signing' action."
+          ],
+          "alternative_approaches": "Implement the multi-sig as a pre-condition for training rather than a post-training broadcast trigger, though this may not satisfy the security requirement for auditing the final model."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-03",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-01",
+            "S-03",
+            "S-05"
+          ]
+        },
+        {
+          "component": "C-05",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-01",
+            "S-04"
+          ]
+        },
+        {
+          "component": "C-01",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-05"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "System Administrator"
+          ],
+          "rationale": "C-01 is the most critical hotspot because it serves as the 'source of truth' and is central to the 'Consensus' mechanism in S-05. The transition to an indirect classification for S-05 introduces widespread changes, including deadlock risks and the need for new UI/API endpoints for end-user signing. Failure to address this component risks the entire security and auditing integrity of the federated learning lifecycle."
+        },
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-01",
+            "S-03",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "System Administrator"
+          ],
+          "rationale": "As the FL Manager, C-03 is hit by three scenarios and is the primary coordinator for the state machine changes required in S-05. It must manage the 'pause' and 'broadcast' events based on external signals. Not addressing this hotspot would result in a broken training lifecycle and synchronization issues between the audit logs and the operational metrics (S-03)."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-01",
+            "S-04"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "Maintainer",
+            "Developer"
+          ],
+          "rationale": "While C-05 is critical for model deployment, its impact is limited to two scenarios with localized change extents. The primary risk (S-04) involves format compatibility, which can be mitigated through standardizing on formats like ONNX. It has lower operational risk compared to the state-management complexities of C-01 and C-03."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Effective Separation of Concerns: The architecture handles standard operational flows (S-01) and governance-as-source-of-truth responsibilities (S-02) without requiring any changes, demonstrating a robust design for core functional requirements.",
+          "Localized Extensibility: Changes to model serialization and deployment (S-04) are contained within the Client Model Deployer (C-05), indicating a modular design that isolates model-specific logic from the broader orchestration.",
+          "Alignment with Traceability Goals: The architecture naturally supports the business goal of traceability by centralizing governance decisions in C-01 and operational metrics in C-03, providing a clear audit path as seen in S-03."
+        ],
+        "architectural_weaknesses": [
+          "Rigid State Machine Coordination: The transition from automated to manual multi-party consensus (S-05) requires widespread changes across C-01 and C-03, revealing that the training lifecycle is tightly coupled to a specific sequential flow.",
+          "Operational Risk in Multi-Silo Coordination: The introduction of consensus mechanisms (S-05) exposes the architecture to deadlock risks and increased complexity in state management, which could hinder the business goal of 'ease of use'.",
+          "Observability Gaps: S-03 identifies that log-aggregation across silos is not natively handled, requiring specific implementation effort to ensure metrics are 'queryable' and transparent to all participants."
+        ],
+        "modifiability_assessment": "The architecture is highly modifiable for localized logic and standard data flows but exhibits significant rigidity when modifying the cross-component coordination protocols and lifecycle states. It is well-suited for evolving specific component internals but requires substantial refactoring to accommodate complex multi-participant governance workflows."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Decouple the FL lifecycle state machine from the Governance Manager and FL Manager.",
+          "rationale": "This reduces the widespread impact of changes like the S-05 consensus mechanism and mitigates deadlock risks by moving toward a more flexible, event-driven orchestration pattern.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement a standardized, cross-silo log aggregation and auditing layer.",
+          "rationale": "Addresses the issues identified in S-03 and directly supports the business goal of traceability and governance decision transparency.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Standardize on a model exchange format like ONNX for the Client Model Deployer (C-05).",
+          "rationale": "Mitigates the compatibility risks identified in S-04 and ensures the architecture remains format-agnostic as new model types are introduced.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Introduce a dedicated UI/API layer for participant 'signing' and consensus interactions.",
+          "rationale": "Necessary to support the S-05 requirement for collaborative governance without cluttering the core FL logic components.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

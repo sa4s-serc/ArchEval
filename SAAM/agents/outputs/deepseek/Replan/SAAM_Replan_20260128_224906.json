@@ -1,0 +1,381 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Replan",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Allow meeting coordinators to send availability requests to a set of individuals and graphically represent availability periods."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Layered Architecture",
+          "Client-Server"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Current Production Architecture",
+            "description": "Replan is a web-based meeting management system using a layered architecture where business logic is distributed across Java classes and JSP files. Team A's design centralizes business logic in Java classes, while Team B's design spreads it into JSP files, leading to different modularity and maintainability characteristics.",
+            "architecture_characteristics": "Modularity, maintainability, separation of concerns, scalability (limited due to monolithic design), testability (varies by team).",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Java Classes (Business Logic Layer)",
+                "responsibilities": "Encapsulate core business logic (e.g., availability calculation, user management) and handle database interactions.",
+                "dependencies": [
+                  "C-03"
+                ],
+                "change_sensitivity": "Medium (Team A: High due to centralization; Team B: Lower as logic is distributed)"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "JSP Files (Presentation Layer)",
+                "responsibilities": "Render HTML for the user interface. In Team B, also handle request processing, object creation, and navigation decisions.",
+                "dependencies": [
+                  "C-01",
+                  "C-03"
+                ],
+                "change_sensitivity": "High (Team B: Very high due to mixed responsibilities; Team A: Lower as focused on presentation)"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Database (Data Layer)",
+                "responsibilities": "Store persistent data such as user profiles, meeting details, and availability responses.",
+                "dependencies": [],
+                "change_sensitivity": "Low (but schema changes impact C-01 and C-02)"
+              }
+            ],
+            "data_flow": "1. User interacts with the web interface (rendered by JSP). 2. JSP processes requests (directly in Team B; via Java in Team A). 3. Java classes execute business logic and query/update the database. 4. Database persists data. 5. Responses flow back through Java/JSP to the user. In Team B, JSP handles more logic, leading to tighter coupling between presentation and business layers.",
+            "architectural_constraints": [
+              "Monolithic deployment (both layers deployed together)",
+              "Technology coupling to Java/JSP stack",
+              "Team B's architecture mixes presentation and business logic, violating strict layering"
+            ],
+            "notes": "Team A's architecture (76% business logic in Java) supports better separation of concerns, making changes to business rules or UI easier to isolate. Team B's architecture (26% business logic in Java) is more coupled; changes to business logic may require JSP modifications, increasing complexity and risk. Both architectures assume a traditional web model without asynchronous or event-driven components, limiting real-time updates."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A meeting coordinator logs into the system, creates a new meeting event, adds 50 participants via email addresses, and sends an availability request. The system sends emails to all participants with a link to submit their available time slots. The coordinator then views a graphical calendar overlay showing aggregated availability periods for all participants.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Java Classes (Business Logic Layer)",
+            "JSP Files (Presentation Layer)",
+            "Database (Data Layer)"
+          ],
+          "feasibility_note": "Direct match for current architecture. The layered structure supports this: Java classes handle business logic (participant management, email dispatch, availability aggregation), JSP files render the UI and graphical calendar, and the database stores participant data and availability responses. However, the split of business logic between Java classes and JSPs (Team A vs. Team B designs) may affect maintainability and consistency in implementing this scenario.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "This is a core functionality for meeting organizers to efficiently schedule with large, distributed groups, directly addressing the system's purpose of managing difficult scheduling due to participant numbers and geographic distribution."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "The system must scale to support sending availability requests to 10,000 participants concurrently without performance degradation (e.g., email dispatch completes within 2 hours, and the UI remains responsive for the coordinator).",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Java Classes (Business Logic Layer)",
+            "JSP Files (Presentation Layer)",
+            "Database (Data Layer)"
+          ],
+          "feasibility_note": "Requires architectural changes. Current architecture does not specify scalability mechanisms. Scaling to 10,000 participants may need enhancements: asynchronous processing for email dispatch (e.g., message queues), database optimization for large datasets, and potential load balancing for JSP presentation layer. The distributed business logic across JSP files could complicate performance tuning and introduce bottlenecks.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Ensures system reliability and performance as user base grows, which is critical for handling large meetings as described in stakeholder needs."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A developer needs to modify the business logic for availability aggregation (e.g., change weighting of participant preferences) with minimal changes to the presentation layer and no impact on database schema.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Java Classes (Business Logic Layer)",
+            "JSP Files (Presentation Layer)"
+          ],
+          "feasibility_note": "Indirect match; feasibility depends on current design. If business logic is centralized in Java classes (Team A), this scenario is straightforward. If logic is spread into JSP files (Team B), changes may require updates across multiple JSPs, increasing complexity and risk of errors. This highlights architectural constraints from the two team designs.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Supports agile development and maintenance, allowing quick adaptation to new user requirements without extensive rework, which is important for evolving meeting management needs."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A maintainer must update the JSP-based UI to support a new language (e.g., Spanish) without modifying Java business logic classes or database structures, ensuring all text labels and calendar displays are localized.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "JSP Files (Presentation Layer)"
+          ],
+          "feasibility_note": "Direct match for current architecture. JSP files handle presentation, so localization can be implemented via resource bundles or JSP tags. However, if business logic is embedded in JSPs (Team B design), changes may inadvertently affect functionality, increasing maintenance effort.",
+          "priority": "Low",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Enhances system accessibility for global users, aligning with the geographic distribution challenge, though it's an exploratory improvement rather than a core requirement."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The scenario describes core system functionality (creating meetings, managing participants, sending emails, displaying aggregated availability) that is directly supported by the layered architecture. Java classes handle business logic (participant management, email dispatch, availability aggregation), JSP files render the UI and graphical calendar, and the database stores data. The architecture description explicitly notes this as a direct match.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "The current architecture is a monolithic, layered design with no specified scalability mechanisms (e.g., asynchronous processing, load balancing, database optimization for high volume). Scaling to 10,000 concurrent participants for email dispatch while maintaining UI responsiveness exceeds the assumed capacity and violates the 'scalability (limited due to monolithic design)' characteristic. The distributed business logic in JSPs (Team B) further complicates performance tuning.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "Feasibility is contingent on which team's design is implemented. If Team B's design is used (business logic spread into JSP files), modifying aggregation logic would require changes across multiple JSPs, violating the goal of minimal presentation layer impact. The architecture constraint 'Team B's architecture mixes presentation and business logic, violating strict layering' directly prevents direct support. Only Team A's design (centralized Java logic) would support this directly.",
+          "supporting_components": [
+            "C-01",
+            "C-02"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "Localization is a presentation-layer concern. JSP files (C-02) are responsible for rendering the UI, so adding language support via resource bundles or JSP tags aligns with their designated role. The architecture description confirms this as a direct match, noting that changes should be confined to the presentation layer.",
+          "supporting_components": [
+            "C-02"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. Implementation may need to ensure email service integration and graphical calendar libraries are functional, but these are within the scope of existing component responsibilities.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "The split of business logic between Java and JSP (Team A vs. Team B) may lead to inconsistent implementation and varying maintainability, but does not prevent the scenario from being executed."
+          ],
+          "alternative_approaches": "None required."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "change_description": "1. Introduce an asynchronous message queue (new component) to handle bulk email dispatch, decoupling it from the synchronous request/response cycle. 2. Refactor Java classes (C-01) to publish email jobs to the queue. 3. Optimize database (C-03) queries and indexing for large participant sets. 4. Implement caching for UI responsiveness. 5. For Team B's design, refactor business logic out of JSPs (C-02) into Java classes to enable effective performance tuning and load balancing.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Monolithic deployment limits independent scaling of components.",
+            "Technology coupling to Java/JSP may hinder adoption of modern scaling frameworks.",
+            "Distributed logic in JSPs creates a performance bottleneck and complicates refactoring.",
+            "Lack of inherent concurrency/queueing mechanisms."
+          ],
+          "alternative_approaches": "1. Use batch processing with throttling within the existing Java layer, though this may not meet the 2-hour target and risks UI unresponsiveness. 2. Offload email sending to a third-party service with high-volume API, reducing load on the core system but still requiring integration changes."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02"
+          ],
+          "change_description": "If Team B's design is active, business logic for availability aggregation must be extracted from JSP files (C-02) and centralized into Java classes (C-01). This involves identifying all relevant logic in JSPs, creating or modifying Java classes to encapsulate it, and updating JSPs to call these Java classes instead. This change enforces proper separation of concerns.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "High change sensitivity of JSP files in Team B's design increases regression risk.",
+            "Scattered logic makes extraction time-consuming and error-prone.",
+            "Potential need to update navigation and request processing flows originally embedded in JSPs."
+          ],
+          "alternative_approaches": "If refactoring is not feasible, a workaround is to implement the new aggregation logic in a Java class and have JSPs delegate to it, but this still requires changes to each affected JSP, reducing the 'minimal changes to presentation layer' benefit."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-02"
+          ],
+          "change_description": "No architectural changes required. Implementation involves adding resource bundles (e.g., .properties files) for text labels and updating JSP files to use JSTL formatting or custom tags for localization. This aligns with the presentation layer's responsibilities.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "If Team B's design is used, JSP files contain embedded business logic; careful review is needed to ensure localization changes do not inadvertently break functionality."
+          ],
+          "alternative_approaches": "None required."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-01",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-02",
+            "S-03"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "C-02 is impacted by the highest number of scenarios (3), including S-02 (high-risk scaling), S-03 (medium-risk refactoring), and S-04 (low-risk localization). The primary concern is S-02, where JSP-based business logic creates a performance bottleneck, risking UI unresponsiveness during bulk email operations. This directly impacts end-users (poor experience) and system administrators (scaling limitations). Additionally, S-03 highlights maintainability risks due to scattered logic in JSPs, affecting developers and maintainers. Failure to address this hotspot could lead to system failure under load, increased technical debt, and higher long-term maintenance costs."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-02",
+            "S-03"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "C-01 is impacted by S-02 (high-risk) and S-03 (medium-risk). In S-02, it requires refactoring to integrate with a new asynchronous message queue for bulk email processing; without this, the system cannot meet performance targets, impacting administrators and end-users indirectly. In S-03, it must centralize business logic extracted from JSPs to ensure separation of concerns, affecting developers and maintainers. Not addressing C-01 risks architectural rigidity, hindering scalability and increasing complexity for future changes."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: The architecture demonstrates effective separation of concerns for standard presentation-layer tasks, as evidenced by S-04 (localization) and S-01 (basic functionality) requiring only localized or no architectural changes. This indicates the presentation layer (C-02) correctly encapsulates responsibilities like UI rendering and internationalization without needing core structural modifications.",
+          "Strength 2: The architecture's componentization allows for clear identification and targeted modification of high-impact areas. This is shown in the hotspot analysis, where components C-01 and C-02 are precisely pinpointed as the focus for changes in scenarios S-02 and S-03, enabling efficient planning and risk containment."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: The architecture suffers from a critical lack of separation between business logic and presentation, primarily due to Team B's design embedding business logic in JSPs (C-02). This is exposed in S-02 (high-risk scaling) where it creates a performance bottleneck and complicates load balancing, and in S-03 (medium-risk refactoring) where it increases change sensitivity and regression risk, directly impacting maintainability and scalability goals.",
+          "Weakness 2: The architecture is monolithic and lacks inherent mechanisms for concurrency and asynchronous processing, as highlighted in S-02. This limitation requires 'widespread' changes, including introducing a message queue and optimizing database queries, to meet the business goal of sending bulk availability requests within a 2-hour target, indicating poor support for scalable, high-volume operations."
+        ],
+        "modifiability_assessment": "The architecture currently exhibits low modifiability due to high coupling (especially between business logic and presentation in JSPs) and monolithic deployment, making widespread changes for scaling (S-02) and refactoring (S-03) high-effort and high-risk; however, it retains sufficient modularity to allow localized, low-risk changes for standard features (S-01, S-04)."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Refactor to extract all business logic from JSP files (C-02) and centralize it into dedicated Java service classes (C-01 or new components). This is a prerequisite for addressing S-02 and S-03 effectively.",
+          "rationale": "This enforces proper separation of concerns, decouples presentation from core logic, reduces regression risk, and enables performance tuning and independent scaling of business logic, directly improving modifiability and addressing the top-ranked hotspot.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce an asynchronous message queue (new component) for bulk email dispatch and other long-running tasks, decoupling them from the synchronous request/response cycle as required for S-02.",
+          "rationale": "This architectural pattern improves scalability and responsiveness by allowing background processing, preventing UI blocking, and enabling independent scaling of the email service. It directly addresses the performance bottleneck and supports the business goal of handling large participant sets.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Evaluate and plan for a gradual migration away from the monolithic deployment model towards a more modular or microservices-oriented architecture, starting with the newly decoupled business logic and asynchronous components.",
+          "rationale": "This long-term improvement reduces technology coupling, enhances independent deployability and scaling of components (e.g., email service, UI), and improves overall system resilience and modifiability for future requirements.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Implement the localization changes for S-04 as a quick win. Ensure the refactoring of JSPs for business logic (recommendation 1) is completed first or done in parallel to avoid conflicts.",
+          "rationale": "This is a low-risk, low-effort task that delivers immediate user value and demonstrates progress while aligning with the presentation layer's defined responsibilities, provided the foundational separation of concerns is in place.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

@@ -1,0 +1,843 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Enable system builders to integrate systems on time and within costs",
+      "Drive down the cost of command and control systems",
+      "Facilitate 'plug-and-play' integration regardless of component location"
+    ],
+    "technical_constraints": [
+      "Must use Object-Oriented Technology",
+      "Must use Common Object Request Broker Architecture (CORBA)",
+      "Focus on interface definition rather than direct component reuse"
+    ],
+    "architectural_drivers": [
+      "Interoperability",
+      "Real-time Performance",
+      "Availability",
+      "Modifiability",
+      "Security"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The reference architecture was partially documented. The team had developed high-level Interface Design Language (IDL) and completed approximately one-fourth of the IDL for the 12 identified sub-domains. The specification was not complete.",
+      "evaluator_inquiry_questions": [
+        "What are the specific quality attribute goals for the system?",
+        "How does the architecture support reasoning about tradeoffs between competing attributes like performance and reliability?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Distributed system constellation",
+        "Ground-based command and control hardware infrastructure"
+      ],
+      "runtime_constraints": [
+        "Real-time performance requirements",
+        "High availability requirements",
+        "Interoperability across autonomous and directed components"
+      ]
+    },
+    "quantitative_model_parameters": {
+      "Latency_Budgets": "Undefined/Missing",
+      "Availability_Models": "Undefined/Missing",
+      "Data_Management_Capacities": "Undefined/Missing"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Distributed Objects (CORBA)",
+        "questions": [
+          "How does the system ensure semantic integration between components, not just syntactic connection?",
+          "What mechanisms exist to guarantee real-time performance across the distributed middleware?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "A system integrator incorporates a new vendor component into the system."
+      },
+      {
+        "id": "RS-02",
+        "description": "The system must operate continuously despite a partial network failure."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Distributed Objects (CORBA)",
+        "description": "The system leverages the Common Object Request Broker Architecture (CORBA) standard to enable communication and integration between distributed, heterogeneous objects. This approach emphasizes defining clear interfaces using Interface Definition Language (IDL) to facilitate 'plug-and-play' integration across various components and platforms, as required by the business goals and technical constraints.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "CORBA's fundamental purpose is to enable seamless interaction between objects written in different languages and running on different platforms, directly addressing the need for interoperability across autonomous and directed components."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "By enforcing a strict separation of interface (via IDL) from implementation, CORBA promotes modularity. Components can be modified or replaced independently as long as their published interfaces remain consistent, facilitating system evolution."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "While core CORBA doesn't guarantee availability, its services and implementations often include features for fault tolerance, replication, and robust communication, contributing to the high availability requirements of the system."
+          },
+          {
+            "quality_attribute": "Real-time Performance",
+            "rationale": "Given the system's real-time performance requirements, the adoption of CORBA implies the use of Real-time CORBA specifications or specific implementation strategies designed to meet predictable latency and throughput within a distributed environment."
+          },
+          {
+            "quality_attribute": "Security",
+            "rationale": "CORBA includes a Security Service specification that provides mechanisms for authentication, authorization, confidentiality, and integrity, which are crucial for securing distributed interactions within the system."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "New third-party data source integration within 2 weeks",
+              "scenario_id": "I1",
+              "scenario_description": "A new external data provider, using a different communication protocol (e.g., REST API instead of CORBA), needs to be integrated into the system to supply critical sensor data. The integration must be completed within 2 weeks with minimal disruption to existing services.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Update business logic for a specific component within 1 day",
+              "scenario_id": "M1",
+              "scenario_description": "A change in regulatory requirements necessitates an update to the business logic of the 'Compliance Reporting' component. This update involves modifying a complex algorithm but must not affect other system components. The change needs to be deployed within 1 business day.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Low"
+              }
+            },
+            {
+              "refinement": "Replace database technology without impacting service uptime",
+              "scenario_id": "M2",
+              "scenario_description": "Due to cost-efficiency goals, the underlying database technology for the 'User Profile Service' needs to be replaced (e.g., from Oracle to PostgreSQL). This replacement must be performed with zero downtime and no perceptible impact on end-user services.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "System remains operational during single server failure",
+              "scenario_id": "A1",
+              "scenario_description": "One of the application servers hosting critical CORBA objects fails unexpectedly (e.g., hardware crash). The system must automatically detect the failure, re-route requests, and maintain full functionality for all users without manual intervention, achieving 99.99% uptime.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Graceful degradation under peak load",
+              "scenario_id": "A2",
+              "scenario_description": "During unexpected peak load (e.g., 2x normal user traffic), the system should continue to process critical transactions, potentially by shedding non-critical functionality or increasing response times for less critical operations, rather than crashing or becoming unresponsive.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Real-time Performance",
+          "children": [
+            {
+              "refinement": "Process critical sensor data within 100ms end-to-end",
+              "scenario_id": "P1",
+              "scenario_description": "A critical sensor data stream arrives, requiring processing, analysis, and a response (e.g., actuator command) to be generated and transmitted within 100 milliseconds from the point of data reception to command issuance. This must be maintained under normal operating conditions.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Aggregate daily reports within 5 minutes",
+              "scenario_id": "P2",
+              "scenario_description": "The nightly batch process for aggregating daily operational reports, involving data from multiple distributed services, must complete within 5 minutes to be available for morning executive dashboards.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Unauthorized access attempt is detected and blocked within 1 second",
+              "scenario_id": "S1",
+              "scenario_description": "An external malicious actor attempts to gain unauthorized access to a protected CORBA object interface. The system must detect this attempt, block the access, and log the event within 1 second, preventing any data breach or system compromise.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Data in transit is encrypted with industry-standard protocols",
+              "scenario_id": "S2",
+              "scenario_description": "All sensitive data exchanged between CORBA components across network boundaries must be encrypted using FIPS 140-2 compliant algorithms to ensure confidentiality and integrity, with minimal performance overhead.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "A new external data provider, using a different communication protocol (e.g., REST API instead of CORBA), needs to be integrated into the system to supply critical sensor data. The integration must be completed within 2 weeks with minimal disruption to existing services.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "A change in regulatory requirements necessitates an update to the business logic of the 'Compliance Reporting' component. This update involves modifying a complex algorithm but must not affect other system components. The change needs to be deployed within 1 business day.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "Due to cost-efficiency goals, the underlying database technology for the 'User Profile Service' needs to be replaced (e.g., from Oracle to PostgreSQL). This replacement must be performed with zero downtime and no perceptible impact on end-user services.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "One of the application servers hosting critical CORBA objects fails unexpectedly (e.g., hardware crash). The system must automatically detect the failure, re-route requests, and maintain full functionality for all users without manual intervention, achieving 99.99% uptime.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "During unexpected peak load (e.g., 2x normal user traffic), the system should continue to process critical transactions, potentially by shedding non-critical functionality or increasing response times for less critical operations, rather than crashing or becoming unresponsive.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "A critical sensor data stream arrives, requiring processing, analysis, and a response (e.g., actuator command) to be generated and transmitted within 100 milliseconds from the point of data reception to command issuance. This must be maintained under normal operating conditions.",
+        "primary_quality_attribute": [
+          "Real-time Performance"
+        ]
+      },
+      {
+        "scenario_text": "The nightly batch process for aggregating daily operational reports, involving data from multiple distributed services, must complete within 5 minutes to be available for morning executive dashboards.",
+        "primary_quality_attribute": [
+          "Real-time Performance"
+        ]
+      },
+      {
+        "scenario_text": "An external malicious actor attempts to gain unauthorized access to a protected CORBA object interface. The system must detect this attempt, block the access, and log the event within 1 second, preventing any data breach or system compromise.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "All sensitive data exchanged between CORBA components across network boundaries must be encrypted using FIPS 140-2 compliant algorithms to ensure confidentiality and integrity, with minimal performance overhead.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "I1",
+          "text": "A new external data provider, using a different communication protocol (e.g., REST API instead of CORBA), needs to be integrated into the system to supply critical sensor data. The integration must be completed within 2 weeks with minimal disruption to existing services.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Interoperability",
+        "environment": "Integration of new external service",
+        "stimulus": "Need to integrate a REST API-based data provider",
+        "response_measure": "Integration completed within 2 weeks with minimal disruption",
+        "architectural_decisions": [
+          "Adoption of CORBA for internal component communication",
+          "Definition of CORBA IDL interfaces for existing services"
+        ],
+        "reasoning": "The CORBA architecture excels at interoperability between CORBA-compliant systems. However, integrating with a non-CORBA protocol like REST requires an intermediary layer (gateway/adapter) to translate protocols and data models. This introduces complexity, potential performance overhead, and additional development effort, directly impacting the 2-week integration deadline.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-I1-1",
+              "description": "High development effort and time required to implement or configure a robust CORBA-REST gateway/adapter.",
+              "rationale": "CORBA is not natively compatible with REST; a custom or third-party translation layer is needed, which adds significant work and may exceed the 2-week timeline."
+            },
+            {
+              "id": "R-I1-2",
+              "description": "Performance overhead introduced by protocol translation and data marshalling/unmarshalling at the gateway, potentially impacting critical sensor data processing.",
+              "rationale": "Each request/response will incur processing time for conversion between CORBA IDL data types and REST (e.g., JSON/XML), which can be non-trivial for high-volume or low-latency data."
+            },
+            {
+              "id": "R-I1-3",
+              "description": "Potential for data model impedance mismatch between CORBA IDL and REST API schemas, leading to complex and error-prone mapping logic.",
+              "rationale": "Different paradigms in data representation can make direct mapping challenging, requiring intricate transformation rules that are difficult to maintain and test."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-I1-1",
+              "description": "Existing CORBA services are unlikely to be disrupted by the integration of a new external service, as the integration logic is isolated within the gateway.",
+              "rationale": "The CORBA IDL provides a stable interface for internal components, and the new integration layer acts as a client to these interfaces without altering them."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-I1-1",
+              "parameter": "Complexity and volume of data models requiring transformation in the gateway",
+              "correlated_attribute": "Integration Time, Maintainability, Performance"
+            },
+            {
+              "id": "S-I1-2",
+              "parameter": "Latency overhead introduced by the CORBA-REST gateway",
+              "correlated_attribute": "Performance (end-to-end latency for sensor data)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-I1-1",
+              "parameter": "Choice between a generic off-the-shelf CORBA-REST gateway vs. custom development",
+              "conflicting_attributes": [
+                "Integration Time (positive for generic)",
+                "Performance/Flexibility (positive for custom)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A change in regulatory requirements necessitates an update to the business logic of the 'Compliance Reporting' component. This update involves modifying a complex algorithm but must not affect other system components. The change needs to be deployed within 1 business day.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Regulatory change",
+        "stimulus": "Update to 'Compliance Reporting' component's business logic",
+        "response_measure": "Deployed within 1 business day without affecting other components",
+        "architectural_decisions": [
+          "Strict separation of interface (IDL) from implementation in CORBA objects"
+        ],
+        "reasoning": "CORBA's strong separation of interface (IDL) from implementation is a key enabler for modifiability. As long as the public IDL interface of the 'Compliance Reporting' component remains unchanged, its internal business logic can be modified and deployed independently without impacting other components that interact with it. This supports the rapid deployment requirement.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M1-1",
+              "description": "If the regulatory change necessitates an alteration to the 'Compliance Reporting' component's CORBA IDL interface, it would require coordinated updates across all client components, violating the 'not affect other system components' constraint.",
+              "rationale": "Interface changes in CORBA are breaking changes; clients must be recompiled or adapted, which can be time-consuming and impact the 1-day deployment goal."
+            },
+            {
+              "id": "R-M1-2",
+              "description": "Complexity of the internal algorithm modification could lead to errors, extending testing and deployment time beyond 1 day, even if the interface is stable.",
+              "rationale": "While the interface protects external consumers, internal complexity can still introduce defects and delays in the modification process."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M1-1",
+              "description": "CORBA's interface/implementation separation allows internal logic changes within a component without affecting other system components, provided the IDL interface remains stable.",
+              "rationale": "This is a core benefit of the CORBA approach, promoting modularity and independent evolution of components."
+            },
+            {
+              "id": "NR-M1-2",
+              "description": "Deployment of a contained component change within 1 business day is feasible due to the isolation provided by the CORBA interface.",
+              "rationale": "The scope of the change is limited, simplifying testing and deployment procedures."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M1-1",
+              "parameter": "Stability and scope of the 'Compliance Reporting' component's CORBA IDL interface",
+              "correlated_attribute": "Impact on other components, Deployment Time"
+            },
+            {
+              "id": "S-M1-2",
+              "parameter": "Test coverage and automation for the 'Compliance Reporting' component",
+              "correlated_attribute": "Deployment Risk, Quality"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M1-1",
+              "parameter": "Granularity of the CORBA object representing the 'Compliance Reporting' functionality",
+              "conflicting_attributes": [
+                "Modifiability (finer-grained objects offer more isolation)",
+                "Complexity/Performance (finer-grained objects increase object count and remote calls)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M2",
+          "text": "Due to cost-efficiency goals, the underlying database technology for the 'User Profile Service' needs to be replaced (e.g., from Oracle to PostgreSQL). This replacement must be performed with zero downtime and no perceptible impact on end-user services.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Cost-efficiency initiative",
+        "stimulus": "Replacement of database technology for 'User Profile Service'",
+        "response_measure": "Zero downtime and no perceptible impact on end-user services during replacement",
+        "architectural_decisions": [
+          "Encapsulation of data access logic within CORBA services",
+          "Use of CORBA IDL to abstract service implementation details"
+        ],
+        "reasoning": "The CORBA approach, by abstracting implementation details behind IDL interfaces, inherently supports changing underlying technologies like databases without affecting clients. However, achieving zero downtime during a database migration is a significant operational challenge, requiring advanced techniques that are not directly provided by CORBA but must be layered on top of the service implementation.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M2-1",
+              "description": "High complexity and potential for data loss or inconsistency during the live migration of data from Oracle to PostgreSQL, especially under the zero-downtime constraint.",
+              "rationale": "Database migrations, particularly between different vendors, are inherently complex. Zero downtime requires sophisticated strategies like dual-writing or logical replication, which add significant risk."
+            },
+            {
+              "id": "R-M2-2",
+              "description": "Performance differences between Oracle and PostgreSQL could lead to degraded 'User Profile Service' response times, even if the CORBA interface remains stable.",
+              "rationale": "Different database engines have varying performance characteristics. A 'drop-in' replacement might not perform identically, potentially impacting the user experience."
+            },
+            {
+              "id": "R-M2-3",
+              "description": "Achieving true zero downtime for a database replacement requires sophisticated infrastructure and deployment strategies (e.g., blue-green deployments, robust data synchronization) that are external to CORBA and can be costly and complex to implement.",
+              "rationale": "CORBA provides the abstraction layer, but the operational challenge of zero downtime for the underlying persistence layer is independent of CORBA and requires significant investment."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M2-1",
+              "description": "The CORBA IDL interface for the 'User Profile Service' provides a strong abstraction layer, shielding clients from the underlying database technology change.",
+              "rationale": "Clients interact with the service via its stable IDL, unaware of the specific database used for persistence, thus supporting the modifiability goal."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M2-1",
+              "parameter": "Volume and complexity of data in the 'User Profile Service' database",
+              "correlated_attribute": "Data Migration Time, Risk of Data Inconsistency"
+            },
+            {
+              "id": "S-M2-2",
+              "parameter": "Performance characteristics and tuning of the new PostgreSQL database",
+              "correlated_attribute": "Service Response Time, Resource Utilization"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M2-1",
+              "parameter": "Strict adherence to zero downtime vs. allowing a controlled, minimal downtime window",
+              "conflicting_attributes": [
+                "Availability (positive for zero downtime)",
+                "Cost/Complexity (negative for zero downtime)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "One of the application servers hosting critical CORBA objects fails unexpectedly (e.g., hardware crash). The system must automatically detect the failure, re-route requests, and maintain full functionality for all users without manual intervention, achieving 99.99% uptime.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Server failure",
+        "stimulus": "Unexpected hardware crash of a CORBA server",
+        "response_measure": "Automatic detection, re-routing, full functionality maintained, 99.99% uptime",
+        "architectural_decisions": [
+          "Use of CORBA for distributed object communication"
+        ],
+        "reasoning": "While CORBA provides the distributed object paradigm, achieving 99.99% availability with automatic failover requires specific fault-tolerance mechanisms, often provided by specialized CORBA services (e.g., Load Balancing, Replication) or custom implementations. Standard CORBA ORBs alone do not inherently provide automatic detection and re-routing without explicit configuration and design for high availability.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-A1-1",
+              "description": "Lack of explicit fault-tolerance mechanisms (e.g., object replication, Naming Service clustering, load balancing for CORBA objects) in the current CORBA implementation.",
+              "rationale": "CORBA itself is a standard for distributed objects; specific high-availability features like automatic failover and request re-routing are typically provided by specialized ORBs or additional services that might not be in place."
+            },
+            {
+              "id": "R-A1-2",
+              "description": "Even with failover mechanisms, there might be a brief service interruption or increased latency during failure detection and request re-routing.",
+              "rationale": "Failover is not instantaneous; detection mechanisms have a delay, and reconnecting or re-establishing state can take time, impacting the 'full functionality' and 'no perceptible impact' goals."
+            },
+            {
+              "id": "R-A1-3",
+              "description": "Complex state management for stateful CORBA objects during failover, potentially leading to data inconsistency or lost client sessions.",
+              "rationale": "Replicating and synchronizing state across multiple server instances for stateful objects is a significant challenge in distributed systems, especially during unexpected failures."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-A1-1",
+              "description": "Standard CORBA implementations include basic exception handling for communication failures, allowing client applications to attempt re-connection or retry operations.",
+              "rationale": "Clients are typically designed to handle communication exceptions, providing a baseline level of resilience, though not full automatic failover."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-A1-1",
+              "parameter": "Configuration and robustness of CORBA Naming Service/Trading Service for high availability and replication",
+              "correlated_attribute": "Failover Time, Reliability of Re-routing"
+            },
+            {
+              "id": "S-A1-2",
+              "parameter": "Degree of statefulness of critical CORBA objects",
+              "correlated_attribute": "Complexity of Failover, Potential for Data Loss/Inconsistency"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-A1-1",
+              "parameter": "Active-active vs. Active-passive replication strategies for CORBA objects",
+              "conflicting_attributes": [
+                "Availability/Failover Time (active-active is faster)",
+                "Resource Utilization/Complexity (active-active consumes more resources and is more complex)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A2",
+          "text": "During unexpected peak load (e.g., 2x normal user traffic), the system should continue to process critical transactions, potentially by shedding non-critical functionality or increasing response times for less critical operations, rather than crashing or becoming unresponsive.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Unexpected peak load (2x normal traffic)",
+        "stimulus": "Increased user traffic",
+        "response_measure": "Continue processing critical transactions, graceful degradation (shed non-critical functionality, increased response times for less critical operations)",
+        "architectural_decisions": [
+          "Use of CORBA for distributed object invocation"
+        ],
+        "reasoning": "While CORBA supports distributed scaling, graceful degradation under extreme load requires explicit design for load management, prioritization (QoS), and throttling, which are not inherent features of all CORBA ORBs. Without these, increased load can lead to unmanaged resource exhaustion and system collapse rather than graceful degradation.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-A2-1",
+              "description": "Absence of explicit load balancing for CORBA object requests, leading to server overload and bottlenecks on specific object implementations.",
+              "rationale": "Without proper load distribution, traffic spikes can overwhelm individual server instances, leading to unresponsiveness or crashes rather than graceful degradation."
+            },
+            {
+              "id": "R-A2-2",
+              "description": "Lack of Quality of Service (QoS) mechanisms within the CORBA framework or application logic to prioritize critical transactions over non-critical ones.",
+              "rationale": "Without prioritization, all requests are treated equally, meaning critical transactions might be delayed or dropped alongside less important ones during overload."
+            },
+            {
+              "id": "R-A2-3",
+              "description": "Inadequate resource provisioning (CPU, memory, network bandwidth) for CORBA servers to handle peak loads, leading to resource exhaustion.",
+              "rationale": "Even with distributed objects, if the underlying infrastructure cannot handle the increased demand, the system will fail to maintain availability."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-A2-1",
+              "description": "CORBA's distributed nature allows for scaling out by adding more object implementations across servers, which can help with increased load, given proper load balancing.",
+              "rationale": "The ability to distribute processing across multiple nodes is a fundamental advantage of distributed object systems, enabling horizontal scalability."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-A2-1",
+              "parameter": "Capacity planning and provisioning of CORBA object servers and underlying infrastructure",
+              "correlated_attribute": "System Responsiveness, Stability under Load"
+            },
+            {
+              "id": "S-A2-2",
+              "parameter": "Implementation of request queues, throttling mechanisms, and QoS policies",
+              "correlated_attribute": "Graceful Degradation Behavior, Transaction Prioritization"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-A2-1",
+              "parameter": "Aggressive vs. conservative resource allocation for peak load handling",
+              "conflicting_attributes": [
+                "Availability/Performance (positive for aggressive)",
+                "Cost (negative for aggressive)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "A critical sensor data stream arrives, requiring processing, analysis, and a response (e.g., actuator command) to be generated and transmitted within 100 milliseconds from the point of data reception to command issuance. This must be maintained under normal operating conditions.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Real-time Performance",
+        "environment": "Normal operating conditions",
+        "stimulus": "Arrival of critical sensor data stream",
+        "response_measure": "End-to-end processing and command transmission within 100 milliseconds",
+        "architectural_decisions": [
+          "Use of CORBA for inter-component communication"
+        ],
+        "reasoning": "Achieving hard real-time constraints like 100ms end-to-end latency in a distributed CORBA system is extremely challenging with standard CORBA. It typically requires specialized Real-time CORBA (RT-CORBA) implementations, careful resource management, and a real-time operating environment to ensure predictable performance and minimize overheads from network communication, marshalling, and ORB processing.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P1-1",
+              "description": "Standard CORBA implementations are not inherently real-time and may introduce unpredictable latencies due to factors like garbage collection, thread scheduling, and dynamic resource allocation.",
+              "rationale": "Commercial ORBs prioritize throughput and generality over strict latency guarantees, making them unsuitable for hard real-time requirements without significant customization or specialized RT-CORBA versions."
+            },
+            {
+              "id": "R-P1-2",
+              "description": "Overheads from marshalling/unmarshalling data, context switching, and network protocol processing for CORBA calls can easily exceed the 100ms budget, especially for complex data structures or multiple hops.",
+              "rationale": "Each layer of abstraction and communication adds a measurable delay; in a distributed system, these delays accumulate."
+            },
+            {
+              "id": "R-P1-3",
+              "description": "Network latency and jitter between distributed CORBA components can significantly impact end-to-end response times, making the 100ms goal difficult to guarantee.",
+              "rationale": "Network conditions are often outside the direct control of the application and can introduce variability and delays that violate real-time constraints."
+            },
+            {
+              "id": "R-P1-4",
+              "description": "The absence of a Real-time Operating System (RTOS) or real-time network protocols for the underlying infrastructure.",
+              "rationale": "Predictable performance at the application layer is dependent on predictable performance from the underlying OS and network stack."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P1-1",
+              "description": "If Real-time CORBA (RT-CORBA) is specifically implemented with appropriate OS and network support, it is designed for this type of requirement.",
+              "rationale": "RT-CORBA provides QoS policies, predictable scheduling, and bounded latency, directly addressing real-time needs."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P1-1",
+              "parameter": "Network latency and bandwidth between CORBA components",
+              "correlated_attribute": "End-to-end Latency"
+            },
+            {
+              "id": "S-P1-2",
+              "parameter": "Complexity and size of data structures exchanged via CORBA IDL",
+              "correlated_attribute": "Marshalling/Unmarshalling Time, CPU Utilization"
+            },
+            {
+              "id": "S-P1-3",
+              "parameter": "CPU and memory utilization of CORBA servers and client applications",
+              "correlated_attribute": "Processing Time, Responsiveness"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P1-1",
+              "parameter": "Use of standard CORBA vs. specialized Real-time CORBA (RT-CORBA)",
+              "conflicting_attributes": [
+                "Predictable Performance (positive for RT-CORBA)",
+                "Development Simplicity/Cost (positive for standard CORBA)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P2",
+          "text": "The nightly batch process for aggregating daily operational reports, involving data from multiple distributed services, must complete within 5 minutes to be available for morning executive dashboards.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Real-time Performance",
+        "environment": "Nightly batch processing",
+        "stimulus": "Initiation of daily report aggregation",
+        "response_measure": "Completion within 5 minutes",
+        "architectural_decisions": [
+          "Use of CORBA for accessing data from distributed services"
+        ],
+        "reasoning": "For batch processing of aggregated reports, CORBA's strength in object-level interaction might become a bottleneck if large volumes of data need to be transferred through fine-grained object calls. The 5-minute window is tight, and the overall performance will depend heavily on the efficiency of data retrieval, network bandwidth, and the aggregation logic, rather than just CORBA's communication capabilities.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P2-1",
+              "description": "High data volumes transmitted over CORBA calls could lead to network bottlenecks or excessive marshalling/unmarshalling time, exceeding the 5-minute window.",
+              "rationale": "While CORBA is distributed, repeatedly invoking remote methods to retrieve large datasets can be inefficient compared to bulk data transfer mechanisms."
+            },
+            {
+              "id": "R-P2-2",
+              "description": "Sequential fetching of data from multiple distributed services via CORBA could exceed the 5-minute window if individual services are slow or data volumes are substantial.",
+              "rationale": "The cumulative latency of multiple remote calls, even if individual calls are fast, can add up quickly."
+            },
+            {
+              "id": "R-P2-3",
+              "description": "Inefficient data aggregation logic or database queries after data collection could become the primary bottleneck, unrelated to CORBA communication.",
+              "rationale": "The performance of the aggregation process itself is critical; CORBA only addresses the data retrieval part."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P2-1",
+              "description": "CORBA's distributed nature allows for parallel data fetching from different services, if the batch process is designed to utilize concurrent calls.",
+              "rationale": "Multiple CORBA calls can be made concurrently to different services, potentially speeding up data collection."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P2-1",
+              "parameter": "Total volume of data to be aggregated from all distributed services",
+              "correlated_attribute": "Batch Completion Time, Network Utilization"
+            },
+            {
+              "id": "S-P2-2",
+              "parameter": "Number of distributed services involved and their individual average response times for data queries",
+              "correlated_attribute": "Batch Completion Time"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P2-1",
+              "parameter": "Real-time data access via CORBA vs. dedicated batch data transfer mechanisms (e.g., file transfer, bulk data APIs)",
+              "conflicting_attributes": [
+                "Latency of individual requests (positive for CORBA)",
+                "Throughput for bulk data (positive for batch transfer mechanisms)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "An external malicious actor attempts to gain unauthorized access to a protected CORBA object interface. The system must detect this attempt, block the access, and log the event within 1 second, preventing any data breach or system compromise.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Security",
+        "environment": "External attack",
+        "stimulus": "Unauthorized access attempt to a CORBA object",
+        "response_measure": "Detection, blocking, and logging within 1 second, no data breach/compromise",
+        "architectural_decisions": [
+          "Leveraging CORBA Security Service for Authentication, Authorization, and Auditing (AAA)"
+        ],
+        "reasoning": "The CORBA Security Service is designed to provide authentication, authorization, and audit capabilities for distributed objects. Its effectiveness in meeting the 1-second detection and blocking requirement depends heavily on its configuration, the performance of the underlying security infrastructure (e.g., directory services), and the granularity of access control policies. Misconfiguration or performance bottlenecks can jeopardize the real-time security response.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-S1-1",
+              "description": "Incomplete or improperly configured CORBA Security Service, leading to vulnerabilities (e.g., weak authentication mechanisms, missing authorization policies, insufficient audit logging).",
+              "rationale": "Security mechanisms are only as strong as their weakest link and their implementation. Misconfiguration can leave gaps for attackers."
+            },
+            {
+              "id": "R-S1-2",
+              "description": "Performance overhead of security checks (authentication, authorization) impacts the 1-second detection/blocking requirement, especially under a sustained attack.",
+              "rationale": "Each security check adds processing time. If the security infrastructure cannot keep up with the volume of attack attempts, the 1-second goal may be missed."
+            },
+            {
+              "id": "R-S1-3",
+              "description": "Lack of robust, real-time logging and alerting mechanisms integrated with the CORBA Security Service to ensure immediate notification of security incidents.",
+              "rationale": "Detection is only useful if it's accompanied by timely alerts to security personnel or automated response systems."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-S1-1",
+              "description": "The CORBA Security Service is explicitly designed to address authentication, authorization, and audit for distributed objects, providing a standardized framework.",
+              "rationale": "This standard offers a well-defined approach to securing distributed applications, reducing the need for custom security implementations from scratch."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-S1-1",
+              "parameter": "Granularity and complexity of access control policies (e.g., object-level, method-level access)",
+              "correlated_attribute": "Security Effectiveness, Performance Overhead"
+            },
+            {
+              "id": "S-S1-2",
+              "parameter": "Performance and scalability of the underlying security provider (e.g., LDAP server for user authentication, policy enforcement points)",
+              "correlated_attribute": "Detection/Blocking Time, System Responsiveness"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-S1-1",
+              "parameter": "Strictness of access control (fine-grained, frequent checks) vs. performance impact",
+              "conflicting_attributes": [
+                "Security (positive for strictness)",
+                "Performance (negative for strictness)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S2",
+          "text": "All sensitive data exchanged between CORBA components across network boundaries must be encrypted using FIPS 140-2 compliant algorithms to ensure confidentiality and integrity, with minimal performance overhead.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Security",
+        "environment": "Data in transit across network boundaries",
+        "stimulus": "Exchange of sensitive data between CORBA components",
+        "response_measure": "Encryption using FIPS 140-2 compliant algorithms, minimal performance overhead",
+        "architectural_decisions": [
+          "Implementation of CORBA Security Service with Secure Interoperability (CSIv2)"
+        ],
+        "reasoning": "The CORBA Security Service, specifically through its Secure Interoperability (CSIv2) specification, supports secure communication including encryption. However, FIPS 140-2 compliant algorithms often involve significant computational overhead. Meeting both the high security standard and the 'minimal performance overhead' constraint concurrently is a common challenge and a significant tradeoff.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-S2-1",
+              "description": "Performance overhead from FIPS 140-2 compliant encryption algorithms (which are often computationally intensive) may not be 'minimal,' potentially impacting overall system throughput and latency.",
+              "rationale": "Strong cryptographic algorithms require substantial CPU resources, which can directly affect the performance of CORBA communication."
+            },
+            {
+              "id": "R-S2-2",
+              "description": "Complexity of configuring and managing FIPS 140-2 compliant cryptography within the CORBA environment, especially when integrating different ORB implementations or security providers.",
+              "rationale": "Ensuring FIPS compliance across a distributed system with potentially heterogeneous components adds significant configuration and validation effort."
+            },
+            {
+              "id": "R-S2-3",
+              "description": "The chosen CORBA ORB and its security extensions may not natively support FIPS 140-2 compliant algorithms, requiring custom integration or third-party libraries.",
+              "rationale": "Not all ORB vendors provide out-of-the-box FIPS 140-2 compliance, which would necessitate additional development or procurement."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-S2-1",
+              "description": "CORBA Security Service provides mechanisms for securing message exchanges, including confidentiality and integrity using various encryption protocols.",
+              "rationale": "The standard explicitly includes provisions for secure communication channels, which can be configured for encryption."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-S2-1",
+              "parameter": "Choice of specific FIPS 140-2 compliant encryption algorithm and key length",
+              "correlated_attribute": "Security Strength, Performance Overhead"
+            },
+            {
+              "id": "S-S2-2",
+              "parameter": "Volume of sensitive data exchanged between CORBA components",
+              "correlated_attribute": "Encryption/Decryption Processing Load, Network Bandwidth Utilization"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-S2-1",
+              "parameter": "Strength of encryption (FIPS 140-2 compliance, key size) vs. performance overhead",
+              "conflicting_attributes": [
+                "Security (positive for stronger encryption)",
+                "Performance (negative for stronger encryption)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

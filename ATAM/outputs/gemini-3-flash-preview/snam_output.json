@@ -1,0 +1,482 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Reduce maximum sending time of technical data from 1'20\" to 50\"",
+      "Reduce unofficial alert dissemination from 5% to 1%",
+      "Ensure unit goals are represented in the development and future operation",
+      "Generate and monitor tsunami warnings effectively"
+    ],
+    "technical_constraints": [
+      "System must integrate with external entities (CSN, ONEMI)",
+      "Must support alternative communication channels (e.g., if internet/phone fails)"
+    ],
+    "architectural_drivers": [
+      "Security",
+      "Reliability",
+      "Performance",
+      "Maintainability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The initial architectural design was provided as three specific views: Contextual, Functional, and Deployment. These were consistent with each other and previously revised by the Architect role.",
+      "evaluator_inquiry_questions": [
+        "I have a question about the architecture.",
+        "I think that according to the difficulty and relevance of this attribute, it should be a priority of [value] due to [reason]."
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Deployment view includes an Information Capture Server, Decision Making Server, and Data Base Server.",
+        "Client terminals include ResearchClient, SensorsReader, ExpertClient, and BulletinClient.",
+        "External entities include CSN and ONEMI terminals."
+      ],
+      "runtime_constraints": [
+        "Must operate in scenarios with No Internet connection or No phone connection.",
+        "Must prevent unauthorized external bulletin generation."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "data_transmission_time_csn_snam": "1 minute 20 seconds (Current)",
+      "target_data_transmission_time": "50 seconds (Goal)",
+      "snam_to_onemi_latency": "2 minutes 30 seconds",
+      "unofficial_alert_dissemination_rate": "5% (Current) to 1% (Goal)",
+      "database_uptime": "94%",
+      "query_response_time": "5 seconds",
+      "test_error_detection_rate": "25%"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Three-Layer Architecture / Client-Server",
+        "questions": [
+          "How does the system handle alternative sending channels if the primary connection fails?",
+          "How are pre-modeled scenarios accessed if the primary database server fails?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "No Internet connection."
+      },
+      {
+        "id": "RS-02",
+        "description": "Failure of the primary server data pre-modeled scenarios."
+      },
+      {
+        "id": "RS-03",
+        "description": "Communication between servers is cut."
+      },
+      {
+        "id": "RS-04",
+        "description": "Denial-of-service attack."
+      },
+      {
+        "id": "RS-05",
+        "description": "Attempt to generate newsletter externally by unauthorized users."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Three-Layer Architecture / Client-Server",
+        "description": "The system is organized into three distinct layers (Capture, Decision, Database) and uses a client-server pattern to manage communication between monitoring terminals and central servers.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Separation of functional layers allows for independent updates to data capture and decision logic."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Client-server distribution allows dedicated servers to handle specific high-load tasks like data capture and query processing."
+          }
+        ]
+      },
+      {
+        "approach_name": "Redundant Failover Configuration",
+        "description": "Deployment of secondary servers for Decision Making and Database components to ensure continuity during hardware or communication failure between servers.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Mitigates the risk of a single point of failure in the primary data processing nodes."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Ensures the system remains operational for expert analysis even when primary infrastructure is compromised."
+          }
+        ]
+      },
+      {
+        "approach_name": "Multi-Channel Communication Strategy",
+        "description": "Utilization of alternative data transmission paths (e.g., satellite, radio links) to bypass standard Internet or phone line failures.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Guarantees that tsunami warnings reach ONEMI and CSN even if the primary public infrastructure is down."
+          }
+        ]
+      },
+      {
+        "approach_name": "Role-Based Access Control (RBAC)",
+        "description": "Strict authentication and authorization protocols for client terminals and external interfaces.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Security",
+            "rationale": "Prevents unauthorized external entities from generating bulletins or accessing sensitive seismic data."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Throughput and Latency",
+              "scenario_id": "P1",
+              "scenario_description": "Processing 1000 sensor inputs/sec with latency < 2s",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "Message Delivery Guarantee",
+              "scenario_id": "R1",
+              "scenario_description": "100% alert delivery via satellite/radio links during primary network failure",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "Fault Tolerance",
+              "scenario_id": "A1",
+              "scenario_description": "Automatic failover to redundant Decision and Database nodes within 30s",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Access Control",
+              "scenario_id": "S1",
+              "scenario_description": "Role-Based Access Control prevents 100% of unauthorized alert generation attempts",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Maintainability",
+          "children": [
+            {
+              "refinement": "Extensibility",
+              "scenario_id": "M1",
+              "scenario_description": "Integration of a new sensor type/protocol requires < 2 man-days of development",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "During a high-intensity seismic event, the system processes 1000 sensor inputs per second, ensuring the end-to-end latency from data capture to decision logic output is less than 2 seconds.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "In the event of a total failure of the primary public internet and phone infrastructure, the system successfully delivers 100% of generated tsunami alerts to ONEMI and CSN using secondary satellite and radio communication links.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "Upon the hardware failure of the primary Decision-Making server, the system performs an automatic failover to a redundant secondary node, restoring full operational capacity within 30 seconds.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "An unauthorized external entity attempts to access a monitoring terminal to generate a false tsunami bulletin; the Role-Based Access Control (RBAC) system identifies the lack of credentials and blocks 100% of the unauthorized attempts.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "A new type of deep-sea pressure sensor with a proprietary communication protocol is introduced to the network; the system architecture allows for the integration and deployment of the new protocol within 2 man-days of development effort.",
+        "primary_quality_attribute": [
+          "Maintainability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "During a high-intensity seismic event, the system processes 1000 sensor inputs per second, ensuring the end-to-end latency from data capture to decision logic output is less than 2 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "High-intensity seismic event (Overload)",
+        "stimulus": "1000 sensor inputs per second",
+        "response_measure": "End-to-end latency < 2 seconds",
+        "architectural_decisions": [
+          "Three-Layer Architecture",
+          "Client-Server Distribution"
+        ],
+        "reasoning": "Decoupling the capture layer from the decision logic allows parallel processing, but the centralized database in the three-layer model may become a contention point during peak loads.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Database Write Contention",
+              "rationale": "High-frequency writes from 1000 sensors/sec to a single database node may exceed I/O limits, increasing latency beyond 2s."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Capture Layer Scalability",
+              "rationale": "The capture layer is stateless and can be horizontally scaled to handle input volume."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Database I/O Throughput",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Layered Abstraction",
+              "conflicting_attributes": [
+                "Maintainability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "In the event of a total failure of the primary public internet and phone infrastructure, the system successfully delivers 100% of generated tsunami alerts to ONEMI and CSN using secondary satellite and radio communication links.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Network Infrastructure Failure",
+        "stimulus": "Total failure of primary internet/phone lines",
+        "response_measure": "100% alert delivery",
+        "architectural_decisions": [
+          "Multi-Channel Communication Strategy"
+        ],
+        "reasoning": "By utilizing non-public infrastructure (satellite/radio), the system bypasses common failure modes of public utilities.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Satellite Bandwidth Limitation",
+              "rationale": "Satellite links often have lower bandwidth and higher latency; if alert packets are large, delivery may be delayed."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Infrastructure Independence",
+              "rationale": "Radio links operate on dedicated frequencies, making them immune to public network congestion."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Atmospheric Conditions",
+              "correlated_attribute": "Reliability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Redundant Link Maintenance",
+              "conflicting_attributes": [
+                "Reliability",
+                "Cost"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "Upon the hardware failure of the primary Decision-Making server, the system performs an automatic failover to a redundant secondary node, restoring full operational capacity within 30 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Hardware Failure",
+        "stimulus": "Primary Decision-Making server failure",
+        "response_measure": "Failover completion < 30 seconds",
+        "architectural_decisions": [
+          "Redundant Failover Configuration"
+        ],
+        "reasoning": "Automatic failover requires a heartbeat mechanism and data synchronization. The 30s window is achievable but depends on the detection timeout settings.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Split-Brain Syndrome",
+              "rationale": "If the heartbeat link fails but both servers are up, both may attempt to act as primary, leading to corrupted data."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "State Recovery",
+              "rationale": "Using a secondary database node ensures that the new primary has immediate access to historical data."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Heartbeat Timeout Interval",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Data Sync Synchronicity",
+              "conflicting_attributes": [
+                "Availability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "An unauthorized external entity attempts to access a monitoring terminal to generate a false tsunami bulletin; the Role-Based Access Control (RBAC) system identifies the lack of credentials and blocks 100% of the unauthorized attempts.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Security",
+        "environment": "Unauthorized Access Attempt",
+        "stimulus": "External entity login attempt",
+        "response_measure": "100% rejection of unauthorized actions",
+        "architectural_decisions": [
+          "Role-Based Access Control (RBAC)"
+        ],
+        "reasoning": "RBAC provides a standard, robust way to enforce authorization at the service layer.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-04",
+              "description": "Credential Theft",
+              "rationale": "RBAC protects against unauthorized roles but does not inherently protect against stolen valid credentials (e.g., phishing)."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-04",
+              "description": "Privilege Escalation Prevention",
+              "rationale": "Well-defined roles in the Decision layer prevent low-level accounts from accessing bulletin generation functions."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-04",
+              "parameter": "Authentication Token Expiry",
+              "correlated_attribute": "Security"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-04",
+              "parameter": "Strictness of Access Policy",
+              "conflicting_attributes": [
+                "Security",
+                "Usability"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A new type of deep-sea pressure sensor with a proprietary communication protocol is introduced to the network; the system architecture allows for the integration and deployment of the new protocol within 2 man-days of development effort.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Maintainability",
+        "environment": "System Evolution",
+        "stimulus": "Requirement for new sensor integration",
+        "response_measure": "Development effort < 2 man-days",
+        "architectural_decisions": [
+          "Three-Layer Architecture (Separated Capture Layer)"
+        ],
+        "reasoning": "Isolation of the Capture layer means only the driver/adapter needs modification, leaving the Decision and Database layers untouched.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-05",
+              "description": "Tight Coupling to Schema",
+              "rationale": "If the new sensor data requires a schema change in the Database layer, the 2-day target may be exceeded."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-05",
+              "description": "Logic Isolation",
+              "rationale": "The Decision-Making logic is independent of the transport protocol, reducing regression testing needs."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-05",
+              "parameter": "Adapter Interface Standardization",
+              "correlated_attribute": "Maintainability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-05",
+              "parameter": "Abstraction Level",
+              "conflicting_attributes": [
+                "Maintainability",
+                "Complexity"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

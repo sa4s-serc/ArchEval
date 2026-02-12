@@ -1,0 +1,427 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Use for Keeping patient records",
+      "Use for Answering ad hoc queries from medical Researchers",
+      "Use to Provide performance information (e.g., mortality rates, patient counts)",
+      "Use for Resource Management Decisions",
+      "Produce on-demand & Periodic reports based on specific needs of Institution or Hospital"
+    ],
+    "technical_constraints": [
+      "An improved web-based system with web services",
+      "Transaction response time",
+      "System throughput"
+    ],
+    "architectural_drivers": [
+      "Performance",
+      "Security",
+      "Reliability",
+      "Availability",
+      "Functionality",
+      "Modifiability",
+      "Portability",
+      "Conceptual Integrity"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Pre-exercise review of architecture documentation was conducted, though architectural approaches required further identification and elicitation during the session.",
+      "evaluator_inquiry_questions": [
+        "How does the system function and behave during execution?",
+        "Questions related to run-time behavior (sent via text/email to remote users)"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Client-Server architecture",
+        "Database Layer utilizing FileMan and M Software",
+        "RPC Broker Server Layer for middleware communication"
+      ],
+      "runtime_constraints": [
+        "Transaction response time",
+        "System throughput",
+        "Web-based system performance with web services"
+      ]
+    },
+    "quantitative_model_parameters": {
+      "storage_latency_limit": "200ms",
+      "report_generation_time": "10ms",
+      "transaction_completion_peak_load": "1 second",
+      "transaction_completion_double_peak_load": "4 seconds",
+      "throughput_peak_load": "150 normalised transactions per second"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Client-Server / Layered",
+        "questions": [
+          "How does the architecture respond to peak load scenarios?",
+          "How does the database structure affect performance and migration needs?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "No unauthorized access to the system (User)"
+      },
+      {
+        "id": "RS-02",
+        "description": "User errors in using system should be handled (User)"
+      },
+      {
+        "id": "RS-03",
+        "description": "All operations are processed in fastest possible speed (User)"
+      },
+      {
+        "id": "RS-04",
+        "description": "Proper data encapsulation and secure data structures (Architect)"
+      },
+      {
+        "id": "RS-05",
+        "description": "Flexible implementation using other programming languages (Architect)"
+      },
+      {
+        "id": "RS-06",
+        "description": "Overall consistent behavior expected from the architecture (Architect)"
+      },
+      {
+        "id": "RS-07",
+        "description": "Framework should be complete, clear and perform exactly as required (Application Developer)"
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Layered Client-Server Architecture",
+        "description": "The system is structured into a multi-tier architecture separating the presentation (Web-based), application logic, and data storage (FileMan and M Software) layers.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "The separation of the database layer from the web-based presentation layer allows for independent updates to the UI or schema without necessitating a full system overhaul."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "By utilizing a web-based client-server model, the system can be accessed across various hardware platforms via a browser, satisfying the requirement for an improved web-based system."
+          },
+          {
+            "quality_attribute": "Security",
+            "rationale": "Layering allows for the implementation of security checkpoints at the middleware and database boundaries, isolating sensitive medical records from direct web exposure."
+          }
+        ]
+      },
+      {
+        "approach_name": "Middleware-based Communication (RPC Broker)",
+        "description": "Utilizes a Remote Procedure Call (RPC) Broker as a specialized middleware layer to manage communication and data exchange between clients and the backend database.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "The RPC Broker is designed to optimize transaction response times and system throughput by managing connections and data serialization efficiently."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "A centralized broker ensures consistent communication protocols and error handling between the modern web frontend and the legacy M Software environment."
+          }
+        ]
+      },
+      {
+        "approach_name": "Service-Oriented Web Services",
+        "description": "Exposes core system functionalities and data access points through web services to facilitate internal operations and external reporting.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Functionality",
+            "rationale": "Enables the execution of ad hoc queries by medical researchers and the generation of on-demand reports by providing standardized service interfaces."
+          },
+          {
+            "quality_attribute": "Conceptual Integrity",
+            "rationale": "Web services provide a unified interface for both periodic reporting and resource management decisions, ensuring the system behaves consistently across different use cases."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Response time for patient record retrieval via RPC Broker during peak load",
+              "scenario_id": "P1",
+              "scenario_description": "The system must retrieve patient records through the RPC Broker within acceptable latency during high usage periods.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Middleware-level isolation preventing direct access to legacy M Software",
+              "scenario_id": "S1",
+              "scenario_description": "The middleware tier must ensure that the web tier cannot directly access the M Software database without passing through security checkpoints.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Ability to update the web-based presentation layer without schema changes in FileMan",
+              "scenario_id": "M1",
+              "scenario_description": "UI changes should be decoupled from the underlying database schema to allow independent evolution.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "RPC Broker failover time in the event of a middleware crash",
+              "scenario_id": "R1",
+              "scenario_description": "The system should detect a broker failure and switch to a standby instance with minimal downtime.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Functionality",
+          "children": [
+            {
+              "refinement": "Execution of complex ad hoc queries by researchers via the web service layer",
+              "scenario_id": "F1",
+              "scenario_description": "The system must support complex data extraction for research purposes through standardized web services.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "A physician requests a patient history record through the web interface during peak morning hours; the RPC Broker must return the data in under 2 seconds.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "An unauthorized external entity attempts to bypass the web tier; the middleware tier must block any direct connection attempts to the M Software environment.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "The primary RPC Broker instance fails; the system must detect the failure and switch to a standby broker within 30 seconds to maintain clinical continuity.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "The UI team updates the patient dashboard layout; these changes must be implemented without requiring any modifications to the underlying FileMan data schema.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "A medical researcher runs a complex multi-parameter query for a study; the web service layer must execute this against the legacy data without degrading clinical user performance.",
+        "primary_quality_attribute": [
+          "Functionality",
+          "Performance"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "A physician requests a patient history record through the web interface during peak morning hours; the RPC Broker must return the data in under 2 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak clinical hours (High load)",
+        "stimulus": "Physician record retrieval request",
+        "response_measure": "Latency < 2 seconds",
+        "architectural_decisions": [
+          "Middleware-based Communication (RPC Broker)",
+          "Layered Client-Server Architecture"
+        ],
+        "reasoning": "The RPC Broker acts as a bottleneck for all client-to-legacy communications. Performance is dependent on the broker's ability to handle concurrent connections and the efficiency of the M Software data retrieval.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "RPC Broker Connection Saturation",
+              "rationale": "Without explicit connection pooling details, the broker may exhaust available sockets during peak morning hours, leading to request queuing and timeout."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Layered Separation Overhead",
+              "rationale": "The overhead introduced by the web-tier and middleware-tier transition is negligible compared to the database I/O, assuming high-speed internal networking."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "RPC Broker Max Threads/Connections",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "RPC Broker Abstraction Level",
+              "conflicting_attributes": [
+                "Modifiability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "An unauthorized external entity attempts to bypass the web tier; the middleware tier must block any direct connection attempts to the M Software environment.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Security",
+        "environment": "External attack attempt",
+        "stimulus": "Unauthorized bypass attempt",
+        "response_measure": "Zero direct connections allowed to legacy backend",
+        "architectural_decisions": [
+          "Layered Client-Server Architecture",
+          "Middleware-based Communication (RPC Broker)"
+        ],
+        "reasoning": "The architecture relies on the middleware to act as a security gatekeeper. Security is achieved by ensuring no network paths exist between the public web and the private database except through the broker.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Middleware Configuration Drift",
+              "rationale": "If the RPC Broker's IP filtering or authentication rules are misconfigured, the legacy system becomes exposed as it lacks native modern security controls."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Physical Isolation",
+              "rationale": "The use of a multi-tier physical topology inherently prevents direct routing to the M Software environment from the public internet."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Firewall Rule Strictness",
+              "correlated_attribute": "Security"
+            }
+          ],
+          "tradeoff_points": []
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "The primary RPC Broker instance fails; the system must detect the failure and switch to a standby broker within 30 seconds to maintain clinical continuity.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Middleware failure",
+        "stimulus": "Primary RPC Broker crash",
+        "response_measure": "Failover completion < 30 seconds",
+        "architectural_decisions": [
+          "Middleware-based Communication (RPC Broker)",
+          "Redundant Broker Instances"
+        ],
+        "reasoning": "Availability depends on the detection latency of the failover mechanism and the time required to re-establish session states on the standby broker.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Session State Loss",
+              "rationale": "If the RPC Broker is stateful, failing over to a standby instance may result in lost transactions or forced user re-authentication."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Heartbeat Frequency",
+              "correlated_attribute": "Reliability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Failover Automation Complexity",
+              "conflicting_attributes": [
+                "Reliability",
+                "Modifiability"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "F1",
+          "text": "A medical researcher runs a complex multi-parameter query for a study; the web service layer must execute this against the legacy data without degrading clinical user performance.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Concurrent clinical and research usage",
+        "stimulus": "Complex ad hoc query",
+        "response_measure": "No measurable increase in clinical response latency",
+        "architectural_decisions": [
+          "Service-Oriented Web Services"
+        ],
+        "reasoning": "The system must isolate high-resource research queries from time-sensitive clinical transactions. This requires resource prioritization at the database or middleware level.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-04",
+              "description": "Resource Starvation",
+              "rationale": "Legacy M Software may not support fine-grained resource governance, allowing a single complex query to lock tables or consume all CPU cycles."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-04",
+              "parameter": "Query Concurrency Limits",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Data Freshness vs. Performance Isolation",
+              "conflicting_attributes": [
+                "Functionality",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

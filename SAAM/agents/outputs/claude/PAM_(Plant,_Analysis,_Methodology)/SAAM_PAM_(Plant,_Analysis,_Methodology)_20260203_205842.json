@@ -1,0 +1,1228 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "PAM (Plant, Analysis, Methodology)",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Optimize plant maintenance, ensure safety, and improve efficiency and quality of simulation work."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Distributed Computing",
+          "Service-Oriented"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "PAM-ARCH",
+            "name": "PAM Nuclear Simulation Management System",
+            "description": "A distributed client-server architecture for managing nuclear plant simulations. The system separates concerns between data input/editing (client), simulation execution (distributed Unix servers), and results analysis. Four architectural variants exist based on where file processing occurs (client vs. server) and how files are stored (distributed vs. centralized).",
+            "architecture_characteristics": "Distributed execution for computational scalability; modular separation of simulation orchestration from execution; flexible deployment options for processing and storage; network-dependent for client-server communication; variable performance based on architectural variant selection.",
+            "key_components": [
+              {
+                "component_id": "CLIENT",
+                "component_name": "Client Application",
+                "responsibilities": "Primary user interface for simulation workflow. Collects and edits input data for simulations. Presents output files and results to users. In variants A1/A2, processes and filters simulation files locally. Stores input data in database. Initiates simulation requests.",
+                "dependencies": [
+                  "SB",
+                  "DATABASE"
+                ],
+                "change_sensitivity": "High - Central user touchpoint; changes affect all user workflows and may require processing logic migration between client/server variants"
+              },
+              {
+                "component_id": "DATABASE",
+                "component_name": "Input Data Database",
+                "responsibilities": "Persistent storage for simulation input data and configuration. Maintains simulation metadata and parameters edited through the client.",
+                "dependencies": [],
+                "change_sensitivity": "Medium - Schema changes impact client data entry; migration affects all stored simulations"
+              },
+              {
+                "component_id": "SB",
+                "component_name": "Service Broker",
+                "responsibilities": "Entry point for simulation execution requests. Routes calculation requests to appropriate Calculation Servers. One Service Broker exists per Unix server computer (architectural constraint). Acts as gateway between client and distributed computation resources.",
+                "dependencies": [
+                  "CS"
+                ],
+                "change_sensitivity": "Medium - Critical routing component but with well-defined interface; one-per-server constraint limits scaling options"
+              },
+              {
+                "component_id": "CS",
+                "component_name": "Calculation Server",
+                "responsibilities": "Orchestrates a single complete simulation workflow. Manages simulation lifecycle and state. Spawns and coordinates multiple Task Calculation Server processes for parallel task execution. Coordinates with file storage (distributed or central based on variant).",
+                "dependencies": [
+                  "TCS",
+                  "STORAGE"
+                ],
+                "change_sensitivity": "High - Core orchestration logic; changes affect simulation reliability and performance; variant selection impacts file handling responsibilities"
+              },
+              {
+                "component_id": "TCS",
+                "component_name": "Task Calculation Server",
+                "responsibilities": "Executes a single simulation task (atomic unit of computation). Performs actual nuclear simulation calculations. Multiple TCS instances run in parallel for a single simulation. Writes results to storage location (distributed or centralized).",
+                "dependencies": [
+                  "STORAGE"
+                ],
+                "change_sensitivity": "Low - Encapsulated execution unit; changes typically isolated to computational algorithms; interface with CS is stable"
+              },
+              {
+                "component_id": "SDS",
+                "component_name": "Service Dispatch Server",
+                "responsibilities": "Present only in B1/B2 variants. Processes input and output files on the server side before client transfer. Performs filtering, transformation, and preparation of simulation files. Offloads processing burden from client.",
+                "dependencies": [
+                  "STORAGE",
+                  "CS"
+                ],
+                "change_sensitivity": "Medium - Variant-specific component; adding/removing changes architectural variant; processing logic must be maintained separately from client"
+              },
+              {
+                "component_id": "STORAGE",
+                "component_name": "File Storage System",
+                "responsibilities": "Stores simulation input files, intermediate results, and output files. Implementation varies by variant: A1/B1 use distributed storage (files on execution node), A2/B2 use centralized file server. Provides file access to processing components (Client in A variants, SDS in B variants).",
+                "dependencies": [],
+                "change_sensitivity": "High - Storage topology change requires architectural variant switch; affects network traffic patterns, performance, and reliability"
+              }
+            ],
+            "data_flow": "1) User edits input data in CLIENT, which stores to DATABASE. 2) CLIENT initiates simulation by sending request to SERVICE BROKER. 3) SB routes request to available CALCULATION SERVER. 4) CS spawns multiple TASK CALCULATION SERVERS to execute simulation tasks in parallel on Unix servers. 5) TCS processes write results to STORAGE (distributed across nodes in A1/B1, centralized file server in A2/B2). 6) Output files flow back to user: In A1/A2 variants, CLIENT retrieves and processes files directly from storage. In B1/B2 variants, SERVICE DISPATCH SERVER processes files on server-side before transferring to CLIENT. 7) CLIENT presents analyzed results to user.",
+            "architectural_constraints": [
+              "Exactly one Service Broker per Unix server computer (limits broker-level scaling)",
+              "Client-server network dependency (requires reliable network connectivity)",
+              "Unix server environment required for simulation execution",
+              "File processing location is architecturally fixed (client vs. server variants cannot be mixed)",
+              "Storage topology is architecturally fixed (distributed vs. centralized variants require different infrastructure)"
+            ],
+            "what_architecture_supports": {
+              "easily_accommodated": [
+                "Adding more Unix servers with Service Brokers (horizontal scaling of computation)",
+                "Parallel execution of simulation tasks within a single simulation",
+                "Multiple concurrent simulations across different Calculation Servers",
+                "Changes to simulation algorithms within TCS (encapsulated)",
+                "Database schema evolution for input data",
+                "User interface improvements in client application"
+              ],
+              "difficult_or_not_supported": [
+                "Dynamic switching between processing locations (client vs. server) - requires architectural variant change",
+                "Dynamic switching between storage topologies - requires infrastructure and variant change",
+                "More than one Service Broker per server - violates architectural constraint",
+                "Real-time collaboration between multiple clients on same simulation - no coordination mechanism",
+                "Automatic failover or high availability - no redundancy in SB or CS components",
+                "Fine-grained load balancing below server level - SB is per-server, not per-resource",
+                "Heterogeneous server environments (non-Unix) - Unix dependency is fundamental",
+                "Streaming or incremental results - batch-oriented file-based architecture"
+              ]
+            },
+            "variant_selection_guidance": {
+              "A1_client_processing_distributed_storage": "Best for: Powerful client machines, unreliable network, data locality important. Drawbacks: Client processing burden, distributed file management complexity.",
+              "A2_client_processing_central_storage": "Best for: Powerful clients, simplified backup/management, reliable file server. Drawbacks: Client processing burden, file server becomes bottleneck and single point of failure.",
+              "B1_server_processing_distributed_storage": "Best for: Thin clients, server-side processing power, data locality. Drawbacks: Distributed file management, server processing load.",
+              "B2_server_processing_central_storage": "Best for: Thin clients, centralized management, simplified architecture. Drawbacks: File server bottleneck, network traffic concentration, single point of failure."
+            },
+            "quality_attribute_tradeoffs": {
+              "performance": "Distributed storage (A1/B1) provides better data locality and parallel I/O; centralized storage (A2/B2) may bottleneck on file server. Client processing (A1/A2) reduces network transfer of large files; server processing (B1/B2) reduces client resource requirements.",
+              "scalability": "Computation scales horizontally by adding Unix servers. Storage scalability differs: distributed grows with servers, centralized requires file server scaling. Client processing limits scalability to client capacity.",
+              "reliability": "Distributed storage (A1/B1) has no single point of failure for files but complicates recovery. Centralized storage (A2/B2) simplifies backup but creates single point of failure. No built-in redundancy for SB or CS.",
+              "maintainability": "Centralized storage (A2/B2) simplifies file management and backup. Server processing (B1/B2) centralizes processing logic updates. Client processing (A1/A2) requires client software updates for processing changes.",
+              "modifiability": "TCS is most modifiable (encapsulated algorithms). Storage and processing location changes require variant switch (high impact). Adding new simulation types affects CS, TCS, and client."
+            },
+            "notes": "The PAM architecture offers four distinct variants representing fundamental tradeoffs between processing location and storage topology. These are not runtime configurations but architectural alternatives requiring different deployment and infrastructure. The one-Service-Broker-per-server constraint suggests the architecture predates modern containerization and microservices patterns. The batch-oriented, file-based approach is appropriate for long-running nuclear simulations but limits real-time interaction. Stakeholders should understand that migrating between variants (e.g., A1\u2192B1) is a significant architectural change affecting multiple components, not a simple configuration switch. The lack of built-in redundancy or failover mechanisms means high availability would require external infrastructure solutions."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "An end-user initiates a nuclear plant simulation by editing input parameters through the client application, submitting the job to the calculation server, and receiving results within 2 hours for a standard thermal-hydraulic analysis with 95% success rate.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Client Application",
+            "Input Data Database",
+            "Service Broker",
+            "Service Dispatch Server",
+            "Calculation Server",
+            "File Storage System"
+          ],
+          "feasibility_note": "Directly supported by current architecture. The distributed client-server model with service broker and dispatch server enables this workflow. Performance depends on which variant is deployed (client vs. server file processing).",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Core functionality that directly supports plant safety analysis and operational decision-making. Reliability and timeliness are critical for maintenance planning and safety assessments."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A system administrator needs to add 3 new calculation servers to handle increased simulation workload during a plant outage period, with new servers becoming available to users within 4 hours without system downtime.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Service Broker",
+            "Service Dispatch Server",
+            "Calculation Server",
+            "Task Calculation Server"
+          ],
+          "feasibility_note": "Partially supported. The Service Dispatch Server architecture suggests load distribution capability, but dynamic server registration and load balancing mechanisms are not explicitly documented. May require configuration changes or restart.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Critical for maintaining system availability and performance during peak demand periods. Plant outages require intensive simulation work for safety verification before restart."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A maintainer needs to upgrade the simulation calculation engine on all calculation servers to incorporate new regulatory safety models, completing the upgrade with zero data loss and less than 8 hours of planned downtime.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Calculation Server",
+            "Task Calculation Server",
+            "Service Dispatch Server",
+            "Input Data Database",
+            "File Storage System"
+          ],
+          "feasibility_note": "Indirectly supported. The separation of data storage (database and file system) from calculation servers enables upgrades, but the architecture doesn't specify versioning or rolling upgrade capabilities. Downtime requirement may be challenging with current architecture.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Regulatory compliance is mandatory in nuclear industry. System must accommodate frequent updates to safety models while maintaining data integrity and minimizing operational disruption."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A developer needs to integrate a new third-party thermal analysis module into the system, making it available as a selectable calculation option in the client within 2 weeks of development effort.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Client Application",
+            "Service Broker",
+            "Calculation Server",
+            "Service Dispatch Server"
+          ],
+          "feasibility_note": "Partially supported. The Service Broker suggests a plugin or service-oriented approach, but extensibility mechanisms are not documented. Integration complexity depends on whether the architecture supports dynamic service registration and client-side discovery.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Enables continuous improvement of simulation capabilities and incorporation of best-in-class analysis tools, supporting the goal of improving simulation work quality."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "The system must automatically archive completed simulation results older than 90 days to long-term storage while maintaining metadata searchability, reducing active storage requirements by 60% without impacting user access to recent simulations.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "File Storage System",
+            "Input Data Database",
+            "Client Application"
+          ],
+          "feasibility_note": "Requires architectural changes. Current architecture has four variants for file storage (distributed vs. centralized) but doesn't specify lifecycle management or tiered storage capabilities. Would need new archival service component and database schema extensions.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Supports long-term operational efficiency by managing storage costs and system performance. Nuclear simulations generate large datasets that accumulate over years of operation."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "End-users must be able to compare results from up to 5 different simulation runs side-by-side in the client application, with interactive visualization of parameter differences and result deviations, to optimize maintenance scheduling decisions.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Client Application",
+            "Input Data Database",
+            "File Storage System"
+          ],
+          "feasibility_note": "Requires client application enhancement. Current architecture separates analysis functionality in the client, but multi-run comparison and advanced visualization are not specified. May require additional data retrieval optimization from database and file storage.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Directly supports the stated goal of optimizing plant maintenance. Engineers need to evaluate multiple scenarios to determine optimal maintenance windows and strategies while ensuring safety margins."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "The system must provide real-time progress monitoring for long-running simulations (>30 minutes), allowing users to view intermediate results and cancel jobs that are trending toward invalid results, reducing wasted computation time by 40%.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Client Application",
+            "Service Broker",
+            "Calculation Server",
+            "Task Calculation Server",
+            "Service Dispatch Server"
+          ],
+          "feasibility_note": "Requires significant architectural changes. Current architecture doesn't specify real-time communication mechanisms between calculation servers and clients. Would need event streaming, progress reporting API, and potentially websocket or polling mechanisms.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Improves efficiency and quality of simulation work by enabling early detection of setup errors or diverging calculations, saving computational resources and analyst time."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "Developers must be able to deploy and test new calculation algorithms in an isolated sandbox environment that mirrors production, with automated regression testing against 50 historical simulation cases, before promoting to production servers.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Calculation Server",
+            "Task Calculation Server",
+            "Service Dispatch Server",
+            "Input Data Database",
+            "File Storage System"
+          ],
+          "feasibility_note": "Requires new architectural components. Current architecture doesn't specify environment isolation, test automation, or deployment pipeline capabilities. Would need containerization or VM-based isolation, test harness, and deployment orchestration.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Ensures quality and safety by preventing defective calculation algorithms from reaching production. Critical in nuclear domain where simulation errors could lead to incorrect safety assessments."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "Maintainers must receive automated alerts when calculation server CPU utilization exceeds 90% for more than 15 minutes or when job failure rates exceed 5%, with diagnostic logs automatically collected for troubleshooting.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Calculation Server",
+            "Task Calculation Server",
+            "Service Dispatch Server"
+          ],
+          "feasibility_note": "Requires new monitoring and alerting infrastructure. Current architecture doesn't specify observability components. Would need metrics collection agents, alerting service, and log aggregation system integrated with existing components.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Proactive monitoring ensures system reliability and availability, preventing failures that could delay critical safety analyses. Supports operational efficiency goals."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "The system must support role-based access control where simulation analysts can only view/edit their own simulations, senior engineers can review all simulations, and regulatory auditors have read-only access to completed simulations with full audit trails.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Client Application",
+            "Input Data Database",
+            "Service Broker",
+            "File Storage System"
+          ],
+          "feasibility_note": "Requires significant security architecture additions. Current architecture doesn't specify authentication, authorization, or audit logging mechanisms. Would need identity management, access control layer, and audit logging across all components.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Essential for regulatory compliance in nuclear industry. Ensures data integrity, prevents unauthorized modifications, and provides accountability required by nuclear regulatory bodies."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "End-users should be able to create and save simulation templates with pre-configured parameter sets for common analysis scenarios (e.g., 'Loss of Coolant Accident', 'Steam Generator Tube Rupture'), reducing setup time from 45 minutes to 5 minutes per simulation.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Client Application",
+            "Input Data Database"
+          ],
+          "feasibility_note": "Moderate architectural impact. Requires database schema extension for template storage and client application enhancement for template management UI. Fits within existing client-database interaction pattern.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Significantly improves efficiency of simulation work by reducing repetitive data entry and standardizing common analysis scenarios, supporting quality improvement goals."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "The system could integrate with plant sensor data streams to automatically populate simulation input parameters with current plant conditions, enabling 'digital twin' simulations that reflect real-time plant state within 5-minute data freshness.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Input Data Database",
+            "Service Broker",
+            "Client Application"
+          ],
+          "feasibility_note": "Major architectural extension. Would require new data ingestion components, real-time data processing pipeline, sensor data integration layer, and potentially time-series database. Represents significant departure from current batch-oriented simulation model.",
+          "priority": "Low",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Exploratory capability that could revolutionize plant safety analysis by enabling predictive simulations based on actual plant conditions. Supports optimization and safety goals but requires substantial investment."
+        },
+        {
+          "scenario_id": "S-13",
+          "scenario_text": "Developers could leverage machine learning models trained on historical simulation results to predict simulation outcomes and recommend optimal parameter adjustments, reducing trial-and-error iterations by 50%.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "File Storage System",
+            "Input Data Database",
+            "Service Broker",
+            "Client Application"
+          ],
+          "feasibility_note": "Requires new ML infrastructure. Would need model training pipeline, feature engineering from historical data, model serving infrastructure, and integration with client for recommendations. Significant architectural addition beyond current scope.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Exploratory AI/ML capability that could enhance simulation quality and efficiency. Represents future innovation direction but requires proof of concept and regulatory acceptance in nuclear domain."
+        },
+        {
+          "scenario_id": "S-14",
+          "scenario_text": "Maintainers could perform automated health checks across all system components (database connectivity, server availability, file system integrity) every 5 minutes with a unified dashboard showing system-wide status and historical trends.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Client Application",
+            "Input Data Database",
+            "Service Broker",
+            "Calculation Server",
+            "Task Calculation Server",
+            "Service Dispatch Server",
+            "File Storage System"
+          ],
+          "feasibility_note": "Requires comprehensive monitoring framework. Would need health check endpoints on all components, centralized monitoring service, time-series metrics storage, and dashboard application. Complements S-09 but more comprehensive.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Proactive system health monitoring improves reliability and reduces mean-time-to-repair. Exploratory in scope but valuable for operational excellence and supporting safety-critical operations."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "This is the core use case the architecture was designed for. All four variants (A1/A2/B1/B2) support the complete workflow: CLIENT edits input data stored in DATABASE, submits to SB which routes to CS, CS spawns TCS instances for parallel execution, results stored in STORAGE, and returned to CLIENT (either directly in A variants or via SDS in B variants). The 2-hour performance target and 95% success rate are operational metrics dependent on variant selection and infrastructure, but the architecture fundamentally supports this workflow.",
+          "supporting_components": [
+            "CLIENT",
+            "DATABASE",
+            "SB",
+            "CS",
+            "TCS",
+            "STORAGE"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the architecture supports horizontal scaling by adding Unix servers with Service Brokers ('Adding more Unix servers with Service Brokers' is listed as easily accommodated), the 4-hour deployment window and zero-downtime requirement are not explicitly supported. The architecture lacks documented dynamic service discovery, health checking, or graceful server registration mechanisms. The one-SB-per-server constraint means adding servers requires SB deployment, but how clients/existing SBs discover new capacity is unspecified. The 'no downtime' requirement suggests need for dynamic registration not present in current architecture.",
+          "supporting_components": [
+            "SB",
+            "CS"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "The architecture separates data (DATABASE, STORAGE) from computation (CS, TCS), which enables upgrades without data loss. However, the 8-hour downtime requirement and coordinated upgrade across all servers is challenging. The architecture lacks: (1) versioning mechanisms for CS/TCS, (2) rolling upgrade capabilities, (3) backward compatibility specifications, (4) in-flight simulation handling during upgrades. The TCS component has 'Low' change sensitivity for algorithm changes, but coordinated multi-server upgrades with minimal downtime requires orchestration not present in the architecture.",
+          "supporting_components": [
+            "CS",
+            "TCS"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "The architecture shows TCS as having 'Low' change sensitivity with 'Encapsulated execution unit; changes typically isolated to computational algorithms', suggesting new modules could be added to TCS. However, the 2-week timeline and 'selectable calculation option' requirement implies: (1) CLIENT needs UI changes to expose new option, (2) CS needs awareness of new module type for orchestration, (3) SB may need routing logic updates, (4) no plugin architecture or dynamic module loading is documented. The architecture lacks extensibility mechanisms for third-party integration, requiring changes across multiple components.",
+          "supporting_components": [
+            "TCS",
+            "CLIENT",
+            "CS"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The architecture defines STORAGE component but only addresses topology (distributed vs. centralized), not lifecycle management. The scenario requires: (1) new archival service component not present in architecture, (2) DATABASE schema extensions for archival metadata and search indices, (3) CLIENT modifications to handle archived vs. active data access, (4) tiered storage integration. The architecture's 'what_architecture_supports' section does not mention data lifecycle or archival capabilities. This represents a significant functional gap requiring new components and workflows.",
+          "supporting_components": [
+            "STORAGE",
+            "DATABASE"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "The CLIENT component is responsible for 'Presents output files and results to users' and has 'High' change sensitivity. While the architecture supports result presentation, multi-run comparison with interactive visualization is not specified. This requires: (1) CLIENT enhancements for comparison UI and visualization, (2) potentially new data retrieval patterns from DATABASE and STORAGE to efficiently load multiple simulation datasets, (3) possible performance optimization for handling 5 concurrent result sets. The architecture supports the data access pattern but not the specific comparison and visualization functionality.",
+          "supporting_components": [
+            "CLIENT",
+            "DATABASE",
+            "STORAGE"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "The architecture is fundamentally batch-oriented and file-based. The 'difficult_or_not_supported' section explicitly lists 'Streaming or incremental results - batch-oriented file-based architecture' as not supported. Real-time progress monitoring requires: (1) CS/TCS to emit progress events during execution, (2) event streaming infrastructure (websockets, message queue, or polling), (3) CLIENT to receive and display real-time updates, (4) job cancellation API in CS. This represents a fundamental architectural pattern shift from batch to event-driven communication.",
+          "supporting_components": [
+            "CS",
+            "TCS",
+            "CLIENT",
+            "SB"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "The architecture has no concept of environment isolation, deployment pipelines, or test automation. The scenario requires: (1) sandbox environment infrastructure (containers/VMs) separate from production, (2) test harness component to execute regression tests, (3) deployment orchestration to promote code between environments, (4) DATABASE and STORAGE replication for test data. The architecture's Unix server constraint and lack of environment management capabilities mean this requires entirely new infrastructure and components outside the current architectural scope.",
+          "supporting_components": [
+            "CS",
+            "TCS",
+            "DATABASE",
+            "STORAGE"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "The architecture has no observability components specified. The scenario requires: (1) metrics collection agents on CS/TCS/SDS to gather CPU, job failure rates, (2) centralized monitoring/alerting service, (3) log aggregation system, (4) notification mechanism to maintainers. While these could be added as external infrastructure, they're not part of the current architecture. The components lack instrumentation interfaces for metrics exposure. This is a cross-cutting concern affecting multiple components.",
+          "supporting_components": [
+            "CS",
+            "TCS",
+            "SDS"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "The architecture has no security components documented - no authentication, authorization, or audit logging. The scenario requires: (1) identity management system, (2) access control layer across CLIENT, DATABASE, STORAGE, (3) audit logging infrastructure capturing all data access/modifications, (4) role-based permission model. This is a fundamental architectural gap requiring security architecture to be added across all components. The 'architectural_constraints' and component descriptions make no mention of security mechanisms.",
+          "supporting_components": [
+            "CLIENT",
+            "DATABASE",
+            "SB",
+            "STORAGE"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "The architecture supports CLIENT editing input data stored in DATABASE, but template management is not specified. This requires: (1) DATABASE schema extension to store templates as reusable parameter sets, (2) CLIENT UI enhancements for template creation, management, and application, (3) potentially template versioning and sharing mechanisms. While this fits the existing CLIENT-DATABASE interaction pattern, it's a functional extension not currently supported. The change is relatively contained compared to other scenarios but still requires architectural additions.",
+          "supporting_components": [
+            "CLIENT",
+            "DATABASE"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "This represents a major architectural paradigm shift. The current architecture is batch-oriented for offline simulation. Real-time sensor integration requires: (1) new data ingestion component for sensor streams, (2) real-time data processing pipeline, (3) potentially time-series database for sensor data, (4) DATABASE integration to populate input parameters, (5) 5-minute freshness requirement implies continuous data flow vs. current batch model. The 'difficult_or_not_supported' section lists 'Streaming or incremental results' as not supported, and this extends that limitation to inputs as well.",
+          "supporting_components": [
+            "DATABASE",
+            "CLIENT"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-13",
+          "classification": "Indirect",
+          "rationale": "ML capabilities are entirely outside current architectural scope. This requires: (1) ML training pipeline accessing historical data from STORAGE and DATABASE, (2) feature engineering infrastructure, (3) model serving component, (4) CLIENT integration for displaying recommendations, (5) potentially new data warehouse for ML training data. The architecture has no AI/ML components, and adding this represents a major functional expansion. The batch-oriented nature supports offline training, but real-time inference and recommendation requires new components.",
+          "supporting_components": [
+            "STORAGE",
+            "DATABASE",
+            "CLIENT"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-14",
+          "classification": "Indirect",
+          "rationale": "Comprehensive health monitoring requires: (1) health check endpoints on all components (CLIENT, DATABASE, SB, CS, TCS, SDS, STORAGE), (2) centralized monitoring service to orchestrate checks, (3) time-series metrics database for historical trends, (4) dashboard application for visualization. The architecture has no observability infrastructure. This is more comprehensive than S-09 (which focuses on specific metrics) and requires instrumentation across all seven components. The 5-minute check interval and unified dashboard represent significant new infrastructure.",
+          "supporting_components": [
+            "CLIENT",
+            "DATABASE",
+            "SB",
+            "CS",
+            "TCS",
+            "SDS",
+            "STORAGE"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. This is the primary use case the architecture was designed to support. Performance and reliability targets (2 hours, 95% success) are operational concerns dependent on infrastructure capacity and variant selection, not architectural limitations.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - directly supported. Variant selection (A1/A2/B1/B2) should be based on client processing capacity, network reliability, and storage management preferences per variant_selection_guidance."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "SB",
+            "CS",
+            "CLIENT"
+          ],
+          "change_description": "Add dynamic service discovery and registration: (1) SB needs registration API to announce availability to CLIENT or central registry, (2) CLIENT or new load balancer component needs service discovery to find available SBs, (3) Health checking mechanism to verify new servers are ready, (4) Configuration management to deploy SB/CS to new servers. The one-SB-per-server constraint is satisfied, but dynamic discovery is missing.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No service registry or discovery mechanism documented",
+            "Client-side load balancing or server selection logic not specified",
+            "Health check protocol between components not defined",
+            "Zero-downtime requirement implies hot-add capability not architecturally supported",
+            "Configuration synchronization across distributed SBs not addressed"
+          ],
+          "alternative_approaches": "Manual approach: (1) Deploy new servers with SB/CS during maintenance window, (2) Update CLIENT configuration with new server endpoints, (3) Restart CLIENT to pick up new servers. This violates zero-downtime but is architecturally simpler. Alternatively, use external load balancer in front of SBs to handle discovery, though this adds infrastructure dependency."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CS",
+            "TCS",
+            "SB",
+            "CLIENT"
+          ],
+          "change_description": "Add upgrade orchestration capabilities: (1) Version compatibility matrix between CS and TCS, (2) Rolling upgrade support in SB to route to compatible CS versions during transition, (3) In-flight simulation handling - either drain existing jobs or support mixed versions, (4) CLIENT compatibility with multiple CS versions, (5) Upgrade orchestration service to coordinate multi-server upgrades. The 8-hour window for all servers is tight without automation.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No versioning scheme for CS/TCS components",
+            "No graceful shutdown or job draining mechanism specified",
+            "Backward compatibility requirements not defined",
+            "Coordinated upgrade across distributed servers requires orchestration not present",
+            "Rollback strategy if upgrade fails not addressed",
+            "8-hour window may be insufficient without rolling upgrade capability"
+          ],
+          "alternative_approaches": "Phased approach: (1) Schedule maintenance window with planned downtime, (2) Complete all running simulations before upgrade, (3) Upgrade all servers simultaneously during downtime, (4) Validate with test simulations before returning to service. This accepts longer downtime but is architecturally simpler. Alternatively, maintain blue-green server pools and switch CLIENT configuration, though this doubles infrastructure."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "TCS",
+            "CS",
+            "CLIENT",
+            "DATABASE"
+          ],
+          "change_description": "Add plugin/module extensibility: (1) TCS plugin interface for third-party modules with standardized input/output contracts, (2) Module registry in DATABASE to store available calculation types, (3) CS orchestration logic to handle new module types, (4) CLIENT UI framework for dynamically displaying available modules and their parameters, (5) Module metadata schema for describing parameters and capabilities. The 2-week timeline requires well-defined extension points.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No plugin architecture or extension points defined",
+            "Module discovery and registration mechanism not specified",
+            "Parameter schema for new modules needs standardization",
+            "CLIENT dynamic UI generation for arbitrary modules is complex",
+            "Validation and certification process for third-party modules not addressed (critical in nuclear domain)",
+            "Version compatibility between modules and core system not defined"
+          ],
+          "alternative_approaches": "Integrated approach: (1) Develop new module as native TCS code rather than plugin, (2) Hard-code module selection in CLIENT UI, (3) Deploy as coordinated release across all components. This is slower for future modules but avoids plugin complexity. Alternatively, limit to configuration-based modules where behavior is parameterized rather than code-based, reducing integration complexity."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "STORAGE",
+            "DATABASE",
+            "CLIENT",
+            "New: Archival Service"
+          ],
+          "change_description": "Add data lifecycle management: (1) New Archival Service component to orchestrate archival process, (2) DATABASE schema extensions for archival status, archival timestamps, and search indices over archived data, (3) Tiered STORAGE integration (active vs. archive tiers), (4) CLIENT modifications to transparently access archived data with potential latency warnings, (5) Archival policy engine to identify candidates based on age and access patterns, (6) Data restoration workflow for retrieving archived simulations.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No archival component or lifecycle management in current architecture",
+            "Storage variants (A1/A2/B1/B2) don't address tiered storage",
+            "Metadata searchability over archived data requires indexing strategy",
+            "60% storage reduction target requires accurate usage analysis",
+            "Restoration SLA for archived data not specified",
+            "Archival format and compression strategy not defined",
+            "Regulatory requirements for nuclear data retention may constrain archival approach"
+          ],
+          "alternative_approaches": "Manual archival: (1) Periodic manual identification of old simulations, (2) Export to external archive storage, (3) Remove from active STORAGE, (4) Maintain catalog in DATABASE with archive location. This is operationally intensive but avoids architectural changes. Alternatively, use storage-level tiering (e.g., NFS with HSM) transparent to application, though this limits metadata searchability."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CLIENT",
+            "DATABASE",
+            "STORAGE"
+          ],
+          "change_description": "Add multi-run comparison capabilities: (1) CLIENT UI framework for side-by-side visualization of up to 5 simulations, (2) Efficient data retrieval API to load multiple result sets from STORAGE, (3) DATABASE query optimization for multi-simulation metadata retrieval, (4) Comparison engine in CLIENT to compute parameter differences and result deviations, (5) Interactive visualization library integration, (6) Potentially caching layer for frequently compared simulations.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "CLIENT visualization capabilities not specified in current architecture",
+            "Performance of loading 5 concurrent result sets from STORAGE may be poor depending on variant (centralized A2/B2 could bottleneck)",
+            "Comparison algorithms for nuclear simulation results require domain expertise",
+            "Interactive visualization may require significant CLIENT processing power",
+            "User workflow for selecting simulations to compare needs design"
+          ],
+          "alternative_approaches": "Simplified comparison: (1) Export simulation results to CSV/Excel, (2) Use external tools (Excel, MATLAB) for comparison, (3) CLIENT provides export functionality only. This avoids CLIENT complexity but reduces user experience. Alternatively, implement basic tabular comparison first, defer advanced visualization to later phase."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CS",
+            "TCS",
+            "CLIENT",
+            "SB",
+            "New: Event Streaming Service"
+          ],
+          "change_description": "Add real-time progress monitoring: (1) TCS instrumentation to emit progress events (% complete, intermediate results), (2) CS aggregation of TCS progress across parallel tasks, (3) Event streaming infrastructure (message queue or websocket server) to push updates to CLIENT, (4) CLIENT real-time UI to display progress and intermediate results, (5) Job cancellation API in CS with cleanup logic, (6) SB routing of cancellation requests. This fundamentally shifts from batch to event-driven architecture.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Architecture explicitly does not support streaming/incremental results",
+            "Event streaming infrastructure not present (websockets, message queue, etc.)",
+            "TCS progress reporting requires standardized progress metrics across different simulation types",
+            "Network bandwidth for streaming intermediate results may be significant",
+            "Job cancellation requires safe cleanup of distributed TCS processes and partial results",
+            "Real-time communication conflicts with batch-oriented file-based design",
+            "40% waste reduction target requires accurate early detection algorithms"
+          ],
+          "alternative_approaches": "Polling-based monitoring: (1) CS writes progress file to STORAGE periodically, (2) CLIENT polls progress file every 30-60 seconds, (3) Display progress in CLIENT, (4) Cancellation via flag file that CS checks periodically. This is less real-time but avoids event streaming infrastructure. Alternatively, implement progress monitoring only for long-running jobs (>1 hour) to limit scope."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CS",
+            "TCS",
+            "DATABASE",
+            "STORAGE",
+            "New: Test Automation Service",
+            "New: Deployment Orchestration"
+          ],
+          "change_description": "Add development/test infrastructure: (1) Environment isolation using containers or VMs for sandbox, (2) Test Automation Service to execute regression tests against historical cases, (3) Test data management to replicate production DATABASE and STORAGE to sandbox, (4) Deployment orchestration to promote CS/TCS code between environments, (5) Version control integration, (6) Test result reporting and comparison against baselines. This is DevOps infrastructure outside current scope.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No environment isolation or deployment pipeline in architecture",
+            "Test automation framework not specified",
+            "Historical test case management (50 cases) requires test data repository",
+            "Sandbox environment requires duplicate infrastructure (DATABASE, STORAGE, servers)",
+            "Regression testing of nuclear simulations requires result validation criteria",
+            "Promotion workflow and approval gates not defined",
+            "Configuration management across environments not addressed"
+          ],
+          "alternative_approaches": "Manual testing: (1) Developers test locally or on dedicated test server, (2) Manual execution of regression test suite, (3) Manual comparison of results, (4) Scheduled deployment windows for production promotion. This is slower but avoids automation infrastructure. Alternatively, implement CI/CD for TCS only (most frequently changed) and manual process for CS/other components."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CS",
+            "TCS",
+            "SDS",
+            "New: Monitoring Service",
+            "New: Alerting Service"
+          ],
+          "change_description": "Add observability infrastructure: (1) Metrics collection agents on CS/TCS/SDS to expose CPU, memory, job metrics, (2) Centralized Monitoring Service to collect and store metrics, (3) Alerting Service with rule engine for threshold detection (90% CPU, 5% failure rate), (4) Log aggregation from distributed components, (5) Notification integration (email, SMS, etc.), (6) Diagnostic log collection automation when alerts trigger.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "No observability components in current architecture",
+            "Components lack instrumentation for metrics exposure",
+            "Distributed log collection across Unix servers requires aggregation infrastructure",
+            "Alert threshold tuning requires baseline understanding of normal operation",
+            "Diagnostic log collection automation requires component cooperation",
+            "15-minute window for CPU alerts may generate false positives during normal peak loads"
+          ],
+          "alternative_approaches": "OS-level monitoring: (1) Use existing Unix monitoring tools (top, vmstat, cron scripts), (2) Simple threshold alerts via system monitoring, (3) Manual log collection when issues occur. This provides basic monitoring without application integration. Alternatively, implement monitoring for CS only initially (most critical component) and expand incrementally."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CLIENT",
+            "DATABASE",
+            "SB",
+            "CS",
+            "STORAGE",
+            "New: Identity Management",
+            "New: Authorization Service",
+            "New: Audit Service"
+          ],
+          "change_description": "Add security architecture: (1) Identity Management system for user authentication, (2) Authorization Service implementing RBAC (analyst, senior engineer, auditor roles), (3) Access control enforcement in CLIENT, DATABASE, and STORAGE, (4) Audit Service logging all data access and modifications, (5) Secure communication (TLS) between components, (6) Session management, (7) Audit trail storage and query capabilities for regulatory compliance.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No security architecture currently defined",
+            "Authentication and authorization mechanisms absent across all components",
+            "Audit logging requires cross-cutting instrumentation",
+            "Role definitions and permission mappings need regulatory alignment",
+            "Secure storage of credentials and audit logs required",
+            "Regulatory compliance requirements (10CFR50, etc.) may dictate specific security controls",
+            "Retrofit security into existing components is high-risk",
+            "Performance impact of authorization checks and audit logging needs assessment"
+          ],
+          "alternative_approaches": "OS-level security: (1) Use Unix file permissions for STORAGE access control, (2) Database-level access control for DATABASE, (3) Network segmentation to restrict CLIENT access. This provides basic security but lacks application-level RBAC and audit trails. Alternatively, implement security incrementally: authentication first, then authorization, then audit logging."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CLIENT",
+            "DATABASE"
+          ],
+          "change_description": "Add template management: (1) DATABASE schema extension with template tables (template metadata, parameter sets, sharing permissions), (2) CLIENT UI for template creation from current simulation, (3) Template browser and search in CLIENT, (4) Template application to populate simulation parameters, (5) Template versioning and update mechanism, (6) Potentially template sharing between users if multi-user support exists.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Template storage schema not defined in DATABASE",
+            "Template parameter validation against current simulation types needed",
+            "Template versioning strategy if simulation types evolve",
+            "User workflow for template management needs design",
+            "Template sharing requires user/permission model (relates to S-10)",
+            "45-minute to 5-minute reduction assumes templates cover majority of use cases"
+          ],
+          "alternative_approaches": "File-based templates: (1) Export simulation parameters to template file (JSON/XML), (2) Store templates in file system or user's local storage, (3) Import template file to populate simulation. This avoids DATABASE changes but loses centralized management. Alternatively, implement as CLIENT-only feature with local template storage initially."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "DATABASE",
+            "CLIENT",
+            "New: Sensor Integration Service",
+            "New: Real-time Data Pipeline"
+          ],
+          "change_description": "Add real-time sensor integration: (1) Sensor Integration Service to connect to plant sensor data streams, (2) Real-time data processing pipeline for data validation and transformation, (3) Time-series database for sensor data storage, (4) DATABASE integration to map sensor data to simulation input parameters, (5) CLIENT UI to show current plant state and trigger digital twin simulations, (6) Data freshness monitoring to ensure 5-minute requirement. This is a major architectural expansion.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Real-time data integration fundamentally conflicts with batch-oriented architecture",
+            "Sensor data streams require continuous processing vs. current on-demand model",
+            "Plant sensor systems may have proprietary protocols requiring custom integration",
+            "5-minute freshness requires reliable network and data pipeline",
+            "Digital twin concept requires simulation execution triggered by data changes, not user requests",
+            "Regulatory acceptance of automated parameter population from sensors uncertain",
+            "Data quality and validation critical for safety-critical simulations",
+            "Time-series data volume may be substantial"
+          ],
+          "alternative_approaches": "Manual data entry: (1) Operators manually transcribe current plant parameters from control room displays, (2) Enter into CLIENT as normal simulation input. This maintains current architecture but loses automation benefits. Alternatively, implement periodic batch import (hourly/daily) of sensor snapshots rather than real-time streaming, reducing architectural impact."
+        },
+        {
+          "scenario_id": "S-13",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "STORAGE",
+            "DATABASE",
+            "CLIENT",
+            "New: ML Training Pipeline",
+            "New: Model Serving Service"
+          ],
+          "change_description": "Add ML capabilities: (1) ML Training Pipeline to process historical simulation data from STORAGE and DATABASE, (2) Feature engineering to extract relevant parameters and outcomes, (3) Model training infrastructure (potentially GPU-based), (4) Model Serving Service for real-time inference, (5) CLIENT integration to display predictions and recommendations, (6) Model versioning and retraining workflow, (7) Potentially data warehouse for ML training data aggregation.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "ML infrastructure entirely outside current architectural scope",
+            "Historical data may need preprocessing and feature engineering",
+            "Model training requires significant computational resources",
+            "Prediction accuracy and reliability critical in nuclear safety context",
+            "Regulatory acceptance of ML recommendations uncertain",
+            "Model explainability required for safety-critical decisions",
+            "50% iteration reduction target requires high model accuracy",
+            "Continuous model retraining as new simulation data accumulates",
+            "Integration of ML recommendations into user workflow needs careful design"
+          ],
+          "alternative_approaches": "Expert system approach: (1) Encode domain expert knowledge as rule-based recommendations, (2) Implement in CLIENT as parameter validation and suggestions, (3) Avoid ML complexity. This provides guidance without ML infrastructure. Alternatively, implement ML as offline analysis tool separate from PAM architecture, with manual transfer of insights."
+        },
+        {
+          "scenario_id": "S-14",
+          "architecture_id": "PAM-ARCH",
+          "classification": "Indirect",
+          "affected_components": [
+            "CLIENT",
+            "DATABASE",
+            "SB",
+            "CS",
+            "TCS",
+            "SDS",
+            "STORAGE",
+            "New: Health Check Service",
+            "New: Metrics Database",
+            "New: Dashboard Application"
+          ],
+          "change_description": "Add comprehensive health monitoring: (1) Health check endpoints on all seven components (CLIENT, DATABASE, SB, CS, TCS, SDS, STORAGE), (2) Centralized Health Check Service to orchestrate checks every 5 minutes, (3) Time-series Metrics Database to store health status and trends, (4) Dashboard Application for unified visualization, (5) Component-specific health checks (DB connectivity, file system integrity, process status), (6) Historical trend analysis and anomaly detection.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Requires instrumentation across all seven components",
+            "Health check protocol and response format needs standardization",
+            "5-minute check interval across distributed components requires efficient implementation",
+            "File system integrity checks may be expensive on large STORAGE",
+            "Dashboard requires real-time data aggregation from distributed sources",
+            "Historical trend storage requires time-series database",
+            "Health check failures need clear remediation guidance",
+            "Overlaps with S-09 but more comprehensive in scope"
+          ],
+          "alternative_approaches": "Incremental monitoring: (1) Start with critical path components (SB, CS, DATABASE), (2) Use simple ping/connectivity checks initially, (3) Add detailed health checks incrementally, (4) Use existing monitoring tools (Nagios, Prometheus) rather than custom dashboard. Alternatively, implement health checks as on-demand diagnostic tool rather than continuous monitoring."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "SB",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-07",
+            "S-10",
+            "S-14"
+          ]
+        },
+        {
+          "component": "CS",
+          "scenario_count": 8,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-14"
+          ]
+        },
+        {
+          "component": "CLIENT",
+          "scenario_count": 11,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12",
+            "S-13",
+            "S-14"
+          ]
+        },
+        {
+          "component": "TCS",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-14"
+          ]
+        },
+        {
+          "component": "DATABASE",
+          "scenario_count": 9,
+          "scenarios": [
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12",
+            "S-13",
+            "S-14"
+          ]
+        },
+        {
+          "component": "STORAGE",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-13",
+            "S-14"
+          ]
+        },
+        {
+          "component": "SDS",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-09",
+            "S-14"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "CLIENT",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12",
+            "S-13",
+            "S-14"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "CLIENT is the primary user interface touched by 11 scenarios spanning critical capabilities: security/RBAC (S-10 - regulatory compliance risk), real-time monitoring (S-07 - 40% waste reduction), digital twin integration (S-12 - operational efficiency), and ML recommendations (S-13 - 50% iteration reduction). Failure to address creates: (1) Regulatory non-compliance risk in nuclear domain, (2) Poor user experience blocking productivity gains, (3) Inability to evolve system capabilities. End-users directly impacted by all UI/workflow changes; developers face high modification burden across diverse requirements."
+        },
+        {
+          "component": "DATABASE",
+          "scenario_ids": [
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12",
+            "S-13",
+            "S-14"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "DATABASE is the central data repository for 9 scenarios including security audit trails (S-10 - regulatory mandate), archival lifecycle (S-05 - 60% storage reduction), template management (S-11 - 45min\u21925min efficiency), and ML training data (S-13). Critical risks: (1) Security/audit requirements are non-negotiable in nuclear industry - failure blocks regulatory approval, (2) Schema evolution across multiple features creates migration complexity and downtime risk, (3) Performance degradation as data volume grows without archival strategy. System administrators face operational burden; developers encounter integration complexity across evolving schema."
+        },
+        {
+          "component": "CS",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-14"
+          ],
+          "priority": "High",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "CS (Computation Server) orchestrates simulation execution across 8 scenarios including dynamic scaling (S-02 - zero-downtime scaling), version upgrades (S-03 - 8hr window constraint), real-time progress (S-07 - job cancellation), and monitoring (S-09, S-14). Critical because: (1) Upgrade coordination failures (S-03) risk extended outages beyond 8hr window, (2) Lack of service discovery (S-02) prevents elastic scaling under load, (3) No progress monitoring (S-07) wastes compute resources on unnecessary runs, (4) Observability gaps (S-09, S-14) delay incident response. High developer effort for orchestration logic; maintainers struggle with distributed system complexity."
+        },
+        {
+          "component": "STORAGE",
+          "scenario_ids": [
+            "S-05",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-13",
+            "S-14"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "STORAGE handles simulation results across 6 scenarios with archival (S-05 - 60% reduction target), access control (S-10 - data security), and ML training data (S-13). Business risks: (1) Without archival strategy (S-05), storage costs escalate and performance degrades, (2) Security controls (S-10) required for regulatory compliance and IP protection, (3) Multi-run comparison (S-06) performance bottlenecks on centralized variants (A2/B2). System administrators face capacity planning challenges; end-users experience slow data retrieval. However, storage issues are more gradual than compute/security failures."
+        },
+        {
+          "component": "TCS",
+          "scenario_ids": [
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-14"
+          ],
+          "priority": "Medium",
+          "rank": 5,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "TCS (Thermal-hydraulic Calculation Server) executes core simulations in 6 scenarios: version upgrades (S-03), plugin extensibility (S-04 - 2-week new module integration), progress reporting (S-07), and testing (S-08 - 50 regression cases). Risks: (1) Plugin architecture absence (S-04) slows competitive response to new calculation requirements, (2) Version compatibility issues (S-03) during upgrades risk simulation accuracy, (3) Lack of progress instrumentation (S-07) prevents early termination of bad runs. Primarily impacts developers adding capabilities and maintainers managing versions. Less end-user facing than CLIENT/DATABASE."
+        },
+        {
+          "component": "SB",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-07",
+            "S-10",
+            "S-14"
+          ],
+          "priority": "Medium",
+          "rank": 6,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "SB (Simulation Broker) routes requests across 5 scenarios: dynamic scaling (S-02), upgrades (S-03), job cancellation (S-07), security (S-10), and health checks (S-14). Operational risks: (1) Service discovery gaps (S-02) prevent auto-scaling, requiring manual configuration, (2) Upgrade coordination (S-03) complexity across distributed SBs, (3) Security enforcement (S-10) at entry point critical for access control. Primarily infrastructure concern affecting system administrators managing server pools and maintainers handling routing logic. Failures cause service disruption but less data/compliance risk than DATABASE/CLIENT."
+        },
+        {
+          "component": "SDS",
+          "scenario_ids": [
+            "S-09",
+            "S-14"
+          ],
+          "priority": "Low",
+          "rank": 7,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "SDS (Simulation Data Server) appears in only 2 monitoring scenarios (S-09, S-14) with limited functional changes. Risks are operational visibility gaps: (1) Performance monitoring (S-09) helps detect resource constraints, (2) Health checks (S-14) enable proactive maintenance. However, SDS has narrow scope (data serving) with fewer evolutionary pressures than other components. Monitoring absence increases troubleshooting time but doesn't block core functionality or regulatory requirements. Lowest priority as impacts are primarily operational efficiency for administrators rather than capability delivery or compliance."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: Core batch simulation workflow is well-supported. S-01 (primary use case) requires zero architectural changes, demonstrating the architecture successfully addresses its foundational purpose of executing nuclear safety simulations with clear separation between client (CLIENT), orchestration (SB/CS), computation (TCS), and persistence (DATABASE/STORAGE). The 2-hour execution and 95% success targets are operational concerns, not architectural limitations.",
+          "Strength 2: Flexible deployment topology through architectural variants. The four variants (A1/A2/B1/B2) provide deployment flexibility for different client processing capacities, network reliability, and storage management preferences. This variant-based approach allows operational adaptation without architectural redesign, as noted in S-01's variant_selection_guidance.",
+          "Strength 3: Clear component separation enables localized enhancements. S-06 (multi-run comparison) and S-11 (template management) demonstrate localized changes with low risk because CLIENT and DATABASE have well-defined boundaries. These user-facing productivity improvements (45min\u21925min setup, side-by-side comparison) can be delivered without widespread architectural disruption.",
+          "Strength 4: Stateless computation layer supports horizontal scaling potential. The one-SB-per-server and stateless TCS design provides foundation for scaling, as evidenced in S-02. While service discovery is missing, the underlying architectural constraint enables distributed deployment once discovery mechanisms are added."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: Absence of cross-cutting security architecture creates regulatory compliance risk. S-10 exposes that authentication, authorization (RBAC), and audit logging are entirely missing across all seven components. In the nuclear domain, this is a critical gap blocking regulatory approval under 10CFR50. The widespread impact (7 components), high effort, and high risk indicate security was not a first-class architectural concern, requiring expensive retrofit.",
+          "Weakness 2: Batch-oriented, file-based design conflicts with real-time operational requirements. S-07 (real-time progress monitoring), S-12 (digital twin sensor integration), and S-13 (ML predictions) all struggle because the architecture explicitly does not support streaming/incremental results. The fundamental shift from batch to event-driven patterns requires new infrastructure (message queues, websockets, real-time data pipelines) affecting CS, TCS, CLIENT, and DATABASE. This limits operational efficiency gains (40% waste reduction in S-07) and digital transformation initiatives.",
+          "Weakness 3: Lack of lifecycle management and orchestration capabilities. S-02 (dynamic scaling), S-03 (coordinated upgrades), S-05 (data archival), and S-08 (dev/test environments) all identify missing orchestration: no service discovery/registry, no version compatibility management, no deployment pipelines, no data lifecycle policies. These operational scenarios require widespread changes with medium-to-high effort, indicating the architecture optimized for static deployment rather than dynamic operations. The 8-hour upgrade window constraint (S-03) may be unachievable without rolling upgrade support.",
+          "Weakness 4: Rigid extensibility model hinders competitive responsiveness. S-04 (third-party calculation modules) reveals no plugin architecture or extension points in TCS, requiring widespread changes across TCS, CS, CLIENT, and DATABASE to achieve the 2-week integration target. In a competitive nuclear software market, inability to rapidly integrate new calculation types (e.g., advanced containment models, severe accident scenarios) limits product differentiation and customer responsiveness.",
+          "Weakness 5: Insufficient observability infrastructure delays incident response. S-09 (performance monitoring) and S-14 (health dashboard) expose that components lack instrumentation for metrics, logging, and health checks. The absence of centralized monitoring/alerting services means operators cannot proactively detect issues (90% CPU, 5% failure rate) or diagnose distributed system failures. This operational blind spot increases mean-time-to-resolution and risks extended outages in production nuclear plant environments.",
+          "Weakness 6: DATABASE and STORAGE lack advanced data management capabilities. S-05 (archival with 60% storage reduction), S-06 (multi-run comparison performance on centralized variants), and S-13 (ML training data aggregation) reveal limitations: no tiered storage, no data lifecycle policies, no time-series optimization, no data warehouse patterns. As simulation data volumes grow, these gaps will cause performance degradation and escalating storage costs."
+        ],
+        "modifiability_assessment": "The architecture exhibits low-to-moderate modifiability, optimized for its original batch simulation use case but struggling with evolutionary scenarios requiring real-time capabilities, security, orchestration, and extensibility. Of 14 scenarios, only 1 is directly supported; 13 require indirect changes with 9 classified as widespread impact and 8 requiring high effort. The CLIENT (11 scenarios), DATABASE (9 scenarios), and CS (8 scenarios) hotspots indicate tight coupling and insufficient separation of concerns for cross-cutting capabilities like security, monitoring, and lifecycle management."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement comprehensive security architecture with authentication, RBAC, and audit logging across all components (addresses S-10). Adopt industry-standard patterns: OAuth2/SAML for authentication, attribute-based access control (ABAC) for fine-grained permissions, centralized audit service with immutable log storage. Prioritize DATABASE and STORAGE access controls first (regulatory compliance), then CLIENT (user roles), then inter-component communication (TLS).",
+          "rationale": "Security is non-negotiable for nuclear regulatory compliance (10CFR50) and blocks production deployment. S-10's high risk and widespread impact make this the highest business priority. Incremental implementation (authentication\u2192authorization\u2192audit) reduces risk compared to big-bang approach. Establishes foundation for multi-tenancy and data governance required in enterprise nuclear software.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce service mesh or API gateway pattern to decouple CLIENT from backend services and enable cross-cutting capabilities. Implement centralized gateway handling: service discovery/routing (S-02), authentication/authorization (S-10), request logging/monitoring (S-09, S-14), and protocol translation. This creates single point for adding capabilities like rate limiting, circuit breakers, and A/B testing without modifying all components.",
+          "rationale": "CLIENT's involvement in 11 scenarios indicates it's a modifiability bottleneck. Service mesh decouples CLIENT from backend topology changes (dynamic SB scaling in S-02, version upgrades in S-03) and centralizes cross-cutting concerns. Reduces CLIENT complexity and enables independent evolution of UI and backend services. Industry-proven pattern (Istio, Kong) with strong tooling support.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Adopt event-driven architecture with message broker for asynchronous communication and real-time capabilities. Introduce message queue (Kafka, RabbitMQ) between CS and CLIENT for progress updates (S-07), between TCS and CS for intermediate results, and for system events (job completion, failures). Maintain file-based results for final outputs but add event streams for operational visibility.",
+          "rationale": "Addresses fundamental batch-vs-real-time tension in S-07 (40% waste reduction through early cancellation), S-12 (digital twin 5-minute freshness), and S-09 (monitoring alerts). Event-driven patterns enable loose coupling, allowing components to evolve independently. Hybrid approach (events for monitoring, files for results) balances innovation with stability. Unlocks operational efficiency gains without full architectural rewrite.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement data lifecycle management with tiered storage and archival service (addresses S-05). Introduce archival service orchestrating: (1) policy-based identification of archival candidates (age, access patterns), (2) compression and migration to cold storage tier, (3) metadata indexing in DATABASE for searchability, (4) transparent restoration workflow in CLIENT. Use storage-agnostic abstraction layer to support multiple backends (NFS, S3, tape).",
+          "rationale": "60% storage reduction target in S-05 has direct cost impact and performance benefits (faster queries on active data). Archival also supports S-08 (test data management) and S-13 (ML training data curation). Tiered storage is industry best practice for simulation/scientific data. Medium effort with high ROI, and can be implemented incrementally (manual policies first, then automation).",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Design plugin architecture for TCS with standardized extension points (addresses S-04). Define: (1) plugin interface contract (input/output schemas, lifecycle hooks), (2) plugin registry in DATABASE with metadata (version, parameters, certification status), (3) dynamic loading mechanism in TCS, (4) CLIENT framework for rendering plugin-specific UIs from metadata. Establish certification process for third-party modules given nuclear safety criticality.",
+          "rationale": "Enables 2-week integration target for new calculation modules, critical for competitive differentiation. Plugin architecture is proven pattern (Eclipse, Jenkins) balancing extensibility with stability. Certification process addresses nuclear domain's safety validation requirements. Reduces TCS modification burden and enables ecosystem of third-party contributors. Medium priority because fewer scenarios depend on it, but high strategic value.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement centralized observability platform with metrics, logging, and tracing (addresses S-09, S-14). Deploy: (1) metrics collection (Prometheus) with component instrumentation, (2) log aggregation (ELK stack) from distributed services, (3) distributed tracing (Jaeger) for request flows, (4) unified dashboard (Grafana) with pre-built views for operators. Standardize observability libraries across CS, TCS, SB, SDS.",
+          "rationale": "Observability is foundational for operating distributed systems at scale. Addresses S-09 (15-minute CPU alerts, 5% failure rate detection) and S-14 (7-component health dashboard). Enables data-driven capacity planning for S-02 (dynamic scaling) and root cause analysis for S-03 (upgrade failures). Industry-standard tooling reduces implementation risk. Medium priority as operational rather than functional, but high value for maintainability.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Establish service discovery and health check infrastructure (addresses S-02, S-14). Implement: (1) service registry (Consul, etcd) where SB instances register on startup, (2) health check protocol with standardized endpoints on all components, (3) CLIENT-side load balancing or DNS-based discovery to find available SBs, (4) graceful shutdown with connection draining. Enables zero-downtime scaling and automated failover.",
+          "rationale": "Unblocks dynamic scaling in S-02 (zero-downtime server addition) and provides foundation for high availability. Service discovery is prerequisite for elastic infrastructure and cloud deployment. Health checks enable automated remediation and reduce manual operational burden. Complements observability (S-09, S-14) by providing actionable health status. Medium effort with clear operational benefits.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Introduce version management and rolling upgrade capabilities (addresses S-03). Implement: (1) semantic versioning for CS/TCS with compatibility matrix, (2) version negotiation protocol between components, (3) blue-green deployment support with traffic shifting, (4) job draining mechanism in CS to complete in-flight simulations before shutdown, (5) automated rollback on health check failures. Document upgrade runbooks and test in S-08 sandbox.",
+          "rationale": "8-hour upgrade window in S-03 is tight without automation, risking extended outages. Rolling upgrades enable zero-downtime deployments and reduce business risk. Version compatibility management prevents integration failures between CS and TCS. Supports S-08 (dev/test environments) by enabling safe promotion workflows. Medium priority as upgrades are infrequent, but high impact when they occur.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Implement template management system in CLIENT and DATABASE (addresses S-11). Extend DATABASE schema with template tables (metadata, parameter sets, sharing permissions), add CLIENT UI for template CRUD operations, and implement template application to populate simulation parameters. Start with user-local templates, then add shared templates if multi-user support exists (relates to S-10 RBAC).",
+          "rationale": "High ROI quick win: 45min\u21925min setup time with localized changes (CLIENT, DATABASE only) and low risk. Improves user productivity immediately without architectural disruption. Can be delivered incrementally (basic templates first, then versioning/sharing). Low priority relative to security/observability but high user satisfaction impact. Good candidate for early delivery to build stakeholder confidence.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Enhance CLIENT with multi-run comparison and visualization capabilities (addresses S-06). Implement: (1) efficient batch data retrieval API from STORAGE, (2) CLIENT-side comparison engine for parameter diffs and result deviations, (3) interactive visualization library (D3.js, Plotly) for side-by-side charts, (4) caching layer for frequently compared simulations. Optimize for centralized storage variants (A2/B2) with parallel data loading.",
+          "rationale": "Localized change with low risk and clear user value (analyst workflow improvement). Comparison capabilities are common in simulation tools and expected by users. Can be delivered incrementally (tabular comparison first, then advanced visualization). Low priority as productivity enhancement rather than regulatory/operational requirement, but complements template management (S-11) for comprehensive user experience improvements.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Defer ML capabilities (S-13) and digital twin integration (S-12) until foundational architecture is strengthened. These scenarios require event-driven architecture (S-07), real-time data pipelines, and significant new infrastructure (ML training, model serving, sensor integration). Revisit after completing high-priority recommendations (security, observability, service mesh) that provide necessary foundation.",
+          "rationale": "S-12 and S-13 are high-effort, high-risk initiatives with uncertain regulatory acceptance in nuclear domain. They conflict with current batch architecture and require capabilities not yet present (real-time streaming, ML ops). Premature investment risks building on unstable foundation. Better to establish robust operational architecture first, then layer advanced capabilities. Defer to future roadmap phase after core modifiability improvements are proven.",
+          "estimated_effort": "High"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

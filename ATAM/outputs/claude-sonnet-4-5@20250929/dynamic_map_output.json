@@ -1,0 +1,832 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The Dynamic Map is a complex information system designed for urban traffic optimization. It consists of spatial databases storing static and dynamic data (road infrastructure, traffic conditions, events) and software modules for data collection from various sensors (video, acoustic, GPS), interpretation, and provision to clients (visualization, route planning, traffic control).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Generic architectural views (ArchiMate) were available but lacked constructs to describe scenario influence on components or capture specific design decisions. Some specifications were missing or decisions had not yet been made.",
+        "evaluator_inquiry_questions": [
+          "What is the platform for this component (e.g., PostgreSQL, Linux, IIS)?",
+          "Is the component logic fixed or customizable?",
+          "What is the query granularity (bulk, low, medium, high)?",
+          "Is transaction distribution used?",
+          "What communication type is used (synchronous, asynchronous)?",
+          "Is buffering enabled?",
+          "What security methods are applied?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Data originates from a network of fixed sensors (video detectors, acoustic sensors, inductive loops)",
+          "Data includes on-board GPS receivers installed in vehicles",
+          "End-user interaction via network or mobile interfaces"
+        ],
+        "runtime_constraints": [
+          "Real-time performance requirements for traffic analysis",
+          "High volume of data feeds from sensors",
+          "Platform heterogeneity",
+          "Interoperability with various sensor types and client modules"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "read_query_throughput": "200 queries/sec",
+        "sensor_feeds_volume": {
+          "sensor_count": "1000",
+          "update_interval": "60 sec"
+        },
+        "gps_tracker_volume": {
+          "tracker_count": "5000",
+          "update_interval": "5 sec"
+        },
+        "bulk_insert_size": "20000 values",
+        "latency_limit": "10 seconds",
+        "sensor_failure_detection_time": "3 to 20 minutes"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Data-Centric / Repository Style",
+          "questions": [
+            "How are transactions distributed across the distinct repositories (Static, Traffic, Event)?",
+            "How are ontology definitions synchronized with database dictionaries?",
+            "Is the query granularity optimized for bulk updates vs. individual reads?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "New sensor types and sensor processing software will be integrated in <6 days>"
+        },
+        {
+          "id": "RS-02",
+          "description": "Dynamic Map will be capable of accepting feeds from up to 1000 sensors occurring every <60> sec"
+        },
+        {
+          "id": "RS-03",
+          "description": "Dynamic Map will be capable of processing up to <200> read queries per second"
+        },
+        {
+          "id": "RS-04",
+          "description": "New map features can be introduced and made discoverable with built-in functionality"
+        },
+        {
+          "id": "RS-05",
+          "description": "Updating of data defining the road network can cause a loss of at most 10 values of a single monitoring parameter"
+        },
+        {
+          "id": "RS-06",
+          "description": "Sensor failures will be detected in a configurable period ranging from 3 to 20 minutes"
+        },
+        {
+          "id": "RS-07",
+          "description": "New event types and corresponding customizable detection routines can be introduced in 1 day"
+        },
+        {
+          "id": "RS-08",
+          "description": "System will be able to accommodate and interpret location data from 5000 GPS tracker units updated every 5 sec"
+        },
+        {
+          "id": "RS-09",
+          "description": "A Dynamic Map component can be ported to another platform within 20 days"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Optimize road traffic and provide tools for efficient traffic control",
+          "Enable fast response to road accidents or threats using real-time analysis",
+          "Provide efficient route planning and optimization based on dynamic traffic data",
+          "Integrate existing and new sensor infrastructure seamlessly"
+        ],
+        "technical_constraints": [
+          "Platform heterogeneity",
+          "Need for interoperability with diverse subsystems",
+          "Distributed development teams",
+          "High volume of sensor data"
+        ],
+        "architectural_drivers": [
+          "Performance (Real-time response, high throughput)",
+          "Modifiability (Integration of new sensors and event types)",
+          "Reliability (System stability, failure detection)",
+          "Usability",
+          "Portability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Data-Centric / Repository Style",
+          "description": "Central spatial databases (Static, Traffic, Event repositories) serve as the primary integration mechanism. All sensor data flows into these repositories, and client modules query them for information. Transaction distribution across distinct repositories allows parallel processing.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Centralized data access enables optimized query processing and bulk updates. Transaction distribution across distinct repositories (Static, Traffic, Event) allows parallel processing and reduces contention."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "New sensor types can be integrated by adding data collection modules without affecting core repository structure. Ontology-based definitions enable extensibility for new event types and data formats."
+            },
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Repository acts as a common integration point for heterogeneous sensor types (video, acoustic, GPS, inductive loops) and diverse client modules (visualization, route planning, traffic control)."
+            }
+          ]
+        },
+        {
+          "approach_name": "Layered Architecture",
+          "description": "System organized into distinct layers: data collection layer (sensors and acquisition modules), data storage layer (spatial repositories), data interpretation layer (processing and analysis modules), and presentation layer (client interfaces for visualization and control).",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Layer separation allows changes in one layer (e.g., adding new sensor types or client modules) without affecting other layers. Clear interfaces between layers enable independent evolution."
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Platform-specific concerns isolated to individual layers, enabling component porting across different platforms while maintaining system functionality."
+            },
+            {
+              "quality_attribute": "Usability",
+              "rationale": "Presentation layer can be modified independently to improve user interfaces without impacting underlying data processing or storage."
+            }
+          ]
+        },
+        {
+          "approach_name": "Publish-Subscribe / Event-Driven Pattern",
+          "description": "Sensors publish data updates at regular intervals (1000 fixed sensors at 60-second intervals, 5000 GPS trackers at 5-second intervals). Processing modules subscribe to relevant data streams for interpretation and event detection. Buffering mechanisms handle asynchronous communication.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Asynchronous communication and buffering mechanisms handle high-volume sensor feeds without blocking. Decoupled producers and consumers enable parallel processing of data streams."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Decoupled sensor feeds enable failure detection mechanisms (3-20 minute configurable detection window). System can continue operating even if individual sensors fail."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "New subscribers can be added to process existing data streams without modifying sensor components. Event-driven architecture supports dynamic reconfiguration."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "High-volume sensor data ingestion (1000 fixed sensors @ 60s intervals)",
+                "scenario_id": "RS-02",
+                "scenario_description": "Dynamic Map will be capable of accepting feeds from up to 1000 sensors occurring every 60 sec",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "High-frequency GPS tracker updates (5000 units @ 5s intervals)",
+                "scenario_id": "RS-08",
+                "scenario_description": "System will be able to accommodate and interpret location data from 5000 GPS tracker units updated every 5 sec",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Query throughput for real-time traffic and route planning (200 queries/sec)",
+                "scenario_id": "RS-03",
+                "scenario_description": "Dynamic Map will be capable of processing up to 200 read queries per second",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Rapid integration of new sensor types and processing software",
+                "scenario_id": "RS-01",
+                "scenario_description": "New sensor types and sensor processing software will be integrated in <6 days",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Dynamic addition of new event detection routines",
+                "scenario_id": "RS-07",
+                "scenario_description": "New event types and corresponding customizable detection routines can be introduced in 1 day",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Extensibility for new map features with built-in discoverability",
+                "scenario_id": "RS-04",
+                "scenario_description": "New map features can be introduced and made discoverable with built-in functionality",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Configurable sensor failure detection (3-20 minute window)",
+                "scenario_id": "RS-06",
+                "scenario_description": "Sensor failures will be detected in a configurable period ranging from 3 to 20 minutes",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Data integrity during road network updates (max 10 parameter values lost)",
+                "scenario_id": "RS-05",
+                "scenario_description": "Updating of data defining the road network can cause a loss of at most 10 values of a single monitoring parameter",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Cross-platform component migration capability",
+                "scenario_id": "RS-09",
+                "scenario_description": "A Dynamic Map component can be ported to another platform within 20 days",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Dynamic Map will be capable of accepting feeds from up to 1000 sensors occurring every 60 seconds during normal operations without data loss or processing delays",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "System will be able to accommodate and interpret location data from 5000 GPS tracker units updated every 5 seconds, maintaining real-time accuracy for traffic visualization and route planning",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Dynamic Map will be capable of processing up to 200 read queries per second from client modules (visualization, route planning, traffic control) with response times suitable for real-time decision making",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "New sensor types and sensor processing software will be integrated into the system within 6 days, including data collection modules, repository schema updates, and client interface modifications",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "New event types and corresponding customizable detection routines can be introduced in 1 day using ontology-based definitions without requiring changes to core repository structure",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "New map features can be introduced and made discoverable with built-in functionality, allowing client modules to dynamically detect and utilize new capabilities without manual reconfiguration",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "Sensor failures will be detected in a configurable period ranging from 3 to 20 minutes through monitoring of expected periodic updates, enabling automated alerts and failover mechanisms",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Updating of data defining the road network (static repository modifications) can cause a loss of at most 10 values of a single monitoring parameter during the transition period, ensuring data integrity",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "A Dynamic Map component can be ported to another platform within 20 days by isolating platform-specific dependencies to individual architectural layers",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "RS-02",
+            "text": "Dynamic Map will be capable of accepting feeds from up to 1000 sensors occurring every 60 seconds during normal operations without data loss or processing delays",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with 1000 fixed sensors transmitting periodically",
+          "stimulus": "1000 sensor data feeds arriving every 60 seconds (approximately 16.7 sensor updates per second)",
+          "response_measure": "No data loss or processing delays during continuous sensor ingestion",
+          "architectural_decisions": [
+            "Data-Centric Repository with separate Traffic repository for sensor data",
+            "Publish-Subscribe pattern with buffering mechanisms for asynchronous sensor feeds",
+            "Transaction distribution across distinct repositories (Static, Traffic, Event) for parallel processing"
+          ],
+          "reasoning": "The relatively low update frequency (60-second intervals) and moderate sensor count (1000 units) results in approximately 16.7 updates per second. The Data-Centric Repository approach with buffering can handle this load through asynchronous processing. Transaction distribution across repositories reduces contention. However, without specific buffer sizes and database write throughput capacity, we cannot quantitatively verify that no data loss will occur during peak loads or bulk update scenarios.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Low update frequency (60-second intervals) is well within typical database ingestion capabilities",
+                "rationale": "At 16.7 updates/second, even commodity database systems can handle this load. The publish-subscribe pattern with buffering provides additional headroom for temporary spikes."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Buffer size for sensor data ingestion queue",
+                "correlated_attribute": "Performance (data loss prevention)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Database write transaction throughput capacity",
+                "correlated_attribute": "Performance (processing delay)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-08",
+            "text": "System will be able to accommodate and interpret location data from 5000 GPS tracker units updated every 5 seconds, maintaining real-time accuracy for traffic visualization and route planning",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with high-frequency GPS tracker updates",
+          "stimulus": "5000 GPS tracker units transmitting location data every 5 seconds (1000 updates per second)",
+          "response_measure": "Real-time accuracy maintained for traffic visualization and route planning without processing backlog",
+          "architectural_decisions": [
+            "Publish-Subscribe pattern with asynchronous buffering for GPS data streams",
+            "Separate Traffic repository to isolate high-volume GPS updates from other data",
+            "Data interpretation layer processes GPS streams for event detection and traffic analysis"
+          ],
+          "reasoning": "GPS trackers generate 1000 updates per second (5000 units / 5 seconds), which is significantly higher than fixed sensor load. The publish-subscribe pattern decouples data ingestion from processing, allowing buffering to smooth out bursts. However, sustained 1000 updates/second requires substantial database write capacity and network bandwidth. Without specific message sizes, network capacity, and database throughput metrics, this represents a significant performance risk.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "High-frequency GPS updates (1000/sec) may exceed database write capacity, causing processing backlog and delayed real-time accuracy",
+                "rationale": "Sustained 1000 writes per second requires high-performance database configuration. If write throughput is insufficient, buffers will fill and either data loss or increasing latency will occur. No quantitative verification of database capacity exists."
+              },
+              {
+                "id": "R-02",
+                "description": "Network bandwidth between GPS trackers and central repositories may become saturated",
+                "rationale": "Without knowing message sizes and available bandwidth, 1000 messages/second could exceed network capacity, especially if GPS data includes additional metadata beyond coordinates."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "GPS message size (bytes per location update)",
+                "correlated_attribute": "Performance (network bandwidth utilization)"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Network bandwidth capacity between GPS units and Traffic repository",
+                "correlated_attribute": "Performance (data transmission delay)"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Database write transaction rate (transactions per second)",
+                "correlated_attribute": "Performance (real-time accuracy)"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Buffer capacity for GPS data ingestion queue",
+                "correlated_attribute": "Performance (data loss under sustained load)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "GPS update frequency (5-second interval)",
+                "conflicting_attributes": [
+                  "Performance (real-time accuracy - positive with higher frequency)",
+                  "Performance (system load and scalability - negative with higher frequency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-03",
+            "text": "Dynamic Map will be capable of processing up to 200 read queries per second from client modules (visualization, route planning, traffic control) with response times suitable for real-time decision making",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with concurrent client query load",
+          "stimulus": "Up to 200 read queries per second from diverse client modules",
+          "response_measure": "Response times suitable for real-time decision making (typically sub-second for interactive applications)",
+          "architectural_decisions": [
+            "Data-Centric Repository with optimized query processing for spatial data",
+            "Transaction distribution across Static, Traffic, and Event repositories reduces query contention",
+            "Layered architecture separates presentation layer from data storage, enabling query optimization"
+          ],
+          "reasoning": "200 read queries per second is a moderate load for well-designed database systems, especially with spatial indexing. The separation of repositories (Static, Traffic, Event) allows queries to be distributed, reducing contention. However, query complexity matters significantly - simple point queries are very different from complex spatial joins. Without specific query response time requirements or query complexity profiles, we cannot definitively assess whether 'suitable for real-time decision making' will be achieved.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Complex spatial queries (e.g., route planning with real-time traffic) may exceed response time requirements under 200 queries/sec load",
+                "rationale": "Route planning queries likely involve complex spatial joins across Static (road network) and Traffic (current conditions) repositories. Without query optimization strategies (caching, materialized views, spatial indexing details), complex queries may take multiple seconds, unsuitable for real-time interaction."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Simple read queries (e.g., current traffic at specific location) can be served efficiently at 200 queries/sec",
+                "rationale": "Point queries with spatial indexing typically execute in milliseconds. Repository separation reduces lock contention, allowing parallel query execution."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Query complexity distribution (simple vs. complex spatial queries)",
+                "correlated_attribute": "Performance (query response time)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Spatial indexing strategy and database configuration",
+                "correlated_attribute": "Performance (query throughput)"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Acceptable response time threshold for 'real-time decision making'",
+                "correlated_attribute": "Performance (user experience)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Repository normalization (separate Static, Traffic, Event repositories)",
+                "conflicting_attributes": [
+                  "Performance (reduced contention through transaction distribution - positive)",
+                  "Performance (complex queries requiring joins across repositories - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-01",
+            "text": "New sensor types and sensor processing software will be integrated into the system within 6 days, including data collection modules, repository schema updates, and client interface modifications",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution requiring integration of new sensor technology",
+          "stimulus": "Request to add new sensor type with associated processing logic",
+          "response_measure": "Complete integration (data collection, storage, processing, presentation) within 6 days",
+          "architectural_decisions": [
+            "Layered architecture isolates sensor-specific concerns to data collection layer",
+            "Data-Centric Repository with extensible schema supports new data types",
+            "Ontology-based definitions enable semantic integration of new sensor data",
+            "Publish-Subscribe pattern allows new processing modules to subscribe to sensor feeds without modifying producers"
+          ],
+          "reasoning": "The layered architecture and publish-subscribe pattern provide strong modifiability support. New sensors can be added by creating data collection modules that publish to existing repositories, and new processing modules can subscribe to these feeds. However, 6 days is an aggressive timeline that requires well-defined interfaces, comprehensive documentation, and minimal coupling between components. Repository schema updates could require data migration and client interface modifications introduce cross-layer dependencies.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Repository schema updates for new sensor data types may require data migration and extensive testing, potentially exceeding 6-day timeline",
+                "rationale": "Adding new columns or tables to spatial repositories with existing data requires careful migration planning. If schema changes affect existing queries or require index rebuilding, downtime and testing could extend beyond 6 days."
+              },
+              {
+                "id": "R-05",
+                "description": "Client interface modifications introduce cross-layer dependencies that may cascade changes beyond data collection layer",
+                "rationale": "If new sensor data requires presentation layer changes (new visualization types, user controls), the layered architecture's modifiability benefits are reduced. Changes propagate across multiple layers, increasing integration time."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Adding new sensor data collection modules without schema changes can be accomplished quickly through publish-subscribe pattern",
+                "rationale": "If new sensor data fits existing repository schema (e.g., another GPS tracker type), only data collection module development is needed. Publish-subscribe decoupling allows independent deployment."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Degree of schema change required for new sensor type",
+                "correlated_attribute": "Modifiability (integration timeline)"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Interface stability between architectural layers",
+                "correlated_attribute": "Modifiability (change propagation)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Ontology extensibility for new sensor semantics",
+                "correlated_attribute": "Modifiability (semantic integration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Repository schema flexibility (generic vs. sensor-specific schemas)",
+                "conflicting_attributes": [
+                  "Modifiability (adding new sensor types without schema changes - positive with generic schema)",
+                  "Performance (query optimization for specific sensor types - negative with overly generic schema)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-06",
+            "text": "Sensor failures will be detected in a configurable period ranging from 3 to 20 minutes through monitoring of expected periodic updates, enabling automated alerts and failover mechanisms",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with potential sensor hardware failures",
+          "stimulus": "Sensor stops transmitting periodic updates due to hardware failure or network disconnection",
+          "response_measure": "Failure detected within configurable 3-20 minute window, triggering automated alerts",
+          "architectural_decisions": [
+            "Publish-Subscribe pattern with expected update intervals enables timeout-based failure detection",
+            "Decoupled sensor feeds allow system to continue operating despite individual sensor failures",
+            "Event repository can log failure events for monitoring and alerting"
+          ],
+          "reasoning": "The publish-subscribe architecture naturally supports failure detection through monitoring of expected periodic updates. Since sensors publish at known intervals (60 seconds for fixed sensors, 5 seconds for GPS), absence of updates within expected timeframes indicates failure. The 3-20 minute configurable window provides flexibility for different sensor types and network conditions. Decoupled architecture ensures individual sensor failures don't cascade to system-wide failures.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Publish-subscribe pattern with known update intervals provides robust foundation for timeout-based failure detection",
+                "rationale": "Expected update intervals (60s for fixed sensors, 5s for GPS) are well-defined. Monitoring modules can easily detect missing updates within 3-20 minute window. Decoupled architecture prevents failure propagation."
+              },
+              {
+                "id": "NR-05",
+                "description": "Configurable detection window (3-20 minutes) accommodates different sensor types and network reliability levels",
+                "rationale": "Flexibility in detection timing reduces false positives from temporary network issues while ensuring timely detection of genuine failures. Different sensor types can have different thresholds."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Failure detection window configuration (3-20 minute range)",
+                "correlated_attribute": "Reliability (false positive rate vs. detection latency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Failure detection window duration",
+                "conflicting_attributes": [
+                  "Reliability (rapid failure detection - positive with shorter window)",
+                  "Reliability (false positive reduction - positive with longer window)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-05",
+            "text": "Updating of data defining the road network (static repository modifications) can cause a loss of at most 10 values of a single monitoring parameter during the transition period, ensuring data integrity",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Road network updates requiring static repository schema or data modifications",
+          "stimulus": "Administrative update to road network definition (new roads, changed topology, updated attributes)",
+          "response_measure": "Maximum 10 values of a single monitoring parameter lost during update transition",
+          "architectural_decisions": [
+            "Separation of Static repository (road network) from Traffic repository (dynamic sensor data)",
+            "Transaction isolation mechanisms to manage concurrent reads during schema updates",
+            "Buffering of sensor data during repository updates to minimize data loss"
+          ],
+          "reasoning": "The separation of Static and Traffic repositories allows road network updates to occur with limited impact on ongoing sensor data collection. However, if road network topology changes (e.g., road segments renumbered), sensor data referencing old topology may become orphaned. The 10-value loss limit suggests a brief transition period where data mapping is ambiguous. Without specific transaction management and data migration strategies, this requirement is at risk.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Road network topology changes may orphan more than 10 sensor values if referential integrity mechanisms are insufficient",
+                "rationale": "If road segments are renumbered or removed, sensor data referencing those segments may be lost or misattributed. Without documented data migration procedures or referential integrity constraints, the 10-value limit may be exceeded during complex topology changes."
+              },
+              {
+                "id": "R-07",
+                "description": "Concurrent sensor updates during Static repository modifications may cause data inconsistency beyond 10-value threshold",
+                "rationale": "If 1000 sensors update every 60 seconds and 5000 GPS units update every 5 seconds, during a multi-second repository update window, hundreds of sensor values could reference inconsistent road network state. Transaction isolation strategy is critical but not specified."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "Repository separation limits scope of data loss to parameters directly dependent on modified road network elements",
+                "rationale": "Traffic and Event repositories remain operational during Static repository updates. Only sensor data explicitly referencing modified road segments is at risk, limiting potential data loss."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Transaction isolation level during Static repository updates",
+                "correlated_attribute": "Reliability (data consistency during updates)"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Duration of road network update transaction window",
+                "correlated_attribute": "Reliability (number of sensor values at risk)"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Referential integrity enforcement between Static and Traffic repositories",
+                "correlated_attribute": "Reliability (orphaned data prevention)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Repository normalization (separate Static and Traffic repositories)",
+                "conflicting_attributes": [
+                  "Modifiability (independent road network updates - positive)",
+                  "Reliability (referential integrity during concurrent updates - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-07",
+            "text": "New event types and corresponding customizable detection routines can be introduced in 1 day using ontology-based definitions without requiring changes to core repository structure",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution requiring new event detection capabilities",
+          "stimulus": "Request to add new event type (e.g., new traffic incident category) with custom detection logic",
+          "response_measure": "Complete integration of new event type and detection routine within 1 day",
+          "architectural_decisions": [
+            "Ontology-based event definitions enable semantic extensibility without schema changes",
+            "Event repository designed with flexible schema to accommodate new event types",
+            "Data interpretation layer supports pluggable detection routines that subscribe to sensor data streams",
+            "Publish-subscribe pattern allows new detection modules to be added without modifying data sources"
+          ],
+          "reasoning": "The 1-day timeline is achievable if the ontology-based approach is well-implemented and detection routines can be added as independent modules. The publish-subscribe pattern supports this by allowing new subscribers (detection routines) to consume existing sensor data streams. However, this assumes detection logic can be implemented, tested, and deployed rapidly, and that ontology extensions don't require complex semantic reasoning or validation.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Ontology-based event definitions with flexible Event repository schema enable rapid addition of new event types",
+                "rationale": "If Event repository uses extensible schema (e.g., key-value attributes, JSON documents), new event types can be added without schema migration. Ontology provides semantic definitions without code changes."
+              },
+              {
+                "id": "NR-08",
+                "description": "Publish-subscribe pattern allows new detection routines to be deployed as independent subscribers without modifying sensor data sources",
+                "rationale": "Detection modules can subscribe to existing Traffic and Event data streams, process data according to new logic, and publish detected events. Decoupled architecture enables rapid deployment."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Ontology extension complexity (simple attribute addition vs. complex semantic relationships)",
+                "correlated_attribute": "Modifiability (event type integration timeline)"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Detection routine complexity (simple threshold-based vs. complex pattern recognition)",
+                "correlated_attribute": "Modifiability (development and testing time)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-04",
+            "text": "New map features can be introduced and made discoverable with built-in functionality, allowing client modules to dynamically detect and utilize new capabilities without manual reconfiguration",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System evolution with new visualization or analysis features",
+          "stimulus": "Introduction of new map feature (e.g., new data layer, visualization mode, or analysis capability)",
+          "response_measure": "Client modules automatically discover and utilize new features without manual reconfiguration",
+          "architectural_decisions": [
+            "Layered architecture with well-defined interfaces between presentation and data layers",
+            "Service discovery or capability advertisement mechanism for dynamic feature detection",
+            "Ontology-based feature definitions enable semantic discovery of new capabilities"
+          ],
+          "reasoning": "Dynamic feature discovery requires a metadata or service registry mechanism where new features can advertise their capabilities and client modules can query available features. This is architecturally feasible but requires additional infrastructure beyond the basic Data-Centric Repository and Layered patterns. Without explicit service discovery mechanisms documented in the architectural approaches, this scenario represents a potential gap.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "No explicit service discovery or capability advertisement mechanism documented in architectural approaches",
+                "rationale": "While ontology-based definitions support semantic extensibility, dynamic feature discovery requires runtime metadata exchange between presentation layer and data/interpretation layers. Without documented service registry or capability query interfaces, client modules cannot automatically discover new features."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-19",
+                "parameter": "Service discovery mechanism implementation (registry-based, query-based, or advertisement-based)",
+                "correlated_attribute": "Modifiability (automatic feature discovery capability)"
+              },
+              {
+                "id": "S-20",
+                "parameter": "Feature metadata richness (simple availability flags vs. detailed capability descriptions)",
+                "correlated_attribute": "Usability (client ability to utilize discovered features effectively)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Dynamic feature discovery infrastructure",
+                "conflicting_attributes": [
+                  "Modifiability (automatic client adaptation to new features - positive)",
+                  "Performance (runtime overhead of capability queries and metadata exchange - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-09",
+            "text": "A Dynamic Map component can be ported to another platform within 20 days by isolating platform-specific dependencies to individual architectural layers",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Portability",
+          "environment": "System deployment on new hardware or software platform",
+          "stimulus": "Request to port a system component (e.g., data collection module, repository, or client interface) to different platform",
+          "response_measure": "Complete porting including adaptation, testing, and deployment within 20 days",
+          "architectural_decisions": [
+            "Layered architecture isolates platform-specific concerns to individual layers",
+            "Well-defined interfaces between layers enable independent platform adaptation",
+            "Data-Centric Repository abstracts storage mechanisms from application logic"
+          ],
+          "reasoning": "The layered architecture provides good portability support by isolating platform dependencies. For example, porting a client interface to a new GUI framework affects only the presentation layer, while porting a repository to a new database platform affects only the data storage layer. The 20-day timeline is reasonable for single-component porting with well-defined interfaces. However, portability depends heavily on interface stability and the degree of platform-specific code in each layer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Cross-layer dependencies or platform-specific optimizations may require changes beyond the target component layer",
+                "rationale": "If components use platform-specific features for performance optimization (e.g., database-specific spatial queries, OS-specific threading), porting may require changes across multiple layers. Without documented interface contracts and platform abstraction layers, 20-day timeline is at risk."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Layered architecture with clear separation of concerns supports component-level portability",
+                "rationale": "If platform-specific code is truly isolated to individual layers and interfaces are platform-agnostic, porting a single component requires only adaptation of that layer. Well-defined interfaces enable independent testing and deployment."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-21",
+                "parameter": "Degree of platform-specific optimization in component implementation",
+                "correlated_attribute": "Portability (porting effort and timeline)"
+              },
+              {
+                "id": "S-22",
+                "parameter": "Interface abstraction level between layers (platform-agnostic vs. platform-exposed)",
+                "correlated_attribute": "Portability (change propagation during porting)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Platform-specific optimization usage",
+                "conflicting_attributes": [
+                  "Performance (leveraging platform-specific features for optimization - positive)",
+                  "Portability (ease of porting to different platforms - negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

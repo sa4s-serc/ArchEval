@@ -1,0 +1,1232 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The EOSDIS Core System (ECS) is a large-scale, distributed data management system for NASA's Earth Observing System (EOS). Its primary purpose is to ingest, process, archive, and distribute massive amounts of earth science data collected from satellites (such as Terra, Aqua, and Landsat) and other sensors. The system is designed to operate 24/7, handling hundreds of gigabytes of raw data daily, processing it into higher-level data products using science algorithms, and making this information searchable and available to the worldwide scientific community. It features a distributed architecture spanning four major data centers in the U.S., integrating custom code with numerous COTS products.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already fielded and supported by volumes of documentation, including architecture documents provided by the client. The evaluation team reviewed these materials beforehand to understand the system's broad details and concept of operations.",
+        "evaluator_inquiry_questions": [
+          "What are the driving architectural constraints, and where are they documented?",
+          "How do components communicate and synchronize? (Mechanisms used, Restrictions on use)",
+          "What are the system partitions? (Composition, Restrictions on use and visibility)",
+          "What constitutes the system infrastructure? (Supplied functionality, Resource management)",
+          "What are the system interfaces? (Identification, Participants, Coordination mechanisms)",
+          "What is the process/thread model of the architecture?",
+          "What is the deployment model of the system?",
+          "What are the system states and modes?",
+          "What variability mechanisms and variation points are included in the architecture?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system is distributed at four data centers across the United States.",
+          "Deployed on about 20 Unix servers from multiple vendors at each site.",
+          "Supported by a communications infrastructure pictured as a ring connecting the subsystems."
+        ],
+        "runtime_constraints": [
+          "Must support concurrent ingest, production, and distribution of high data volumes.",
+          "Must operate 24 hours a day, 7 days a week, 365 days a year.",
+          "Must process data from 24 sensors on ten spacecraft.",
+          "Must compute about 250 standard data products."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "data_volume": "Ingest ~1.5 TB/day; Distribute ~2 TB/day",
+        "system_scale": {
+          "custom_code": "1.2 million lines",
+          "cots_products": "~50 products",
+          "external_interfaces": "34 systems"
+        },
+        "distribution_targets": "2,000 sites (Scenario Sc4)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Distributed Object / Client-Server",
+          "questions": [
+            "How does the system ensure backward compatibility of interfaces?",
+            "What are the impacts of static linkage of client stubs on deployment?",
+            "How does the distribution of data type information affect modifiability?",
+            "What are the performance costs of location independence via name servers?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "13 (O15.1)",
+          "description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request."
+        },
+        {
+          "id": "Brainstorm_Generic_1",
+          "description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists)."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Support for interdisciplinary earth science",
+          "Concurrent ingest, production, and distribution of high data volumes",
+          "One-stop shopping (location transparency of system components and data)",
+          "Support for externally developed science algorithms/applications",
+          "Science data reprocessing (lineage, version management, processing)",
+          "Assurance of data integrity for archive",
+          "Automated operations to minimize operational costs"
+        ],
+        "technical_constraints": [
+          "Must use specific COTS products (~50 used)",
+          "Must interoperate with other systems",
+          "Must reuse legacy code where applicable",
+          "Distributed deployment across four specific data centers"
+        ],
+        "architectural_drivers": [
+          "Maintainability",
+          "Operability",
+          "Reliability",
+          "Scalability",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [],
+      "utility_tree": {},
+      "scenarios": [
+        {
+          "scenario_text": "An operator requests a report for the execution results of a specific scientific algorithm run. The system must generate and deliver the complete report within 2 hours of the request during normal operations.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "During peak data collection periods with 500+ concurrent sensors transmitting, the ECS must maintain response times under 3 seconds for operator queries and commands without degradation.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "The system must scale to accommodate a 300% increase in sensor count (from current baseline to projected growth) over 3 years without requiring architectural redesign.",
+          "primary_quality_attribute": [
+            "Scalability",
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "When a critical sensor data processing component fails, the system must detect the failure within 30 seconds and automatically failover to redundant components with zero data loss.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The ECS must achieve 99.5% uptime annually, with no single planned maintenance window exceeding 4 hours and no more than 6 planned maintenance events per year.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "A developer must be able to deploy a software update to the data processing pipeline with zero downtime using rolling deployment strategies, completing the full deployment within 1 hour.",
+          "primary_quality_attribute": [
+            "Maintainability",
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "When integrating a new third-party sensor type with different data formats, a developer must be able to add the necessary data transformation components within 2 weeks without modifying core system architecture.",
+          "primary_quality_attribute": [
+            "Maintainability",
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "All sensor data ingested into the system must maintain complete integrity with cryptographic verification, detecting any corruption or tampering with 100% accuracy within 1 minute of data receipt.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "During a network bandwidth reduction event (50% capacity loss), the system must prioritize critical telemetry data and maintain delivery of high-priority data streams with less than 5% packet loss.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "An operator must be able to configure new data collection parameters and deploy them to 100+ sensors within 15 minutes using the ECS management interface without requiring developer assistance.",
+          "primary_quality_attribute": [
+            "Operability",
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "The system must support interoperability with external scientific analysis tools by exposing standardized APIs (REST/GraphQL) that allow third-party applications to query historical sensor data with response times under 2 seconds for 90% of queries.",
+          "primary_quality_attribute": [
+            "Maintainability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When daily data volume grows from current 5TB to projected 20TB within 2 years, the system must handle the increased throughput without requiring hardware infrastructure changes beyond linear scaling of storage.",
+          "primary_quality_attribute": [
+            "Scalability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A new operations team member must be able to perform routine monitoring tasks (checking sensor health, viewing dashboards, acknowledging alerts) within 1 day of training using intuitive interfaces.",
+          "primary_quality_attribute": [
+            "Operability",
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "The system must automatically archive sensor data older than 90 days to cold storage while maintaining query access with response times under 10 seconds for archived data retrieval.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Operability"
+          ]
+        },
+        {
+          "scenario_text": "When a software defect is identified in the data validation module, a developer must be able to isolate, test, and deploy a fix within 48 hours without impacting other system components.",
+          "primary_quality_attribute": [
+            "Maintainability",
+            "Reliability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "S-01",
+            "text": "An operator requests a report for the execution results of a specific scientific algorithm run. The system must generate and deliver the complete report within 2 hours of the request during normal operations.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with concurrent ingest, production, and distribution activities",
+          "stimulus": "Operator report request for algorithm execution results",
+          "response_measure": "Report generation and delivery within 2 hours",
+          "architectural_decisions": [
+            "Distributed archive subsystem manages data lineage and version information",
+            "Client-server architecture with location-transparent access via name servers",
+            "~250 standard data products processed by science algorithms"
+          ],
+          "reasoning": "The 2-hour response time requirement depends on: (1) query routing through name servers to locate archived algorithm results, (2) retrieval from archive subsystem across distributed sites, (3) report generation processing. With 1.2M LOC custom code and ~50 COTS products, the processing pipeline complexity introduces multiple potential bottlenecks. The distributed nature across four sites means network latency and cross-site data aggregation impact total response time.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Report generation may exceed 2-hour SLA if algorithm results are distributed across multiple archive sites requiring cross-site aggregation",
+                "rationale": "Four-site distributed architecture with ring topology introduces network latency; without known bandwidth specifications and message sizes, cross-site data retrieval time is uncertain"
+              },
+              {
+                "id": "R-02",
+                "description": "Name server lookup overhead for location-transparent access may contribute significant latency under concurrent load",
+                "rationale": "Client-server pattern with name server indirection adds lookup time; under 2000-site distribution load, name server could become bottleneck"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "2-hour window provides substantial margin for typical archive queries",
+                "rationale": "Given 24/7 operations handling 1.5TB/day ingest, the system is designed for continuous data access; 2-hour SLA is generous compared to real-time requirements"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network bandwidth between data centers",
+                "correlated_attribute": "Performance (report delivery time)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Archive query response time for distributed data",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Name server lookup latency under load",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Data replication across archive sites",
+                "conflicting_attributes": [
+                  "Performance (faster local access, positive)",
+                  "Maintainability (synchronization complexity, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-02",
+            "text": "During peak data collection periods with 500+ concurrent sensors transmitting, the ECS must maintain response times under 3 seconds for operator queries and commands without degradation.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak load with 500+ concurrent sensor transmissions (significant increase from baseline 24 sensors on 10 spacecraft)",
+          "stimulus": "Operator query or command during peak sensor activity",
+          "response_measure": "Response time < 3 seconds without degradation",
+          "architectural_decisions": [
+            "Ingest subsystem handles sensor data from distributed spacecraft",
+            "Client-server architecture with ~20 Unix servers per site",
+            "Concurrent ingest, production, and distribution operations"
+          ],
+          "reasoning": "The scenario implies massive scaling from current 24 sensors to 500+ concurrent sensors. The ingest subsystem must handle this load while maintaining operator responsiveness. The 3-second response requirement suggests interactive operations must not be blocked by high-volume ingest. This requires resource isolation or prioritization mechanisms between ingest and operator command paths.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "500+ concurrent sensors represent 20x increase over baseline 24 sensors; ingest subsystem may saturate network and processing capacity",
+                "rationale": "Without known network bandwidth and server capacity metrics, scaling from 24 to 500+ sensors risks overwhelming infrastructure designed for current load"
+              },
+              {
+                "id": "R-04",
+                "description": "Operator queries may experience degradation if ingest traffic contends for same resources without QoS prioritization",
+                "rationale": "No documented QoS or traffic prioritization mechanisms; client-server architecture may not isolate operator commands from bulk data ingest"
+              },
+              {
+                "id": "R-05",
+                "description": "Name server and client stub architecture may not scale to handle 500+ concurrent sensor connections",
+                "rationale": "Static linkage of client stubs mentioned in probes; dynamic connection management for 500+ sensors not addressed in current architecture"
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Ingest subsystem processing capacity (messages/second)",
+                "correlated_attribute": "Performance and Scalability"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Network bandwidth utilization during peak sensor load",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Server resource allocation between ingest and operator command processing",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Resource prioritization for operator commands vs. sensor ingest",
+                "conflicting_attributes": [
+                  "Operability (fast operator response, positive)",
+                  "Performance (potential ingest throughput reduction, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-03",
+            "text": "The system must scale to accommodate a 300% increase in sensor count (from current baseline to projected growth) over 3 years without requiring architectural redesign.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Projected growth scenario over 3-year timeline",
+          "stimulus": "Incremental addition of sensors to reach 300% of baseline",
+          "response_measure": "No architectural redesign required; linear scaling of resources acceptable",
+          "architectural_decisions": [
+            "Distributed four-site architecture with ring topology",
+            "Client-server pattern with location-transparent access",
+            "~20 Unix servers per site (current capacity)"
+          ],
+          "reasoning": "300% growth from 24 sensors implies scaling to ~72 sensors (or from unstated baseline if 24 is not the baseline). The architecture must support this growth through resource scaling rather than redesign. The distributed nature and client-server pattern should theoretically support horizontal scaling, but COTS integration (~50 products) and static client stub linkage may create scaling bottlenecks.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Static linkage of client stubs may require redeployment to all 2000 sites when adding new sensors",
+                "rationale": "Architectural probes identified static linkage as deployment concern; adding sensors may require client stub updates across entire distribution network"
+              },
+              {
+                "id": "R-07",
+                "description": "COTS product licensing and integration constraints may limit scalability without vendor renegotiation",
+                "rationale": "~50 COTS products with unknown licensing models; scaling may hit license limits or require architectural changes to COTS integration points"
+              },
+              {
+                "id": "R-08",
+                "description": "Ring topology communication infrastructure may become bottleneck as sensor count and data volume increase 300%",
+                "rationale": "Ring topology has inherent bandwidth limits; 300% increase in sensors implies proportional increase in data traffic without known capacity headroom"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "3-year timeline provides adequate planning window for incremental capacity additions",
+                "rationale": "Gradual growth allows for staged hardware procurement and deployment without disruptive architectural changes"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Ring topology bandwidth capacity vs. projected data volume growth",
+                "correlated_attribute": "Scalability and Performance"
+              },
+              {
+                "id": "S-08",
+                "parameter": "COTS product scalability limits and licensing constraints",
+                "correlated_attribute": "Scalability and Maintainability"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Server capacity per site (current ~20 servers)",
+                "correlated_attribute": "Scalability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Horizontal scaling (adding servers) vs. vertical scaling (upgrading servers)",
+                "conflicting_attributes": [
+                  "Scalability (horizontal scaling supports growth, positive)",
+                  "Maintainability (more servers increase operational complexity, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-04",
+            "text": "When a critical sensor data processing component fails, the system must detect the failure within 30 seconds and automatically failover to redundant components with zero data loss.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with component failure event",
+          "stimulus": "Critical sensor data processing component failure",
+          "response_measure": "Detection within 30 seconds, automatic failover, zero data loss",
+          "architectural_decisions": [
+            "Distributed architecture across four sites (inherent redundancy potential)",
+            "24/7/365 operational requirement",
+            "Archive subsystem manages data integrity and lineage"
+          ],
+          "reasoning": "The 30-second detection and zero data loss requirements demand robust health monitoring, redundant component deployment, and reliable message queuing or buffering. The distributed four-site architecture provides infrastructure for redundancy, but specific failover mechanisms are not documented. Zero data loss implies either synchronous replication or durable message queuing before processing.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Zero data loss requirement may not be achievable without synchronous replication, which conflicts with performance requirements",
+                "rationale": "Synchronous replication to redundant components introduces latency; distributed architecture across sites makes synchronous replication expensive"
+              },
+              {
+                "id": "R-10",
+                "description": "30-second detection window requires sophisticated health monitoring not explicitly documented in architecture",
+                "rationale": "No documented health monitoring or heartbeat mechanisms; achieving 30-second detection across distributed sites requires dedicated monitoring infrastructure"
+              },
+              {
+                "id": "R-11",
+                "description": "Automatic failover mechanism not documented; client-server architecture with static stubs may complicate transparent failover",
+                "rationale": "Static client stub linkage may require client-side reconfiguration for failover; name server redirection could support failover but mechanism not specified"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Four-site distributed architecture provides physical infrastructure for redundancy deployment",
+                "rationale": "Multiple sites enable geographic redundancy; architecture supports deploying redundant components at different sites"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Health monitoring polling interval and detection latency",
+                "correlated_attribute": "Reliability (failure detection time)"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Message queue durability and replication lag",
+                "correlated_attribute": "Reliability (data loss prevention)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Failover orchestration time (detection to active redundant component)",
+                "correlated_attribute": "Reliability and Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Synchronous vs. asynchronous replication for zero data loss",
+                "conflicting_attributes": [
+                  "Reliability (synchronous ensures zero loss, positive)",
+                  "Performance (synchronous adds latency, negative)"
+                ]
+              },
+              {
+                "id": "T-05",
+                "parameter": "Health monitoring frequency",
+                "conflicting_attributes": [
+                  "Reliability (frequent monitoring enables fast detection, positive)",
+                  "Performance (monitoring overhead consumes resources, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-05",
+            "text": "The ECS must achieve 99.5% uptime annually, with no single planned maintenance window exceeding 4 hours and no more than 6 planned maintenance events per year.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Annual operational cycle with planned maintenance events",
+          "stimulus": "Planned maintenance activities and unplanned failures",
+          "response_measure": "99.5% uptime (43.8 hours downtime/year allowed), maintenance windows \u2264 4 hours, \u2264 6 events/year",
+          "architectural_decisions": [
+            "24/7/365 operational requirement",
+            "Distributed four-site architecture",
+            "~20 Unix servers per site from multiple vendors"
+          ],
+          "reasoning": "99.5% uptime allows 43.8 hours of downtime annually. With 6 planned maintenance events of up to 4 hours each (24 hours total), only 19.8 hours remain for unplanned outages. This requires high availability architecture with redundancy and rolling deployment capabilities. The multi-vendor Unix server environment may complicate maintenance coordination.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Multi-vendor Unix server environment may complicate coordinated maintenance and increase unplanned downtime risk",
+                "rationale": "Multiple vendors imply different patch cycles, compatibility issues, and coordination overhead; increases risk of exceeding 19.8-hour unplanned downtime budget"
+              },
+              {
+                "id": "R-13",
+                "description": "4-hour maintenance window may be insufficient for complex COTS product upgrades across distributed sites",
+                "rationale": "~50 COTS products with interdependencies; coordinating upgrades across four sites within 4-hour window is challenging"
+              },
+              {
+                "id": "R-14",
+                "description": "Static client stub linkage may require downtime for client updates during maintenance",
+                "rationale": "Deploying updated client stubs to 2000 sites may require service interruption if not designed for hot-swap"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "99.5% uptime target is achievable with proper redundancy and rolling deployment strategies",
+                "rationale": "Four-site architecture provides redundancy foundation; 99.5% is less stringent than 99.9% or higher availability requirements"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Mean Time To Repair (MTTR) for unplanned failures",
+                "correlated_attribute": "Reliability (uptime achievement)"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Maintenance procedure complexity and execution time",
+                "correlated_attribute": "Reliability and Operability"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Redundancy coverage (percentage of components with active redundancy)",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Frequency of planned maintenance events",
+                "conflicting_attributes": [
+                  "Reliability (fewer events reduce downtime risk, positive)",
+                  "Maintainability (more frequent smaller updates easier to manage, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-06",
+            "text": "A developer must be able to deploy a software update to the data processing pipeline with zero downtime using rolling deployment strategies, completing the full deployment within 1 hour.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system under normal operational load",
+          "stimulus": "Software update deployment to data processing pipeline",
+          "response_measure": "Zero downtime, rolling deployment, completion within 1 hour",
+          "architectural_decisions": [
+            "Distributed architecture across four sites with ~20 servers per site",
+            "Production subsystem processes data using science algorithms",
+            "1.2M LOC custom code integrated with ~50 COTS products"
+          ],
+          "reasoning": "Rolling deployment requires ability to update subsets of servers while others continue processing. The four-site, ~80 server total architecture provides infrastructure for rolling updates. However, 1-hour completion window for full deployment across all sites is aggressive. Load balancing, session affinity, and version compatibility between old and new code are critical concerns.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-15",
+                "description": "1-hour deployment window may be insufficient to roll updates across four geographically distributed sites with ~80 servers",
+                "rationale": "Deployment to ~80 servers across four sites requires coordination, testing at each stage, and rollback capability; 1 hour is aggressive for safe rolling deployment"
+              },
+              {
+                "id": "R-16",
+                "description": "Data processing pipeline updates may require version compatibility between old and new code during rolling deployment",
+                "rationale": "If processing stages span multiple servers, mixed versions during rollout could cause data format incompatibilities or processing errors"
+              },
+              {
+                "id": "R-17",
+                "description": "COTS product dependencies may prevent zero-downtime updates if COTS components require restart",
+                "rationale": "~50 COTS products may have restart requirements or version lock-in that prevents rolling updates of dependent custom code"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Distributed architecture with multiple servers per site supports rolling deployment pattern",
+                "rationale": "~20 servers per site allows updating subsets while others handle load; architecture is conducive to rolling updates"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-16",
+                "parameter": "Deployment automation maturity and tooling",
+                "correlated_attribute": "Maintainability (deployment speed and reliability)"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Load balancer configuration and traffic shifting capabilities",
+                "correlated_attribute": "Maintainability and Performance"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Backward compatibility requirements between code versions",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Rolling deployment batch size (servers updated per stage)",
+                "conflicting_attributes": [
+                  "Maintainability (larger batches complete faster, positive)",
+                  "Reliability (smaller batches reduce blast radius of defects, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-07",
+            "text": "When integrating a new third-party sensor type with different data formats, a developer must be able to add the necessary data transformation components within 2 weeks without modifying core system architecture.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Development and integration environment",
+          "stimulus": "New third-party sensor type with different data format",
+          "response_measure": "Integration within 2 weeks, no core architecture modification",
+          "architectural_decisions": [
+            "Ingest subsystem handles sensor data from 24 sensors on 10 spacecraft",
+            "Distributed data type information across system (identified in probes as modifiability concern)",
+            "~50 COTS products integrated with 1.2M LOC custom code"
+          ],
+          "reasoning": "Adding new sensor types requires data transformation/adapter components in the ingest subsystem. The 2-week timeline implies a plugin or adapter architecture should exist. However, architectural probes identified distributed data type information as a modifiability concern, suggesting that adding new data formats may require changes across multiple components.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-18",
+                "description": "Distributed data type information across system may require changes to multiple components when adding new sensor formats",
+                "rationale": "Architectural probes explicitly identified distributed data type information as modifiability concern; adding new formats may propagate changes beyond ingest subsystem"
+              },
+              {
+                "id": "R-19",
+                "description": "Static client stub linkage may require recompilation and redeployment of clients when new sensor types are added",
+                "rationale": "If sensor data types are embedded in client stubs, adding new types requires stub regeneration and deployment to affected clients"
+              },
+              {
+                "id": "R-20",
+                "description": "COTS product constraints may limit flexibility in data transformation approaches",
+                "rationale": "If COTS products impose specific data format requirements, transformation components must conform to COTS interfaces, potentially increasing development time"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "2-week timeline is reasonable if adapter/plugin architecture exists for ingest subsystem",
+                "rationale": "Standard adapter pattern allows adding new sensor types through configuration and isolated transformation code"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-19",
+                "parameter": "Degree of coupling between ingest subsystem and downstream components",
+                "correlated_attribute": "Maintainability (change propagation)"
+              },
+              {
+                "id": "S-20",
+                "parameter": "Data type schema management and versioning mechanisms",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-21",
+                "parameter": "COTS product interface flexibility for custom data formats",
+                "correlated_attribute": "Maintainability and Scalability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Centralized vs. distributed data type schema management",
+                "conflicting_attributes": [
+                  "Maintainability (centralized simplifies updates, positive)",
+                  "Performance (distributed reduces lookup overhead, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-08",
+            "text": "All sensor data ingested into the system must maintain complete integrity with cryptographic verification, detecting any corruption or tampering with 100% accuracy within 1 minute of data receipt.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations during sensor data ingest",
+          "stimulus": "Sensor data receipt with potential corruption or tampering",
+          "response_measure": "100% detection accuracy, detection within 1 minute of receipt",
+          "architectural_decisions": [
+            "Ingest subsystem handles 1.5 TB/day from 24 sensors",
+            "Archive subsystem manages data integrity and lineage",
+            "Distributed architecture across four sites"
+          ],
+          "reasoning": "Cryptographic verification (e.g., digital signatures, checksums) must be applied to all ingested data. 100% accuracy is achievable with proper cryptographic algorithms. The 1-minute detection window requires verification to occur immediately upon receipt, before data propagates to downstream systems. At 1.5 TB/day (~17 MB/second average), cryptographic verification must be computationally efficient.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-21",
+                "description": "Cryptographic verification of 1.5 TB/day may introduce processing bottleneck in ingest subsystem",
+                "rationale": "Cryptographic operations are CPU-intensive; verifying all data within 1 minute of receipt at 17+ MB/sec average (higher at peaks) requires significant compute capacity"
+              },
+              {
+                "id": "R-22",
+                "description": "1-minute detection window may be violated if verification is queued behind other ingest processing tasks",
+                "rationale": "Without priority queuing for verification, high ingest load could delay cryptographic checks beyond 1-minute SLA"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "100% detection accuracy is achievable with standard cryptographic algorithms (SHA-256, digital signatures)",
+                "rationale": "Modern cryptographic hash functions and signature schemes provide deterministic verification with negligible false positive/negative rates"
+              },
+              {
+                "id": "NR-08",
+                "description": "1-minute detection window is generous for cryptographic verification operations",
+                "rationale": "Cryptographic verification typically completes in milliseconds to seconds; 1-minute window provides substantial margin"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-22",
+                "parameter": "Cryptographic algorithm choice and computational overhead",
+                "correlated_attribute": "Performance and Reliability"
+              },
+              {
+                "id": "S-23",
+                "parameter": "Ingest subsystem CPU capacity for verification workload",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-24",
+                "parameter": "Verification task prioritization in ingest pipeline",
+                "correlated_attribute": "Reliability (detection timeliness)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Cryptographic algorithm strength vs. computational cost",
+                "conflicting_attributes": [
+                  "Reliability (stronger algorithms improve security, positive)",
+                  "Performance (stronger algorithms increase CPU usage, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-09",
+            "text": "During a network bandwidth reduction event (50% capacity loss), the system must prioritize critical telemetry data and maintain delivery of high-priority data streams with less than 5% packet loss.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Degraded network conditions with 50% bandwidth reduction",
+          "stimulus": "Network bandwidth reduction event",
+          "response_measure": "Critical data prioritization, <5% packet loss for high-priority streams",
+          "architectural_decisions": [
+            "Ring topology communication infrastructure connecting four sites",
+            "1.5 TB/day ingest, 2 TB/day distribution (normal load)",
+            "Distributed architecture with concurrent operations"
+          ],
+          "reasoning": "50% bandwidth reduction on ring topology severely impacts system capacity. At normal 1.5 TB/day ingest + 2 TB/day distribution, the system moves ~3.5 TB/day total. With 50% reduction, only 1.75 TB/day capacity remains, creating significant congestion. Prioritization requires QoS mechanisms and traffic classification. The <5% packet loss target for high-priority streams requires effective traffic shaping and buffering.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-23",
+                "description": "Ring topology creates single point of failure for inter-site communication; 50% bandwidth loss may indicate link failure affecting entire ring",
+                "rationale": "Ring topology means traffic may traverse multiple hops; single link failure can partition network or force all traffic through remaining path, exceeding 50% effective reduction"
+              },
+              {
+                "id": "R-24",
+                "description": "No documented QoS or traffic prioritization mechanisms; implementing prioritization may require architectural changes",
+                "rationale": "Client-server architecture and COTS integration may not support dynamic traffic prioritization; achieving <5% loss for priority traffic requires QoS capabilities not documented"
+              },
+              {
+                "id": "R-25",
+                "description": "50% bandwidth reduction exceeds system capacity (3.5 TB/day normal load vs. 1.75 TB/day reduced capacity); even with prioritization, low-priority data will experience >5% loss",
+                "rationale": "System cannot maintain full throughput with 50% bandwidth; prioritization protects critical data but overall system throughput must degrade"
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-25",
+                "parameter": "Ring topology bandwidth capacity and utilization under normal load",
+                "correlated_attribute": "Reliability and Performance"
+              },
+              {
+                "id": "S-26",
+                "parameter": "Percentage of total traffic classified as high-priority",
+                "correlated_attribute": "Reliability (achievability of <5% loss target)"
+              },
+              {
+                "id": "S-27",
+                "parameter": "Buffer capacity for traffic shaping during congestion",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-10",
+                "parameter": "High-priority traffic classification threshold",
+                "conflicting_attributes": [
+                  "Reliability (broader classification protects more data, positive)",
+                  "Performance (broader classification reduces available bandwidth for other traffic, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-10",
+            "text": "An operator must be able to configure new data collection parameters and deploy them to 100+ sensors within 15 minutes using the ECS management interface without requiring developer assistance.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Operability",
+          "environment": "Normal operations with operator-initiated configuration change",
+          "stimulus": "Operator configures new data collection parameters via management interface",
+          "response_measure": "Deployment to 100+ sensors within 15 minutes, no developer assistance",
+          "architectural_decisions": [
+            "Current system handles 24 sensors on 10 spacecraft",
+            "Client-server architecture with location-transparent access",
+            "Distributed architecture across four sites"
+          ],
+          "reasoning": "Deploying configuration to 100+ sensors (vs. current 24) within 15 minutes requires automated configuration management and distribution. The management interface must support bulk operations and provide feedback on deployment status. The 15-minute window implies parallel deployment rather than sequential updates. No developer assistance requirement means the interface must be intuitive and handle error conditions gracefully.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-26",
+                "description": "100+ sensors significantly exceeds current 24-sensor baseline; configuration distribution mechanism may not scale",
+                "rationale": "Current architecture handles 24 sensors; scaling to 100+ requires robust configuration management not documented in current architecture"
+              },
+              {
+                "id": "R-27",
+                "description": "15-minute deployment window requires parallel configuration push; sequential updates would exceed time limit",
+                "rationale": "Deploying to 100+ sensors sequentially at even 10 seconds per sensor would require 16+ minutes; parallel deployment required but not documented"
+              },
+              {
+                "id": "R-28",
+                "description": "Configuration validation and rollback mechanisms not documented; invalid configurations could impact sensor operations",
+                "rationale": "Operator-driven configuration without developer oversight requires robust validation; errors could disrupt data collection from 100+ sensors"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "15-minute window is achievable with automated configuration management tools",
+                "rationale": "Modern configuration management systems can deploy to 100+ endpoints in minutes with proper automation"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-28",
+                "parameter": "Configuration distribution mechanism scalability (sensors/minute)",
+                "correlated_attribute": "Operability and Scalability"
+              },
+              {
+                "id": "S-29",
+                "parameter": "Network latency to sensor endpoints",
+                "correlated_attribute": "Operability (deployment time)"
+              },
+              {
+                "id": "S-30",
+                "parameter": "Configuration validation complexity and execution time",
+                "correlated_attribute": "Operability and Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-11",
+                "parameter": "Configuration validation rigor vs. deployment speed",
+                "conflicting_attributes": [
+                  "Reliability (thorough validation prevents errors, positive)",
+                  "Operability (validation adds time, may exceed 15-minute window, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-11",
+            "text": "The system must support interoperability with external scientific analysis tools by exposing standardized APIs (REST/GraphQL) that allow third-party applications to query historical sensor data with response times under 2 seconds for 90% of queries.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Normal operations with external third-party API clients",
+          "stimulus": "Third-party application queries historical sensor data via API",
+          "response_measure": "Response time < 2 seconds for 90% of queries",
+          "architectural_decisions": [
+            "Archive subsystem manages historical data",
+            "Client-server architecture with 34 external system interfaces",
+            "Distribution subsystem provides location-transparent access to 2000 sites"
+          ],
+          "reasoning": "Exposing REST/GraphQL APIs requires adding an API gateway or service layer on top of existing client-server architecture. The 2-second response time for 90th percentile queries requires efficient archive access and query optimization. The scenario implies the current 34 external interfaces may not include modern REST/GraphQL APIs, requiring new integration layer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-29",
+                "description": "Adding REST/GraphQL API layer on top of existing client-server architecture may introduce additional latency",
+                "rationale": "API gateway adds translation overhead between REST/GraphQL and internal client-server protocols; multi-hop communication increases latency"
+              },
+              {
+                "id": "R-30",
+                "description": "Archive subsystem query performance not documented; may not meet 2-second response time for complex historical queries",
+                "rationale": "Historical data queries can be complex (time ranges, aggregations); without known archive query performance, 2-second target is uncertain"
+              },
+              {
+                "id": "R-31",
+                "description": "90th percentile target allows 10% of queries to exceed 2 seconds; tail latency could be significantly higher",
+                "rationale": "90th percentile masks tail latency; complex queries or cold storage access could result in multi-minute response times for 10% of queries"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "REST/GraphQL are standard protocols with mature implementation frameworks",
+                "rationale": "Well-established API frameworks and libraries simplify implementation; interoperability is achievable with standard approaches"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-31",
+                "parameter": "Archive subsystem query execution time for typical historical queries",
+                "correlated_attribute": "Performance and Maintainability"
+              },
+              {
+                "id": "S-32",
+                "parameter": "API gateway translation overhead and caching effectiveness",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-33",
+                "parameter": "Query complexity distribution (simple vs. complex queries)",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-12",
+                "parameter": "API result caching aggressiveness",
+                "conflicting_attributes": [
+                  "Performance (caching improves response time, positive)",
+                  "Reliability (stale cached data may not reflect latest updates, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-12",
+            "text": "When daily data volume grows from current 5TB to projected 20TB within 2 years, the system must handle the increased throughput without requiring hardware infrastructure changes beyond linear scaling of storage.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Projected growth scenario over 2-year timeline",
+          "stimulus": "Daily data volume increase from 5TB to 20TB (4x growth)",
+          "response_measure": "Handle increased throughput with only linear storage scaling",
+          "architectural_decisions": [
+            "Current 1.5 TB/day ingest, 2 TB/day distribution (3.5 TB/day total documented)",
+            "Ring topology communication infrastructure",
+            "Archive subsystem manages data storage"
+          ],
+          "reasoning": "The scenario states current 5TB/day, but documented metrics show 1.5TB ingest + 2TB distribution = 3.5TB total. Assuming 5TB is correct baseline, 20TB represents 4x growth. 'Linear scaling of storage' implies only storage capacity increases, not compute, network, or other infrastructure. This requires the processing and network infrastructure to handle 4x throughput without upgrades.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-32",
+                "description": "4x data volume growth (5TB to 20TB) will proportionally increase network traffic; ring topology bandwidth may be insufficient",
+                "rationale": "Without network infrastructure upgrades, ring topology must handle 4x traffic; unknown current utilization means capacity headroom is uncertain"
+              },
+              {
+                "id": "R-33",
+                "description": "Processing subsystem must handle 4x throughput without compute infrastructure scaling; current ~80 servers may be insufficient",
+                "rationale": "Scenario restricts infrastructure changes to storage only; processing 4x data volume with same compute capacity requires significant efficiency improvements"
+              },
+              {
+                "id": "R-34",
+                "description": "Ingest subsystem must handle 4x sensor data rate; current capacity for 24 sensors may not scale to required throughput",
+                "rationale": "4x data volume implies either 4x more sensors or 4x higher data rate per sensor; ingest subsystem scalability not documented"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-11",
+                "description": "Linear storage scaling is straightforward with modern storage systems",
+                "rationale": "Storage capacity can be increased linearly through additional disks/arrays; storage is not the bottleneck"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-34",
+                "parameter": "Current network bandwidth utilization percentage",
+                "correlated_attribute": "Scalability (headroom for 4x growth)"
+              },
+              {
+                "id": "S-35",
+                "parameter": "Current processing subsystem CPU/memory utilization",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-36",
+                "parameter": "Data compression ratios and efficiency improvements potential",
+                "correlated_attribute": "Scalability and Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-13",
+                "parameter": "Data compression to reduce network and storage requirements",
+                "conflicting_attributes": [
+                  "Scalability (compression reduces bandwidth needs, positive)",
+                  "Performance (compression adds CPU overhead, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-13",
+            "text": "A new operations team member must be able to perform routine monitoring tasks (checking sensor health, viewing dashboards, acknowledging alerts) within 1 day of training using intuitive interfaces.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Operability",
+          "environment": "Operations environment with new team member onboarding",
+          "stimulus": "New operator performs routine monitoring tasks after 1 day training",
+          "response_measure": "Successful task completion using intuitive interfaces",
+          "architectural_decisions": [
+            "24/7/365 operational requirement",
+            "2000 distribution sites (implies complex operational scope)",
+            "~50 COTS products integrated (potentially complex UI landscape)"
+          ],
+          "reasoning": "1-day training requirement implies highly intuitive, unified interface design. With ~50 COTS products, there is risk of fragmented UIs requiring separate training. Routine monitoring tasks should be consolidated in a single dashboard or interface. The 24/7 operations requirement means new operators must become productive quickly.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-35",
+                "description": "~50 COTS products may present fragmented user interfaces requiring separate training for each tool",
+                "rationale": "COTS products typically have independent UIs; without unified operations dashboard, operators must learn multiple interfaces, exceeding 1-day training window"
+              },
+              {
+                "id": "R-36",
+                "description": "Complex distributed architecture (four sites, 2000 distribution endpoints) may require sophisticated monitoring interfaces",
+                "rationale": "Monitoring distributed system health across multiple sites and thousands of endpoints requires complex visualizations that may not be intuitive"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-12",
+                "description": "Routine monitoring tasks are typically well-defined and can be supported by focused training",
+                "rationale": "Checking health, viewing dashboards, and acknowledging alerts are standard operations tasks; 1-day training is achievable with good UI design"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-37",
+                "parameter": "Degree of UI integration across COTS products",
+                "correlated_attribute": "Operability (training time)"
+              },
+              {
+                "id": "S-38",
+                "parameter": "Dashboard design complexity and information density",
+                "correlated_attribute": "Operability"
+              },
+              {
+                "id": "S-39",
+                "parameter": "Alert management workflow complexity",
+                "correlated_attribute": "Operability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-14",
+                "parameter": "Dashboard information density",
+                "conflicting_attributes": [
+                  "Operability (comprehensive information reduces need to switch views, positive)",
+                  "Operability (too much information overwhelms new users, negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-14",
+            "text": "The system must automatically archive sensor data older than 90 days to cold storage while maintaining query access with response times under 10 seconds for archived data retrieval.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with automated archival process",
+          "stimulus": "Query for sensor data older than 90 days (in cold storage)",
+          "response_measure": "Response time < 10 seconds for archived data retrieval",
+          "architectural_decisions": [
+            "Archive subsystem manages data integrity and lineage",
+            "1.5 TB/day ingest implies 135 TB accumulates in 90 days",
+            "Distributed architecture across four sites"
+          ],
+          "reasoning": "Automated archival to cold storage after 90 days requires tiered storage architecture. At 1.5 TB/day ingest, 90 days accumulates ~135 TB in hot storage before archival. Cold storage typically has higher latency than hot storage, so 10-second response time is a performance requirement for cold storage access. The archive subsystem must support efficient retrieval from cold tier.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-37",
+                "description": "10-second response time for cold storage retrieval may be challenging depending on cold storage technology (tape, glacier-class cloud storage)",
+                "rationale": "Cold storage technologies like tape or AWS Glacier have retrieval times measured in minutes to hours; 10-second target requires disk-based cold storage or caching"
+              },
+              {
+                "id": "R-38",
+                "description": "Automated archival process must complete within daily window to avoid accumulation; 1.5 TB/day archival rate required",
+                "rationale": "After initial 90-day period, system must archive 1.5 TB daily; archival process must not interfere with ongoing ingest and production operations"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-13",
+                "description": "90-day hot storage window provides ample time for automated archival processes",
+                "rationale": "90 days is generous window for archival; allows for batched archival operations and error recovery"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-40",
+                "parameter": "Cold storage technology and retrieval latency characteristics",
+                "correlated_attribute": "Performance (archived data access time)"
+              },
+              {
+                "id": "S-41",
+                "parameter": "Archival process throughput and scheduling",
+                "correlated_attribute": "Performance and Reliability"
+              },
+              {
+                "id": "S-42",
+                "parameter": "Cache size and hit rate for frequently accessed archived data",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-15",
+                "parameter": "Cold storage technology choice (disk vs. tape vs. cloud glacier)",
+                "conflicting_attributes": [
+                  "Performance (disk provides fast access, positive)",
+                  "Maintainability (tape/glacier reduce storage costs, negative for performance)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-15",
+            "text": "When a software defect is identified in the data validation module, a developer must be able to isolate, test, and deploy a fix within 48 hours without impacting other system components.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system with identified software defect",
+          "stimulus": "Software defect in data validation module",
+          "response_measure": "Isolate, test, and deploy fix within 48 hours, no impact to other components",
+          "architectural_decisions": [
+            "1.2M LOC custom code integrated with ~50 COTS products",
+            "Distributed architecture across four sites",
+            "Data validation likely in ingest subsystem (critical path)"
+          ],
+          "reasoning": "48-hour fix deployment requires modular architecture with clear component boundaries. Data validation module must be isolatable for testing without requiring full system integration testing. Deployment without impacting other components implies the module can be updated independently (loose coupling). The 48-hour window includes isolation, testing, and deployment across four distributed sites.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-39",
+                "description": "1.2M LOC codebase may have tight coupling that prevents isolated testing and deployment of data validation module",
+                "rationale": "Large custom codebase without documented modular architecture may have dependencies that require extensive integration testing, exceeding 48-hour window"
+              },
+              {
+                "id": "R-40",
+                "description": "Data validation module is in critical ingest path; defects could cause data loss or corruption requiring careful testing",
+                "rationale": "Validation errors could allow corrupt data into system or reject valid data; thorough testing required but may conflict with 48-hour deployment deadline"
+              },
+              {
+                "id": "R-41",
+                "description": "Deployment across four distributed sites within 48-hour window requires automated deployment and rollback capabilities",
+                "rationale": "Manual deployment to four sites with testing at each stage may exceed 48 hours; automation required but not documented"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-14",
+                "description": "48-hour window is reasonable for targeted bug fixes with proper modular architecture and CI/CD pipelines",
+                "rationale": "Modern development practices with automated testing and deployment can support 48-hour fix cycles for isolated components"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-43",
+                "parameter": "Degree of modularity and component isolation in codebase",
+                "correlated_attribute": "Maintainability (fix isolation and testing time)"
+              },
+              {
+                "id": "S-44",
+                "parameter": "Automated testing coverage and execution time",
+                "correlated_attribute": "Maintainability and Reliability"
+              },
+              {
+                "id": "S-45",
+                "parameter": "Deployment automation maturity and rollback capabilities",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-16",
+                "parameter": "Testing rigor vs. deployment speed",
+                "conflicting_attributes": [
+                  "Reliability (comprehensive testing prevents regressions, positive)",
+                  "Maintainability (extensive testing may exceed 48-hour window, negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

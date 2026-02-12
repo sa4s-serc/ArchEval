@@ -1,0 +1,288 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Chilean National Tsunami Warning System (SNAM)",
+      "date": "2017-01-01",
+      "ref": "https://ieeexplore.ieee.org/document/8226416",
+      "evaluator_organization": "Universidad T\u00e9cnica Federico Santa Mar\u00eda",
+      "phase_1_attendees": [
+        "Moderator (Teacher)",
+        "Project Manager",
+        "Architect",
+        "CSN Informant Official",
+        "SNAM Seismic Scenarios DB Provider",
+        "SNAM Seismic Expert",
+        "SNAM Decision Maker",
+        "Alert Dispatcher",
+        "SHOA Requirements Officer",
+        "SHOA Maintenance Officer"
+      ],
+      "phase_2_attendees": [
+        "Moderator",
+        "Project Manager",
+        "Architect",
+        "Stakeholders (Students playing roles of CSN, SNAM, SHOA officials)"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "The SNAM (Sistema Nacional de Alarma de Maremotos) is the Chilean national tsunami warning system. Its core function is to allow the generation and monitoring of tsunami warnings. The system captures seismic data, evaluates scenarios, and disseminates bulletins. A key component is the Warning Decision-making Subsystem, which interfaces with external entities like the National Seismic Center (CSN) and the National Emergency Office (ONEMI).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The initial architectural design was provided as three specific views: Contextual, Functional, and Deployment. These were consistent with each other and previously revised by the Architect role.",
+        "evaluator_inquiry_questions": [
+          "I have a question about the architecture.",
+          "I think that according to the difficulty and relevance of this attribute, it should be a priority of [value] due to [reason]."
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Deployment view includes an Information Capture Server, Decision Making Server, and Data Base Server.",
+          "Client terminals include ResearchClient, SensorsReader, ExpertClient, and BulletinClient.",
+          "External entities include CSN and ONEMI terminals."
+        ],
+        "runtime_constraints": [
+          "Must operate in scenarios with No Internet connection or No phone connection.",
+          "Must prevent unauthorized external bulletin generation."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "data_transmission_time_csn_snam": "1 minute 20 seconds (Current)",
+        "target_data_transmission_time": "50 seconds (Goal)",
+        "snam_to_onemi_latency": "2 minutes 30 seconds",
+        "unofficial_alert_dissemination_rate": "5% (Current) to 1% (Goal)",
+        "database_uptime": "94%",
+        "query_response_time": "5 seconds",
+        "test_error_detection_rate": "25%"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Three-Layer Architecture / Client-Server",
+          "questions": [
+            "How does the system handle alternative sending channels if the primary connection fails?",
+            "How are pre-modeled scenarios accessed if the primary database server fails?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "No Internet connection."
+        },
+        {
+          "id": "RS-02",
+          "description": "Failure of the primary server data pre-modeled scenarios."
+        },
+        {
+          "id": "RS-03",
+          "description": "Communication between servers is cut."
+        },
+        {
+          "id": "RS-04",
+          "description": "Denial-of-service attack."
+        },
+        {
+          "id": "RS-05",
+          "description": "Attempt to generate newsletter externally by unauthorized users."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Reduce maximum sending time of technical data from 1'20\" to 50\"",
+          "Reduce unofficial alert dissemination from 5% to 1%",
+          "Ensure unit goals are represented in the development and future operation",
+          "Generate and monitor tsunami warnings effectively"
+        ],
+        "technical_constraints": [
+          "System must integrate with external entities (CSN, ONEMI)",
+          "Must support alternative communication channels (e.g., if internet/phone fails)"
+        ],
+        "architectural_drivers": [
+          "Security",
+          "Reliability",
+          "Performance",
+          "Maintainability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Three-View Architecture (Contextual, Functional, Deployment)",
+          "description": "The system is structured using distinct views to separate concerns. The deployment view specifically separates Information Capture, Decision Making, and Database servers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Separation of servers allows for dedicated processing resources for decision making versus data capture."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Modular deployment allows for mirroring and redundancy strategies."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Ensure up to 85% that the data received are from CSN experts",
+                "scenario_id": "S1",
+                "scenario_description": "Authorization of data source",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ensure up to 90% that the data received are from experts SNAM",
+                "scenario_id": "S2",
+                "scenario_description": "Authorization of internal data"
+              },
+              {
+                "refinement": "Ensure that alerts are not disseminated through unofficial channels by 95%",
+                "scenario_id": "S3",
+                "scenario_description": "Confidentiality of alerts"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Ensure up to 94% the up-time of the database for pre model of seismic scenarios",
+                "scenario_id": "R1",
+                "scenario_description": "Availability of database"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Maximum time of sending data from CSN to SNAM is 1 minute 20 seconds",
+                "scenario_id": "P1",
+                "scenario_description": "Latency CSN to SNAM"
+              },
+              {
+                "refinement": "Maximum time of sending data from SNAM to ONEMI is 2 minutes 30 seconds",
+                "scenario_id": "P2",
+                "scenario_description": "Latency SNAM to ONEMI"
+              },
+              {
+                "refinement": "Query response time for data for pre model of seismic scenario is 5 seconds",
+                "scenario_id": "P3",
+                "scenario_description": "Query Latency"
+              }
+            ]
+          },
+          {
+            "attribute_name": "Maintainability",
+            "children": [
+              {
+                "refinement": "Times for changes in development varies between 3-5 business days",
+                "scenario_id": "M1",
+                "scenario_description": "Modifiability"
+              },
+              {
+                "refinement": "Running tests allow finding up to 25% of errors in code",
+                "scenario_id": "M2",
+                "scenario_description": "Testability"
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Reduce maximum sending time of technical data from 1'20\" to 50\"",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Ensure that alerts are not disseminated through unofficial channels by 95%",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "RS-01",
+            "text": "No Internet connection / No phone connection",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Communication Failure",
+          "stimulus": "Loss of primary network",
+          "response_measure": "Data transmission continues via alternative",
+          "architectural_decisions": [
+            "Add alternative channels to email",
+            "New interface for alternative channel in Functional View"
+          ],
+          "reasoning": "Implementing an interface for alternative channels ensures that when the primary internet/phone connection fails, the system can switch to a backup method (e.g., radio or satellite) to maintain operation.",
+          "findings": {
+            "risks": [],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Alternative Channel Interface",
+                "conflicting_attributes": [
+                  "Reliability (Positive: Continuity of service)",
+                  "Testability (Negative: Shared functions require more thorough testing)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-02",
+            "text": "Failure of the primary server data pre-modeled scenarios",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Hardware Failure",
+          "stimulus": "Server crash",
+          "response_measure": "System remains available",
+          "architectural_decisions": [
+            "New internal or external mirror device data server to pre-modeled scenarios in Deployment View"
+          ],
+          "reasoning": "Adding a mirror device ensures redundancy; if the primary server for pre-modeled scenarios fails, the mirror takes over.",
+          "findings": {
+            "risks": [],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RS-03",
+            "text": "Communication between servers is cut",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Network Partition",
+          "stimulus": "Severed link",
+          "response_measure": "Query resolution",
+          "architectural_decisions": [
+            "New component with sophisticated algorithms search query interface between data and data processing component"
+          ],
+          "reasoning": "Optimizing the query interface helps mitigate performance degradation during communication issues.",
+          "findings": {
+            "risks": [],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,829 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Accommodate needs of institutional accreditation",
+      "Organize and synchronize information from existing systems",
+      "Reduce duplication issues and problems from various data structures",
+      "Facilitate processes previously done manually",
+      "Create a centralized source for overall academic activity"
+    ],
+    "technical_constraints": [
+      "Low-cost",
+      "Open-source software",
+      "Tight development schedule",
+      "Limited human resources/developer experience",
+      "Existing systems use PHP and MySQL",
+      "Existing systems are disparate and separate"
+    ],
+    "architectural_drivers": [
+      "Security",
+      "Performance",
+      "Compliance",
+      "Modifiability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Low maturity; the system was based on an initial prototype with no standard architectural evaluation practice previously applied. Design decisions were initially driven by immediate needs under tight schedules without thorough analysis.",
+      "evaluator_inquiry_questions": [
+        "How can existing systems be integrated to minimize data duplication?",
+        "What are the available architectural options considering the low-cost and open-source constraints?",
+        "How can binary data (images, audio, video) be handled if existing databases only store file paths?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Dozens of existing information systems operating on separate servers with separate databases.",
+        "Most existing applications are web-based, coded in PHP, using MySQL instances.",
+        "Binary files (images/audio) are stored physically on server hard drives, not in the databases."
+      ],
+      "runtime_constraints": [
+        "Strict reliance on low-cost, open-source software.",
+        "Limited human resources and developer expertise (mostly fresh graduates).",
+        "Legacy systems cannot accept major behavioral changes or new adapter installations."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "system_count": "Dozens of information systems",
+      "data_types": "Text, Binary (Image, Audio, Video)",
+      "network_protocol": "HTTP/REST (for Web Services option), JDBC (for Direct Connection)"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Enterprise Service Bus (ESB)",
+        "questions": [
+          "Does the ESB support binary data transfer natively?",
+          "Can legacy systems connect to the ESB without installing new adapters?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy among them."
+      },
+      {
+        "id": "RS-02",
+        "description": "Each of the other connected applications must be able to connect to a centralized data-warehouse and pull data upon request as needed."
+      },
+      {
+        "id": "RS-03",
+        "description": "The DC system must be able to sync any duplicated master data from different applications."
+      },
+      {
+        "id": "RS-04",
+        "description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed."
+      },
+      {
+        "id": "RS-05",
+        "description": "The source system should not experience overload when another system is connected to get data."
+      },
+      {
+        "id": "RS-06",
+        "description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse."
+      },
+      {
+        "id": "RS-07",
+        "description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files."
+      },
+      {
+        "id": "RS-08",
+        "description": "Small to no change should be needed in any of the connected applications in order to implement the solution."
+      },
+      {
+        "id": "RS-09",
+        "description": "The cost in term of the required software development has to be minimum and preferably using open-source software."
+      },
+      {
+        "id": "RS-10",
+        "description": "The developed system has to be developer-friendly for enhancement purposes."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Enterprise Service Bus (ESB)",
+        "description": "An Enterprise Service Bus acts as a central communication layer that facilitates interaction between disparate applications. It provides capabilities for message routing, transformation, protocol conversion, and orchestration. This approach is chosen to integrate numerous existing, separate information systems, particularly accommodating legacy systems that have limited modification capabilities, by providing a standardized interface for communication without requiring direct coupling between them. It enables the system to handle various data formats and communication protocols.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "The ESB enables loose coupling, allowing new systems to be integrated or existing systems to be changed without directly impacting other connected systems, thus enhancing overall system modifiability."
+          },
+          {
+            "quality_attribute": "Compliance",
+            "rationale": "The ESB can enforce standardized communication protocols and data formats, which helps in meeting institutional accreditation needs by ensuring data consistency and adherence to policies across integrated systems."
+          },
+          {
+            "quality_attribute": "Security",
+            "rationale": "Security concerns such as authentication, authorization, and message encryption/decryption can be centralized and managed at the ESB level, providing a consistent security posture for inter-system communication."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "The ESB can facilitate asynchronous communication, message queuing, and intelligent routing, which can optimize data flow and prevent source systems from being overloaded during data exchange (as per raw scenario RS-05)."
+          },
+          {
+            "quality_attribute": "Low-Cost/Open-Source (Implicit)",
+            "rationale": "There are robust open-source ESB implementations available (e.g., Apache Camel, WSO2 ESB), which directly addresses the technical constraint of low-cost and open-source software."
+          }
+        ]
+      },
+      {
+        "approach_name": "Data Warehouse",
+        "description": "A Data Warehouse is a central repository that consolidates integrated data from various operational systems into a single, consistent, and historical store. It is optimized for reporting, business intelligence, and analytical queries rather than transactional processing. This approach is crucial for creating the 'centralized source for overall academic activity,' reducing data duplication by providing a single source of truth, and supporting institutional accreditation needs through comprehensive reporting and analysis capabilities.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Compliance",
+            "rationale": "Provides a unified and consistent view of academic data, enabling comprehensive reporting and auditing required for institutional accreditation."
+          },
+          {
+            "quality_attribute": "Information Quality/Consistency",
+            "rationale": "By consolidating and cleansing data from disparate sources, the Data Warehouse significantly reduces data duplication and improves the overall quality and consistency of information across the institution."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Optimized for complex analytical queries and reporting, ensuring efficient access to aggregated academic data without impacting the performance of operational source systems."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Allows for schema evolution and the addition of new data sources without directly affecting the operational systems, providing flexibility for future changes in data requirements."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Integrate new systems without affecting existing ones",
+              "scenario_id": "M1",
+              "scenario_description": "A new student information system needs to be integrated within 3 months, without requiring changes to existing operational systems, to support a new academic program.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Compliance",
+          "children": [
+            {
+              "refinement": "Generate comprehensive accreditation reports quickly and accurately",
+              "scenario_id": "C1",
+              "scenario_description": "The system must be able to generate comprehensive reports for institutional accreditation bodies, consolidating data from all academic sources, within 24 hours of request, ensuring data accuracy and completeness.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Detect and block external attacks via ESB in milliseconds",
+              "scenario_id": "S1",
+              "scenario_description": "The system must detect and block external cyber attacks targeting the ESB within milliseconds to prevent unauthorized data access or service disruption.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Generate transcripts for 10,000 concurrent users within 5 seconds",
+              "scenario_id": "P1",
+              "scenario_description": "When 10,000 concurrent students request their complete academic transcript during peak registration periods, the system must generate and display it within 5 seconds.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Information Quality/Consistency",
+          "children": [
+            {
+              "refinement": "Single source of truth for student records, minimizing duplication",
+              "scenario_id": "IQ1",
+              "scenario_description": "Ensure that all student academic records are consistent across all integrated systems, with the Data Warehouse serving as the single source of truth, minimizing data duplication and discrepancies.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "Maintain high uptime during critical periods",
+              "scenario_id": "A1",
+              "scenario_description": "During critical periods like registration or grade submission (e.g., 2 weeks per semester), the system must maintain 99.9% uptime and be fully operational to handle expected user load.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Scalability",
+          "children": [
+            {
+              "refinement": "Accommodate future growth in student enrollment and data volume",
+              "scenario_id": "SC1",
+              "scenario_description": "The system must be able to accommodate a 25% increase in student enrollment and associated data volume over the next 5 years without significant architectural changes or performance degradation.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Low-Cost/Open-Source",
+          "children": [
+            {
+              "refinement": "Minimize operational expenditures through open-source solutions",
+              "scenario_id": "LCO1",
+              "scenario_description": "The system must primarily utilize open-source software and technologies, or commercially available solutions with low licensing costs, to minimize operational expenditures while meeting all functional and quality attribute requirements.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "A new student information system needs to be integrated within 3 months, without requiring changes to existing operational systems, to support a new academic program.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system must be able to generate comprehensive reports for institutional accreditation bodies, consolidating data from all academic sources, within 24 hours of request, ensuring data accuracy and completeness.",
+        "primary_quality_attribute": [
+          "Compliance"
+        ]
+      },
+      {
+        "scenario_text": "The system must detect and block external cyber attacks targeting the ESB within milliseconds to prevent unauthorized data access or service disruption.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "When 10,000 concurrent students request their complete academic transcript during peak registration periods, the system must generate and display it within 5 seconds.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Ensure that all student academic records are consistent across all integrated systems, with the Data Warehouse serving as the single source of truth, minimizing data duplication and discrepancies.",
+        "primary_quality_attribute": [
+          "Information Quality/Consistency"
+        ]
+      },
+      {
+        "scenario_text": "During critical periods like registration or grade submission (e.g., 2 weeks per semester), the system must maintain 99.9% uptime and be fully operational to handle expected user load.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "The system must be able to accommodate a 25% increase in student enrollment and associated data volume over the next 5 years without significant architectural changes or performance degradation.",
+        "primary_quality_attribute": [
+          "Scalability"
+        ]
+      },
+      {
+        "scenario_text": "The system must primarily utilize open-source software and technologies, or commercially available solutions with low licensing costs, to minimize operational expenditures while meeting all functional and quality attribute requirements.",
+        "primary_quality_attribute": [
+          "Low-Cost/Open-Source"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A new student information system needs to be integrated within 3 months, without requiring changes to existing operational systems, to support a new academic program.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Normal operations",
+        "stimulus": "Integration of a new student information system",
+        "response_measure": "Integration within 3 months without changes to existing operational systems",
+        "architectural_decisions": [
+          "Implementation of an Enterprise Service Bus (ESB) for integration"
+        ],
+        "reasoning": "The ESB approach is designed to provide loose coupling and facilitate integration of disparate systems through message routing, transformation, and protocol conversion. This directly supports the scenario's requirement to integrate a new system without altering existing ones, thus enhancing modifiability.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M1-01",
+              "description": "Complexity of ESB configuration and development for new system integration, potentially extending integration timelines.",
+              "rationale": "While ESB simplifies integration conceptually, the actual configuration, data mapping, and transformation logic for a new system can be complex and time-consuming, requiring specialized skills."
+            },
+            {
+              "id": "R-M1-02",
+              "description": "Performance overhead introduced by ESB for message transformation and routing, potentially impacting system response times.",
+              "rationale": "Each layer of abstraction, including the ESB, can introduce latency. If the ESB is not adequately provisioned or configured, its processing for message transformation can become a bottleneck."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M1-01",
+              "description": "Integration of new systems without direct impact on existing operational systems.",
+              "rationale": "The ESB's core capability is to decouple systems. It handles protocol translation and data format changes, allowing existing systems to remain unchanged while a new system is integrated through the ESB."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M1-01",
+              "parameter": "ESB integration developer skill level and experience",
+              "correlated_attribute": "Modifiability (integration time)"
+            },
+            {
+              "id": "S-M1-02",
+              "parameter": "ESB message processing latency",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M1-01",
+              "parameter": "Level of abstraction/transformation within ESB",
+              "conflicting_attributes": [
+                "Modifiability (easier integration)",
+                "Performance (increased latency)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "C1",
+          "text": "The system must be able to generate comprehensive reports for institutional accreditation bodies, consolidating data from all academic sources, within 24 hours of request, ensuring data accuracy and completeness.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Compliance",
+        "environment": "Normal operations",
+        "stimulus": "Request for comprehensive accreditation reports",
+        "response_measure": "Reports generated within 24 hours with accuracy and completeness",
+        "architectural_decisions": [
+          "Implementation of a Data Warehouse for consolidated data",
+          "Use of ESB for data ingestion into Data Warehouse"
+        ],
+        "reasoning": "The Data Warehouse is specifically designed to consolidate, cleanse, and store historical data from various sources, making it ideal for comprehensive reporting and analysis required for accreditation. The ESB facilitates controlled and standardized data flow into the Data Warehouse.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-C1-01",
+              "description": "Data freshness/latency from source systems to Data Warehouse, potentially leading to reports based on slightly outdated information.",
+              "rationale": "ETL processes for a Data Warehouse typically run periodically, meaning there's inherent latency between when data changes in source systems and when it's reflected in the DW, which could affect real-time accuracy if not managed."
+            },
+            {
+              "id": "R-C1-02",
+              "description": "Complexity and potential errors in ETL processes for data cleansing and transformation, compromising data accuracy and completeness in the Data Warehouse.",
+              "rationale": "Incorrectly designed or implemented ETL (Extract, Transform, Load) logic can introduce errors or omit critical data during the consolidation process, directly impacting report reliability."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-C1-01",
+              "description": "Unified and consistent view of academic data for reporting.",
+              "rationale": "The Data Warehouse's primary function is to integrate and centralize data from disparate sources, providing a single, consistent version of truth necessary for comprehensive and accurate reports."
+            },
+            {
+              "id": "NR-C1-02",
+              "description": "Optimized performance for complex analytical queries.",
+              "rationale": "Data Warehouses are optimized for read-heavy analytical queries, which are typical for accreditation reports, ensuring efficient data retrieval."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-C1-01",
+              "parameter": "ETL process efficiency and frequency",
+              "correlated_attribute": "Information Quality (data freshness)"
+            },
+            {
+              "id": "S-C1-02",
+              "parameter": "Data Warehouse query optimization and indexing",
+              "correlated_attribute": "Performance (report generation time)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-C1-01",
+              "parameter": "Frequency of Data Warehouse updates",
+              "conflicting_attributes": [
+                "Information Quality (data freshness)",
+                "Performance (ETL impact on source systems)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "The system must detect and block external cyber attacks targeting the ESB within milliseconds to prevent unauthorized data access or service disruption.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Security",
+        "environment": "External attack",
+        "stimulus": "External cyber attack targeting the ESB",
+        "response_measure": "Detection and blocking within milliseconds",
+        "architectural_decisions": [
+          "Centralized security management via ESB"
+        ],
+        "reasoning": "The ESB can centralize security enforcement (authentication, authorization, encryption). However, achieving 'milliseconds' detection and blocking for sophisticated external attacks requires advanced capabilities, potentially beyond a standard ESB's native features, and often involves specialized security appliances.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-S1-01",
+              "description": "Difficulty in achieving 'milliseconds' detection and blocking for all types of external attacks using only ESB native security features.",
+              "rationale": "While ESB provides security features, real-time advanced threat detection and blocking often require dedicated Intrusion Detection/Prevention Systems (IDS/IPS) or Web Application Firewalls (WAFs) integrated with, or in front of, the ESB."
+            },
+            {
+              "id": "R-S1-02",
+              "description": "Performance overhead from deep packet inspection or complex security rule evaluation within the ESB, impacting message throughput.",
+              "rationale": "Applying stringent security checks (e.g., content scanning, complex policy evaluation) to every message can add significant processing time, potentially leading to performance degradation under load."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-S1-01",
+              "description": "Centralized enforcement of security policies (authentication, authorization, encryption) for inter-system communication.",
+              "rationale": "The ESB acts as a gateway and can apply consistent security policies across all integrated services, reducing the effort needed to secure individual endpoints."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-S1-01",
+              "parameter": "ESB's security module processing latency",
+              "correlated_attribute": "Security (response time to threats)"
+            },
+            {
+              "id": "S-S1-02",
+              "parameter": "Integration with external threat detection systems",
+              "correlated_attribute": "Security (detection capability)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-S1-01",
+              "parameter": "Granularity and complexity of ESB security rules",
+              "conflicting_attributes": [
+                "Security (robust protection)",
+                "Performance (message throughput)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "When 10,000 concurrent students request their complete academic transcript during peak registration periods, the system must generate and display it within 5 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak load (10,000 concurrent users)",
+        "stimulus": "10,000 concurrent requests for academic transcripts",
+        "response_measure": "Transcript generation and display within 5 seconds",
+        "architectural_decisions": [
+          "Data Warehouse for transcript data storage",
+          "ESB for potential request routing to DW or source systems"
+        ],
+        "reasoning": "The Data Warehouse is optimized for analytical queries, which transcript generation typically involves. However, serving 10,000 concurrent complex queries with a 5-second response time requires significant optimization, robust infrastructure, and efficient query design. The ESB could introduce additional latency if not carefully managed.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P1-01",
+              "description": "Data Warehouse query performance degradation under high concurrent load (10,000 users) for complex transcript generation queries.",
+              "rationale": "While optimized for analytical queries, a high volume of concurrent complex queries can still overwhelm a Data Warehouse, especially if indexing or query plans are not highly optimized."
+            },
+            {
+              "id": "R-P1-02",
+              "description": "Network latency and bandwidth limitations between users, application servers, and the Data Warehouse.",
+              "rationale": "Even with an efficient backend, network bottlenecks can significantly contribute to overall response time, especially for a large number of concurrent users requesting potentially large data sets."
+            },
+            {
+              "id": "R-P1-03",
+              "description": "ESB becoming a bottleneck if all transcript requests are routed through it, adding processing overhead.",
+              "rationale": "If the ESB handles every request and performs transformations, it could become a single point of congestion, impacting the overall response time."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P1-01",
+              "description": "Access to consolidated and consistent historical data for transcript generation.",
+              "rationale": "The Data Warehouse provides a reliable source of truth for all academic records, ensuring transcripts are accurate and complete without burdening operational systems."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P1-01",
+              "parameter": "Data Warehouse indexing and query optimization",
+              "correlated_attribute": "Performance (query response time)"
+            },
+            {
+              "id": "S-P1-02",
+              "parameter": "Database server hardware capacity (CPU, RAM, I/O)",
+              "correlated_attribute": "Performance (concurrent query handling)"
+            },
+            {
+              "id": "S-P1-03",
+              "parameter": "Network bandwidth and latency",
+              "correlated_attribute": "Performance (end-to-end response time)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P1-01",
+              "parameter": "Level of detail/complexity in transcript data",
+              "conflicting_attributes": [
+                "Information Quality (comprehensiveness)",
+                "Performance (generation time)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "IQ1",
+          "text": "Ensure that all student academic records are consistent across all integrated systems, with the Data Warehouse serving as the single source of truth, minimizing data duplication and discrepancies.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Information Quality/Consistency",
+        "environment": "Normal operations",
+        "stimulus": "Data synchronization from various source systems",
+        "response_measure": "Single source of truth for student records, minimized duplication and discrepancies",
+        "architectural_decisions": [
+          "Data Warehouse as central repository",
+          "ESB for controlled data ingestion"
+        ],
+        "reasoning": "The Data Warehouse is explicitly designed to consolidate, cleanse, and integrate data from disparate sources, establishing a single, consistent version of truth. The ESB facilitates the structured and controlled flow of data from operational systems into the Data Warehouse.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-IQ1-01",
+              "description": "Errors in ETL processes leading to incorrect data cleansing, transformation, or mapping, introducing inconsistencies into the Data Warehouse.",
+              "rationale": "The quality of data in the Data Warehouse is highly dependent on the correctness of the ETL logic. Any flaws here can lead to propagation of errors or creation of new ones."
+            },
+            {
+              "id": "R-IQ1-02",
+              "description": "Latency in data synchronization from source systems to the Data Warehouse, causing temporary inconsistencies between operational views and the DW.",
+              "rationale": "If the Data Warehouse is not updated in near real-time, there will be a period where the DW's data differs from the operational systems, which can be problematic for 'real-time' consistency needs."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-IQ1-01",
+              "description": "Establishment of a single, consistent source of truth for student academic records.",
+              "rationale": "The Data Warehouse's purpose is to consolidate and integrate data, effectively creating a golden record for analytical and reporting purposes, thereby minimizing duplication and discrepancies."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-IQ1-01",
+              "parameter": "Accuracy and completeness of ETL data cleansing rules",
+              "correlated_attribute": "Information Quality"
+            },
+            {
+              "id": "S-IQ1-02",
+              "parameter": "Frequency and efficiency of data loading into the Data Warehouse",
+              "correlated_attribute": "Information Quality (data freshness)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-IQ1-01",
+              "parameter": "Granularity of data cleansing and transformation",
+              "conflicting_attributes": [
+                "Information Quality (higher consistency)",
+                "Performance (ETL processing time and complexity)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "During critical periods like registration or grade submission (e.g., 2 weeks per semester), the system must maintain 99.9% uptime and be fully operational to handle expected user load.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Critical peak periods",
+        "stimulus": "High user load during registration/grade submission",
+        "response_measure": "99.9% uptime and full operational capability",
+        "architectural_decisions": [
+          "ESB for inter-system communication",
+          "Data Warehouse for analytical data"
+        ],
+        "reasoning": "Both the ESB and Data Warehouse are critical components. Achieving 99.9% uptime requires high-availability configurations for all architectural components, including the ESB and Data Warehouse, with robust failover mechanisms and redundancy.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-A1-01",
+              "description": "Single points of failure within the ESB or Data Warehouse infrastructure (e.g., database server, network devices, shared storage).",
+              "rationale": "Any component without redundancy, if it fails, can bring down the entire system or critical parts of it, preventing the achievement of high availability targets."
+            },
+            {
+              "id": "R-A1-02",
+              "description": "Failure of critical ETL processes during a critical period, leading to stale or missing data in the Data Warehouse and impacting downstream systems.",
+              "rationale": "If data synchronization fails, the DW might not provide accurate or complete information, affecting reports or applications relying on it, even if the DW infrastructure is up."
+            },
+            {
+              "id": "R-A1-03",
+              "description": "Complexity of deploying, configuring, and managing highly available ESB and Data Warehouse clusters, increasing the potential for misconfiguration.",
+              "rationale": "High availability setups are inherently complex. Errors in configuration or management can lead to outages or failover failures."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-A1-01",
+              "description": "Support for high-availability configurations in both ESB and Data Warehouse technologies.",
+              "rationale": "Most enterprise-grade ESB and Data Warehouse solutions offer features like clustering, load balancing, and failover mechanisms to ensure continuous operation."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-A1-01",
+              "parameter": "Redundancy levels for all critical ESB and Data Warehouse components",
+              "correlated_attribute": "Availability"
+            },
+            {
+              "id": "S-A1-02",
+              "parameter": "Mean Time To Recovery (MTTR) for component failures",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-A1-01",
+              "parameter": "Level of redundancy and failover automation",
+              "conflicting_attributes": [
+                "Availability (higher uptime)",
+                "Cost (increased infrastructure and operational expense)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "SC1",
+          "text": "The system must be able to accommodate a 25% increase in student enrollment and associated data volume over the next 5 years without significant architectural changes or performance degradation.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Scalability",
+        "environment": "Growing user base and data volume",
+        "stimulus": "25% increase in student enrollment and data volume over 5 years",
+        "response_measure": "No significant architectural changes or performance degradation",
+        "architectural_decisions": [
+          "ESB for message handling",
+          "Data Warehouse for data storage and analysis"
+        ],
+        "reasoning": "Both the ESB and Data Warehouse architectures are generally designed to be scalable, often supporting horizontal scaling. However, the specific implementation, underlying infrastructure, and database design choices will heavily influence their ability to handle a 25% growth without degradation.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-SC1-01",
+              "description": "Scaling limits of the chosen ESB or Data Warehouse product/implementation, or underlying infrastructure components.",
+              "rationale": "While architectures are scalable, specific product versions or poor initial design choices (e.g., non-distributed database) can introduce hard limits to scalability."
+            },
+            {
+              "id": "R-SC1-02",
+              "description": "Database schema design for the Data Warehouse not optimized for future data growth, leading to performance degradation with increased volume.",
+              "rationale": "Inefficient schema design, lack of partitioning, or improper indexing can cause query performance to degrade significantly as data volume grows, even with scalable hardware."
+            },
+            {
+              "id": "R-SC1-03",
+              "description": "Increased cost and operational complexity associated with scaling infrastructure to support growth.",
+              "rationale": "Scaling, especially horizontally, means managing more servers, more network components, and more complex deployments, leading to higher costs and more demanding operations."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-SC1-01",
+              "description": "Horizontal scalability options for both ESB and Data Warehouse architectures.",
+              "rationale": "Many modern ESB and Data Warehouse solutions support adding more nodes (horizontal scaling) to distribute load and handle increased throughput and data volume."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-SC1-01",
+              "parameter": "Database partitioning and indexing strategies in Data Warehouse",
+              "correlated_attribute": "Performance, Scalability"
+            },
+            {
+              "id": "S-SC1-02",
+              "parameter": "Network capacity and latency between scaled components",
+              "correlated_attribute": "Performance, Scalability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-SC1-01",
+              "parameter": "Investment in scalable infrastructure and design up front",
+              "conflicting_attributes": [
+                "Scalability (long-term growth)",
+                "Cost (initial expenditure)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "LCO1",
+          "text": "The system must primarily utilize open-source software and technologies, or commercially available solutions with low licensing costs, to minimize operational expenditures while meeting all functional and quality attribute requirements.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Low-Cost/Open-Source",
+        "environment": "System development and operation",
+        "stimulus": "Requirement to minimize operational expenditures",
+        "response_measure": "Primary utilization of open-source or low-cost solutions while meeting all requirements",
+        "architectural_decisions": [
+          "Selection of open-source ESB (e.g., Apache Camel, WSO2)",
+          "Selection of open-source database for Data Warehouse (e.g., PostgreSQL, ClickHouse)"
+        ],
+        "reasoning": "Both ESB and Data Warehouse paradigms have robust open-source implementations that align with the low-cost objective. However, relying on open-source introduces potential challenges related to support, skill requirements, and feature maturity which can impact other quality attributes and total cost of ownership.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-LCO1-01",
+              "description": "Open-source solutions might lack enterprise-grade vendor support, potentially leading to higher internal support costs or longer resolution times for critical issues.",
+              "rationale": "While licensing costs are low, the absence of dedicated commercial support can shift the burden of maintenance and troubleshooting to internal teams, requiring specialized skills and increasing operational risk."
+            },
+            {
+              "id": "R-LCO1-02",
+              "description": "Steeper learning curve and higher demand for specialized skills to configure, customize, and maintain open-source technologies.",
+              "rationale": "Open-source tools, while powerful, often require a deeper technical understanding and more hands-on configuration compared to commercial off-the-shelf products."
+            },
+            {
+              "id": "R-LCO1-03",
+              "description": "Maturity and feature completeness of open-source options might vary, potentially impacting other quality attributes (e.g., security, performance, compliance) or requiring custom development.",
+              "rationale": "Some open-source projects might not have the same level of features, performance optimizations, or security certifications as their commercial counterparts, necessitating workarounds or additional development."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-LCO1-01",
+              "description": "Availability of mature and feature-rich open-source ESB and Data Warehouse solutions.",
+              "rationale": "There are well-established open-source options (e.g., Apache Camel, WSO2 ESB, PostgreSQL, ClickHouse) that can meet core functional requirements."
+            },
+            {
+              "id": "NR-LCO1-02",
+              "description": "Significant reduction in direct software licensing costs.",
+              "rationale": "Utilizing open-source software inherently reduces or eliminates the recurring costs associated with commercial software licenses."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-LCO1-01",
+              "parameter": "Availability and expertise of internal staff for open-source technologies",
+              "correlated_attribute": "Operability, Cost"
+            },
+            {
+              "id": "S-LCO1-02",
+              "parameter": "Maturity and community support of chosen open-source products",
+              "correlated_attribute": "Reliability, Supportability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-LCO1-01",
+              "parameter": "Reliance on open-source solutions",
+              "conflicting_attributes": [
+                "Low-Cost (licensing)",
+                "Operability (support, skill requirements), Cost (TCO)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

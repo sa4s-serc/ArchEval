@@ -1,0 +1,446 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Plant Genotyping and Phenotyping Analysis Systems (Galaxy, iPlant, GenAp, LemnaTec)",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ensuring global food security; facilitating reproducibility of experiments; high throughput processing of large/heterogeneous data; making analysis results available to researchers."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Model-View-Controller (MVC)",
+          "Workflow-Driven",
+          "Cloud-Native"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Galaxy Web-Based Platform",
+            "description": "A robust, web-accessible framework designed to simplify biomedical research by abstracting complex computational workflows and cloud resource management.",
+            "architecture_characteristics": "High modularity, reproducibility, and scalability through cloud abstraction (CloudMan).",
+            "key_components": [
+              {
+                "component_id": "C-01-01",
+                "component_name": "Model",
+                "responsibilities": "Handles data persistence and retrieval via a relational database.",
+                "dependencies": [],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-01-02",
+                "component_name": "Job Manager",
+                "responsibilities": "Orchestrates execution, resource allocation, and job lifecycle tracking.",
+                "dependencies": [
+                  "Model"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "C-01-03",
+                "component_name": "ToolBox",
+                "responsibilities": "Maintains a language-independent registry of scientific tools.",
+                "dependencies": [],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "C-01-04",
+                "component_name": "API",
+                "responsibilities": "Provides programmable entry points for external developers and library integration.",
+                "dependencies": [
+                  "Job_Manager",
+                  "ToolBox"
+                ],
+                "change_sensitivity": "Low"
+              }
+            ],
+            "data_flow": "Users interact via the API/UI; the Job Manager requests tools from the ToolBox and data from the Model; results are persisted back through the Model to the database.",
+            "architectural_constraints": [
+              "Relies on CloudMan for dynamic scaling",
+              "Tool integration requires standardized wrappers"
+            ],
+            "notes": "Excellent for reproducibility but can become complex when managing highly heterogeneous non-genomic data without custom tools."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A plant breeder performs a comparative genomic analysis on 1,000 distinct cultivars to identify drought-resistance markers, expecting the system to complete the batch job within 48 hours to meet seasonal planting deadlines.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Job Manager",
+            "ToolBox",
+            "API"
+          ],
+          "feasibility_note": "Directly supported by the current Job Manager and ToolBox; however, scaling to 1,000 cultivars simultaneously may require specific cloud resource allocation logic.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Directly supports the goal of global food security by enabling rapid trait identification for crop improvement."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A researcher attempts to replicate a 3-year-old phenotyping study by re-executing a saved workflow. The system must automatically retrieve the specific legacy tool versions and metadata from the Model to produce identical results.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Model",
+            "ToolBox"
+          ],
+          "feasibility_note": "Requires the 'Model' component to support strict versioning and provenance metadata. If the Model only stores current state, this would require architectural modification.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Ensuring reproducibility is a core scientific requirement and reduces technical debt in research software."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "The system must ingest and process 10TB of heterogeneous data, including high-resolution LemnaTec RGB images and genomic VCF files, ensuring data integrity is maintained during the transfer from local desktop to cloud storage.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "API",
+            "Model",
+            "Job Manager"
+          ],
+          "feasibility_note": "The current architecture is described as 'robust' for heterogeneous data, but the API must be evaluated for high-bandwidth ingestion of multi-terabyte datasets.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "High throughput processing is essential for modern high-throughput phenotyping platforms."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A maintainer needs to integrate a new third-party machine learning library for automated trait appraisal into the ToolBox without requiring a restart of the Job Manager or modification of the core API.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "ToolBox",
+            "Job Manager"
+          ],
+          "feasibility_note": "Depends on the 'ToolBox' being decoupled from the 'Job Manager'. If tools are hard-coded into the manager, this is a significant architectural change.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Automating scientific workflows requires frequent updates to the analytical toolset to keep up with scientific advances."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "An end-user generates a public-facing URL for a completed analysis result, allowing external researchers to view interactive phenotyping charts via a web browser without requiring a system account.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "API",
+            "Model"
+          ],
+          "feasibility_note": "Requires the API to support anonymous read-only access and the Model to support public/private scoping of data objects.",
+          "priority": "Low",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Facilitates making analysis results available to the wider research community, increasing the impact of the data."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The Job Manager (C-01-02) is designed for orchestration and resource allocation, while CloudMan provides the dynamic scaling necessary to meet the 48-hour deadline for batch processing.",
+          "supporting_components": [
+            "C-01-02",
+            "C-01-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the ToolBox is language-independent, the current Model (C-01-01) description only specifies persistence and retrieval. Replicating 3-year-old studies requires strict provenance and versioning metadata that may not be fully implemented in the current relational schema.",
+          "supporting_components": [
+            "C-01-01",
+            "C-01-03"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "Ingesting 10TB of heterogeneous data (images and VCFs) pushes the limits of a standard web API and relational Model. The architectural note specifically mentions complexity with non-genomic data without custom tools.",
+          "supporting_components": [
+            "C-01-01",
+            "C-01-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "The ToolBox (C-01-03) maintains a language-independent registry. Standardized wrappers allow for new library integration without modifying the Job Manager or API core logic.",
+          "supporting_components": [
+            "C-01-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The current architecture assumes user interaction via API/UI. Public-facing URLs for anonymous access require a new scoping layer in the Model and authentication bypass logic in the API.",
+          "supporting_components": [
+            "C-01-01",
+            "C-01-04"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required; requires configuration of CloudMan scaling policies to ensure sufficient nodes are provisioned for 1,000 cultivars.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Potential for cloud quota limits to be hit before architectural limits."
+          ],
+          "alternative_approaches": "Utilize pre-reserved instances if the 48-hour window is a recurring seasonal requirement."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01-01",
+            "C-01-03"
+          ],
+          "change_description": "Implement a versioned tool registry and update the Model schema to include immutable provenance records for every workflow execution.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Legacy tool versions may have dependencies (OS/Libraries) that are no longer supported by the current CloudMan environment."
+          ],
+          "alternative_approaches": "Use containerization (Docker/Singularity) for each tool version to ensure environment-level reproducibility."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01-01",
+            "C-01-04"
+          ],
+          "change_description": "Integrate an object storage backend (e.g., S3) into the Model for large binary files and implement multi-part, resumable upload capabilities in the API.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Relational databases are inefficient for 10TB of image data.",
+            "API timeouts during massive data transfers."
+          ],
+          "alternative_approaches": "Implement a side-channel data transfer mechanism (e.g., Globus or direct cloud-to-cloud transfer) that bypasses the primary API for bulk data."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-01-03"
+          ],
+          "change_description": "Create a standardized XML/YAML tool wrapper for the ML library and register it with the ToolBox.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "New ML libraries may require GPU resources not currently managed by the Job Manager."
+          ],
+          "alternative_approaches": "Expose the ML library as an external microservice that the ToolBox calls via a lightweight wrapper."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01-01",
+            "C-01-04"
+          ],
+          "change_description": "Modify the Model to support 'Public' visibility flags on datasets and update the API to allow GET requests on shared resources without an API key.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Security risk of accidental data exposure if public scoping is incorrectly implemented."
+          ],
+          "alternative_approaches": "Export results to a static web server or external repository (e.g., Zenodo) and provide that link to the user instead of internal system access."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-01-01",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-05"
+          ]
+        },
+        {
+          "component": "C-01-03",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-02",
+            "S-04"
+          ]
+        },
+        {
+          "component": "C-01-04",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-03",
+            "S-05"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-01-01",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "This component is the primary hotspot involved in three distinct indirect scenarios, including the high-risk S-03. It represents a critical intersection between data provenance, large-scale storage integration, and security visibility. Failure to address this hotspot risks system-wide instability, data exposure, and the inability to handle the required 10TB data volume."
+        },
+        {
+          "component": "C-01-04",
+          "scenario_ids": [
+            "S-03",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "System Administrator"
+          ],
+          "rationale": "Linked to the highest-effort scenario (S-03), this component is vital for the API's ability to handle resumable uploads and public access. Operational risks include API timeouts during bulk transfers and potential security breaches if the public visibility flags from S-05 are not correctly decoupled from private binary data."
+        },
+        {
+          "component": "C-01-03",
+          "scenario_ids": [
+            "S-02",
+            "S-04"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "While critical for tool versioning and ML library integration, the operational risk is lower compared to the storage and security concerns of other components. The primary risk is 'Medium' (S-02), involving legacy dependency management, which impacts reproducibility but does not necessarily cause system-wide downtime."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Scalable Computational Provisioning: The architecture demonstrates high confidence in handling increased workloads (S-01) via CloudMan scaling policies, requiring only configuration rather than structural changes.",
+          "Extensible Tool Integration: The system easily accommodates new analytic libraries, such as ML tools (S-04), through localized changes to the ToolBox (C-01-03) using standardized wrappers.",
+          "Support for High-Throughput Processing: The existing job management and scaling infrastructure align well with the business goal of processing large cultivar datasets efficiently."
+        ],
+        "architectural_weaknesses": [
+          "Data Scale Limitations: The reliance on relational databases for large binary files (S-03) creates a significant bottleneck, leading to API timeouts and storage inefficiencies when handling 10TB datasets.",
+          "Rigid Data Model (C-01-01): Component C-01-01 is a critical hotspot involved in three indirect scenarios (S-02, S-03, S-05), indicating that the core model is overly coupled and requires widespread changes for provenance, storage, and security updates.",
+          "Limited Native Reproducibility: The architecture lacks a versioned tool registry and immutable provenance records (S-02), which directly challenges the business goal of facilitating experiment reproducibility.",
+          "Security Vulnerability in Visibility Transitions: Transitioning from private to public data access (S-05) requires significant modifications to the API and Model, presenting a medium-risk potential for accidental data exposure."
+        ],
+        "modifiability_assessment": "The architecture is highly modifiable regarding computational capacity and tool additions but remains rigid and brittle concerning data storage evolution and security model changes due to the high coupling of the core Model (C-01-01)."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Decouple binary data storage from the relational model by integrating an object storage backend (e.g., S3).",
+          "rationale": "Addresses the high-risk S-03 scenario and ensures the system can fulfill the business goal of processing 10TB of heterogeneous data without API failures.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement containerization (Docker/Singularity) for the tool registry and workflow execution.",
+          "rationale": "Mitigates the risk of legacy dependency conflicts identified in S-02 and significantly improves the business goal of experiment reproducibility.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Develop a side-channel data transfer mechanism (e.g., Globus) for bulk data ingestion.",
+          "rationale": "Provides a 'quick win' for S-03 by bypassing the primary API for massive transfers, reducing the risk of timeouts while the core storage is refactored.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Refactor the Model (C-01-01) to utilize a dedicated visibility service or policy-based access control.",
+          "rationale": "Reduces the risk of accidental exposure during public sharing (S-05) and decouples security logic from the core data schema.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

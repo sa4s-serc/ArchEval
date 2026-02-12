@@ -1,0 +1,1565 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A large-scale health care system (millions of lines of code) designed to serve as an information backbone for hospitals, clinics, and HMOs. It consists of two major subsystems: the OnLine Transaction Manager (OLTM) for interactive tasks and the Decision Support and Report Generation Manager (DSRGM) for batch processing. The system handles patient treatment history, insurance tracking, and data warehousing. It is built to be highly configurable to support a product line approach for various regulatory environments and customer needs.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Incomplete and unclear; whole sections were missing, and the architecture was largely presented as inadequately defined box-and-line diagrams.",
+        "evaluator_inquiry_questions": [
+          "Can you verbally fill in the blanks regarding missing architectural sections?",
+          "Can you explain the inconsistencies between the layered view and the runtime view (e.g., missing transaction manager and CORBA components)?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Different customer offices run different hardware configurations.",
+          "The DSRGM subsystem is deployed on UNIX platforms.",
+          "The database is hosted on Sun platforms."
+        ],
+        "runtime_constraints": [
+          "Must respond faster than the legacy system's 5-second transaction time.",
+          "Must support high availability during normal business hours.",
+          "Must accommodate high user turnover with ease of learning."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "peak_transaction_response_time": "0.75 seconds",
+        "peak_throughput": "150 transactions per second",
+        "hardware_replacement_cycle": "26 weeks",
+        "double_peak_load_response_time": "4 seconds"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "COTS-based Layered Architecture",
+          "questions": [
+            "How difficult is it to replace the commercial database with one from another vendor?",
+            "How difficult is it to replace the rules engine with compiled C++ code?",
+            "How are operating system dependencies encapsulated to allow for OS replacement?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Previously public data is made private, and access is adjusted accordingly."
+        },
+        {
+          "id": "RS-02",
+          "description": "Data in the information hub is replicated to a branch clinic, and performance is degraded."
+        },
+        {
+          "id": "RS-03",
+          "description": "A rule in the rule engine fires, and data access is too slow."
+        },
+        {
+          "id": "RS-29",
+          "description": "A fire in the data center forces the information hub to be moved to a new location."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Support the kickoff customer's diverse uses (treatment tracking, payments, trend spotting)",
+          "Serve as a basis for an entire product family of health care management systems",
+          "Replace multiple legacy systems that are old, difficult to maintain, and unresponsive",
+          "Support diverse cultural, regional, language, and currency differences"
+        ],
+        "technical_constraints": [
+          "Buy rather than build (use off-the-shelf software components)",
+          "Two-year implementation time frame",
+          "No lost jobs via retraining of existing employees"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Usability",
+          "Maintainability",
+          "Modifiability",
+          "Security",
+          "Scalability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "COTS-based Layered Architecture",
+          "description": "The system uses a layered architecture built on commercial off-the-shelf components to enable modifiability and reduce development time. Layers encapsulate dependencies on commercial databases, rules engines, and operating systems.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Layering allows replacement of COTS components (database, rules engine, OS) with minimal impact on other layers"
+            },
+            {
+              "quality_attribute": "Maintainability",
+              "rationale": "Clear separation of concerns through layers simplifies maintenance and updates"
+            }
+          ]
+        },
+        {
+          "approach_name": "Subsystem Separation (OLTM and DSRGM)",
+          "description": "The system separates interactive transaction processing (OLTM) from batch processing and reporting (DSRGM) into distinct subsystems with different deployment platforms.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Separating interactive and batch workloads prevents resource contention and ensures responsive transaction processing"
+            },
+            {
+              "quality_attribute": "Scalability",
+              "rationale": "Independent subsystems can be scaled separately based on workload characteristics"
+            }
+          ]
+        },
+        {
+          "approach_name": "Product Line Architecture",
+          "description": "The system is designed to be highly configurable to support multiple customers with different regulatory, cultural, and operational requirements.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Configuration-based variability allows adaptation to different customer needs without code changes"
+            },
+            {
+              "quality_attribute": "Usability",
+              "rationale": "Supports diverse cultural, regional, language, and currency differences through configuration"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Response time < 1 second for OLTM interactive transactions under normal load",
+                "scenario_id": "P1",
+                "scenario_description": "During normal business operations, when a user submits an OLTM transaction, the system processes and responds within 1 second for 95% of transactions",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "DSRGM batch processing completes within 4-hour overnight window",
+                "scenario_id": "P2",
+                "scenario_description": "During nightly batch processing, the DSRGM subsystem completes all reporting and data synchronization tasks within the allocated 4-hour maintenance window",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Zero performance degradation in OLTM during concurrent DSRGM operations",
+                "scenario_id": "P3",
+                "scenario_description": "When DSRGM batch processes are running, OLTM transaction response times remain unchanged, demonstrating effective subsystem isolation",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Replace COTS database with alternative vendor in < 40 person-hours",
+                "scenario_id": "M1",
+                "scenario_description": "When a decision is made to replace the commercial database (e.g., Oracle to PostgreSQL), the layered architecture allows completion of the migration with less than 40 person-hours of effort affecting only the data layer",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Configure new customer deployment in < 8 hours without code changes",
+                "scenario_id": "M2",
+                "scenario_description": "When onboarding a new customer with different regulatory requirements, the product line architecture enables full system configuration (language, currency, business rules, workflows) within 8 hours using only configuration files",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Replace business rules engine affecting < 3 modules",
+                "scenario_id": "M3",
+                "scenario_description": "When the COTS rules engine needs replacement, the layered architecture ensures changes are isolated to fewer than 3 system modules",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Add new regulatory compliance requirement in < 20 person-hours",
+                "scenario_id": "M4",
+                "scenario_description": "When a new regulatory requirement emerges for a specific customer region, the product line architecture allows implementation through configuration changes completed in under 20 person-hours",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Scalability",
+            "children": [
+              {
+                "refinement": "OLTM subsystem scales to 3x transaction volume without DSRGM changes",
+                "scenario_id": "SC1",
+                "scenario_description": "When OLTM transaction volume increases by 300%, the OLTM subsystem can be independently scaled (horizontal or vertical) without requiring any modifications to the DSRGM subsystem",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "DSRGM scales to handle 5x data volume independently",
+                "scenario_id": "SC2",
+                "scenario_description": "When reporting data volume grows by 500%, the DSRGM subsystem can be scaled independently through additional processing nodes without impacting OLTM performance",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Support 50 concurrent customer deployments on shared infrastructure",
+                "scenario_id": "SC3",
+                "scenario_description": "The product line architecture enables hosting 50 different customer configurations on shared infrastructure with resource isolation and independent scaling per tenant",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Maintainability",
+            "children": [
+              {
+                "refinement": "Apply OS security patches with < 2 hours downtime",
+                "scenario_id": "MA1",
+                "scenario_description": "When critical OS security patches are released, the layered architecture allows application of patches with system downtime limited to less than 2 hours",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Diagnose layer-specific defects in < 30 minutes",
+                "scenario_id": "MA2",
+                "scenario_description": "When a production defect occurs, the clear layer separation enables maintenance teams to isolate the problematic layer (presentation, business logic, data) within 30 minutes",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Update COTS component version affecting < 5% of codebase",
+                "scenario_id": "MA3",
+                "scenario_description": "When a COTS component requires version upgrade, the encapsulation provided by layering ensures that less than 5% of the total codebase requires modification",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Usability",
+            "children": [
+              {
+                "refinement": "Support 15 languages through configuration without UI redesign",
+                "scenario_id": "U1",
+                "scenario_description": "When expanding to new geographic markets, the product line architecture supports addition of new languages (up to 15 total) through configuration files without requiring UI component redesign",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Adapt to regional currency and date formats in < 4 hours per locale",
+                "scenario_id": "U2",
+                "scenario_description": "When deploying for a new customer region, cultural adaptations (currency symbols, date formats, number formatting) are completed in under 4 hours through product line configuration",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Configure customer-specific workflows without developer involvement",
+                "scenario_id": "U3",
+                "scenario_description": "When a customer requires workflow customization for their business processes, the product line architecture enables business analysts to configure workflows without software developer involvement",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During normal business operations, when a user submits an OLTM transaction, the system processes and responds within 1 second for 95% of transactions",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "During nightly batch processing, the DSRGM subsystem completes all reporting and data synchronization tasks within the allocated 4-hour maintenance window",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When DSRGM batch processes are running, OLTM transaction response times remain unchanged, demonstrating effective subsystem isolation",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When a decision is made to replace the commercial database (e.g., Oracle to PostgreSQL), the layered architecture allows completion of the migration with less than 40 person-hours of effort affecting only the data layer",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When onboarding a new customer with different regulatory requirements, the product line architecture enables full system configuration (language, currency, business rules, workflows) within 8 hours using only configuration files",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When the COTS rules engine needs replacement, the layered architecture ensures changes are isolated to fewer than 3 system modules",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When a new regulatory requirement emerges for a specific customer region, the product line architecture allows implementation through configuration changes completed in under 20 person-hours",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When OLTM transaction volume increases by 300%, the OLTM subsystem can be independently scaled (horizontal or vertical) without requiring any modifications to the DSRGM subsystem",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "When reporting data volume grows by 500%, the DSRGM subsystem can be scaled independently through additional processing nodes without impacting OLTM performance",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "The product line architecture enables hosting 50 different customer configurations on shared infrastructure with resource isolation and independent scaling per tenant",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "When critical OS security patches are released, the layered architecture allows application of patches with system downtime limited to less than 2 hours",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "When a production defect occurs, the clear layer separation enables maintenance teams to isolate the problematic layer (presentation, business logic, data) within 30 minutes",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "When a COTS component requires version upgrade, the encapsulation provided by layering ensures that less than 5% of the total codebase requires modification",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "When expanding to new geographic markets, the product line architecture supports addition of new languages (up to 15 total) through configuration files without requiring UI component redesign",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "When deploying for a new customer region, cultural adaptations (currency symbols, date formats, number formatting) are completed in under 4 hours through product line configuration",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "When a customer requires workflow customization for their business processes, the product line architecture enables business analysts to configure workflows without software developer involvement",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During normal business operations, when a user submits an OLTM transaction, the system processes and responds within 1 second for 95% of transactions",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal business operations with typical transaction load",
+          "stimulus": "User submits an OLTM interactive transaction",
+          "response_measure": "System responds within 1 second for 95% of transactions",
+          "architectural_decisions": [
+            "Subsystem separation isolates OLTM from DSRGM batch processing",
+            "Layered architecture with COTS database optimized for OLTP workloads",
+            "Dedicated hardware resources for OLTM subsystem"
+          ],
+          "reasoning": "The subsystem separation ensures that batch processing in DSRGM does not contend for OLTM resources. The layered architecture allows selection of high-performance COTS database engines optimized for transaction processing. Response time depends on database query efficiency, network latency between layers, and absence of resource contention.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Layer communication overhead may accumulate and exceed 1-second budget",
+                "rationale": "Each layer transition (presentation \u2192 business logic \u2192 data) introduces serialization, network, and processing latency that could compound"
+              },
+              {
+                "id": "R-02",
+                "description": "COTS database performance may degrade under concurrent user load",
+                "rationale": "Without specific database tuning parameters or connection pooling details, database could become bottleneck as user count increases"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "DSRGM batch processing will not interfere with OLTM response times",
+                "rationale": "Subsystem separation with independent deployment platforms ensures resource isolation"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Number of layer transitions per transaction",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "COTS database connection pool size",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Network latency between architectural layers",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Layer encapsulation granularity",
+                "conflicting_attributes": [
+                  "Modifiability (positive: more layers increase isolation)",
+                  "Performance (negative: more layers increase communication overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "During nightly batch processing, the DSRGM subsystem completes all reporting and data synchronization tasks within the allocated 4-hour maintenance window",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Nightly maintenance window with batch processing workload",
+          "stimulus": "Initiation of DSRGM batch processing jobs",
+          "response_measure": "All reporting and data synchronization completes within 4 hours",
+          "architectural_decisions": [
+            "Separate DSRGM subsystem with dedicated batch processing infrastructure",
+            "Independent scaling capability for DSRGM without affecting OLTM",
+            "COTS database supports bulk data operations"
+          ],
+          "reasoning": "The dedicated DSRGM subsystem can be optimized for batch throughput rather than interactive response. Completion time depends on data volume, processing parallelism, database I/O throughput, and network bandwidth for data synchronization. Without specific data volumes or processing rates, this is a high-difficulty scenario to guarantee.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Data volume growth may exceed 4-hour processing capacity",
+                "rationale": "As business scales, the volume of data to process may grow faster than processing capacity, eventually exceeding the time window"
+              },
+              {
+                "id": "R-04",
+                "description": "Lack of parallelization strategy may limit batch throughput",
+                "rationale": "Without explicit parallel processing architecture, batch jobs may execute sequentially, limiting scalability"
+              },
+              {
+                "id": "R-05",
+                "description": "Data synchronization between OLTM and DSRGM may create bottlenecks",
+                "rationale": "Network bandwidth and synchronization protocol efficiency are not specified, potentially limiting data transfer rates"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "OLTM subsystem will not be impacted by DSRGM processing demands",
+                "rationale": "Subsystem separation ensures DSRGM resource consumption does not affect OLTM availability"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Data volume processed per batch cycle",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Degree of batch job parallelization",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Database I/O throughput for bulk operations",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Network bandwidth between OLTM and DSRGM subsystems",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "DSRGM processing parallelism",
+                "conflicting_attributes": [
+                  "Performance (positive: higher parallelism reduces processing time)",
+                  "Maintainability (negative: complex parallel architectures are harder to debug and maintain)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P3",
+            "text": "When DSRGM batch processes are running, OLTM transaction response times remain unchanged, demonstrating effective subsystem isolation",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Concurrent operation of OLTM interactive transactions and DSRGM batch processing",
+          "stimulus": "DSRGM batch processes execute while OLTM handles user transactions",
+          "response_measure": "OLTM response times show zero degradation compared to baseline",
+          "architectural_decisions": [
+            "Physical subsystem separation with independent deployment platforms",
+            "Separate hardware resources for OLTM and DSRGM",
+            "Resource isolation at infrastructure level"
+          ],
+          "reasoning": "Subsystem separation is the primary architectural decision ensuring isolation. If OLTM and DSRGM run on separate physical or virtualized infrastructure with dedicated CPU, memory, and I/O resources, there should be no performance interference. Risk exists if they share any infrastructure components (database, network, storage).",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Shared database instance may create resource contention",
+                "rationale": "If OLTM and DSRGM share the same COTS database instance, DSRGM's bulk operations could consume I/O bandwidth and locks, degrading OLTM performance"
+              },
+              {
+                "id": "R-07",
+                "description": "Shared network infrastructure may experience congestion during data synchronization",
+                "rationale": "If subsystems share network paths, DSRGM's data transfer could saturate bandwidth and increase OLTM latency"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "CPU and memory isolation prevents DSRGM from affecting OLTM processing",
+                "rationale": "Independent deployment platforms ensure dedicated compute resources for each subsystem"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Degree of infrastructure sharing between OLTM and DSRGM",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Database connection isolation mechanisms",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Network bandwidth allocation between subsystems",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Infrastructure isolation level",
+                "conflicting_attributes": [
+                  "Performance (positive: complete isolation eliminates contention)",
+                  "Modifiability (negative: tightly isolated systems are harder to reconfigure for resource sharing)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "When a decision is made to replace the commercial database (e.g., Oracle to PostgreSQL), the layered architecture allows completion of the migration with less than 40 person-hours of effort affecting only the data layer",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Production system requiring COTS database replacement",
+          "stimulus": "Decision to migrate from one COTS database vendor to another",
+          "response_measure": "Migration completed in less than 40 person-hours with changes isolated to data layer",
+          "architectural_decisions": [
+            "Layered architecture with clear data layer abstraction",
+            "Database access encapsulated behind interfaces",
+            "Business logic layer independent of database implementation details"
+          ],
+          "reasoning": "The layered architecture's success depends on how well the data layer encapsulates database-specific features. If business logic uses database-agnostic SQL and avoids vendor-specific features (stored procedures, triggers, proprietary data types), migration effort is minimized. Risk increases if vendor-specific features are used throughout the codebase.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Use of vendor-specific database features may leak across layer boundaries",
+                "rationale": "If business logic relies on Oracle-specific stored procedures, triggers, or SQL extensions, these must be rewritten for PostgreSQL, exceeding 40 person-hours"
+              },
+              {
+                "id": "R-09",
+                "description": "Data migration and schema conversion effort not accounted for",
+                "rationale": "The 40 person-hour estimate may only cover code changes, not the substantial effort of migrating production data and converting schema differences"
+              },
+              {
+                "id": "R-10",
+                "description": "Performance tuning for new database may require architectural changes",
+                "rationale": "Different databases have different performance characteristics; query optimization for PostgreSQL may require changes beyond the data layer"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Business logic layer will not require changes if data layer abstraction is properly implemented",
+                "rationale": "Layering ensures business logic depends on interfaces, not concrete database implementations"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Degree of database abstraction in data layer interfaces",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Extent of vendor-specific feature usage",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Coupling between business logic and data access code",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Database abstraction layer thickness",
+                "conflicting_attributes": [
+                  "Modifiability (positive: thick abstraction layer simplifies database replacement)",
+                  "Performance (negative: abstraction layers add overhead and may prevent use of database-specific optimizations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "When onboarding a new customer with different regulatory requirements, the product line architecture enables full system configuration (language, currency, business rules, workflows) within 8 hours using only configuration files",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "New customer deployment with unique regulatory and operational requirements",
+          "stimulus": "Request to onboard new customer with specific configuration needs",
+          "response_measure": "Complete configuration achieved in 8 hours without code changes",
+          "architectural_decisions": [
+            "Product line architecture with externalized configuration",
+            "Rules engine for business logic variability",
+            "Configuration-driven workflow engine",
+            "Internationalization framework for language and cultural adaptations"
+          ],
+          "reasoning": "The product line architecture's effectiveness depends on identifying and externalizing all variation points. If regulatory requirements, business rules, and workflows are truly configurable without code changes, the 8-hour target is achievable. Risk exists if new customer requirements introduce unforeseen variation points not supported by current configuration mechanisms.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "New regulatory requirements may exceed configuration capabilities",
+                "rationale": "If a customer's regulatory requirements involve logic not anticipated in the product line design, code changes will be necessary, exceeding the 8-hour window"
+              },
+              {
+                "id": "R-12",
+                "description": "Configuration complexity may lead to errors and extended testing time",
+                "rationale": "Complex configuration files with interdependencies may require extensive validation, potentially exceeding 8 hours when testing is included"
+              },
+              {
+                "id": "R-13",
+                "description": "Lack of configuration validation tools may delay deployment",
+                "rationale": "Without automated configuration validation, errors may only be discovered during runtime testing, requiring iteration"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Language and currency adaptations are well-supported through configuration",
+                "rationale": "Internationalization frameworks typically provide robust support for locale-specific formatting without code changes"
+              },
+              {
+                "id": "NR-06",
+                "description": "Workflow variations can be handled through configuration if variation points are well-defined",
+                "rationale": "Modern workflow engines support configuration-driven process definitions"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Coverage of variation points in product line architecture",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Complexity of configuration file format and dependencies",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Availability of configuration validation and testing tools",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Configuration flexibility and expressiveness",
+                "conflicting_attributes": [
+                  "Modifiability (positive: more expressive configuration supports wider range of customer needs)",
+                  "Usability (negative: complex configuration languages are harder for non-developers to use)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M3",
+            "text": "When the COTS rules engine needs replacement, the layered architecture ensures changes are isolated to fewer than 3 system modules",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Production system requiring COTS rules engine replacement",
+          "stimulus": "Decision to replace the commercial rules engine component",
+          "response_measure": "Changes affect fewer than 3 system modules",
+          "architectural_decisions": [
+            "Layered architecture with rules engine encapsulated in business logic layer",
+            "Adapter or facade pattern isolating rules engine API",
+            "Clear module boundaries with defined interfaces"
+          ],
+          "reasoning": "Success depends on how well the rules engine is encapsulated. If the system uses an adapter pattern to wrap the rules engine API, only the adapter module and potentially configuration modules need changes. Risk exists if rules engine-specific APIs or data formats are used directly across multiple modules.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Rules engine API may be directly referenced across multiple modules",
+                "rationale": "If modules directly invoke rules engine APIs without abstraction, replacement requires changes to all dependent modules, potentially exceeding 3"
+              },
+              {
+                "id": "R-15",
+                "description": "Rules format and syntax may be engine-specific",
+                "rationale": "If business rules are written in engine-specific syntax, all rules must be rewritten for the new engine, affecting rule definition modules"
+              },
+              {
+                "id": "R-16",
+                "description": "Integration points with other COTS components may be affected",
+                "rationale": "If the rules engine integrates with the database or other COTS components through proprietary mechanisms, integration modules may require changes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Presentation layer will not be affected by rules engine replacement",
+                "rationale": "Layered architecture ensures presentation layer depends only on business logic interfaces, not implementation details"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Degree of rules engine encapsulation through adapters or facades",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Standardization of rule definition format",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Number of modules with direct rules engine dependencies",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Rules engine abstraction layer",
+                "conflicting_attributes": [
+                  "Modifiability (positive: abstraction simplifies engine replacement)",
+                  "Performance (negative: abstraction layer adds indirection and may limit access to engine-specific optimizations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M4",
+            "text": "When a new regulatory requirement emerges for a specific customer region, the product line architecture allows implementation through configuration changes completed in under 20 person-hours",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Existing customer deployment requiring new regulatory compliance",
+          "stimulus": "New regulatory requirement for specific customer region",
+          "response_measure": "Implementation completed in under 20 person-hours through configuration only",
+          "architectural_decisions": [
+            "Product line architecture with regulatory variation points",
+            "Rules engine supporting externalized compliance rules",
+            "Configuration-driven validation and workflow mechanisms"
+          ],
+          "reasoning": "This scenario assumes the new regulatory requirement falls within the scope of existing variation points. If the product line architecture anticipated regulatory variability and externalized compliance rules, new requirements can be implemented through configuration. The 20 person-hour estimate includes rule definition, configuration, and testing.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-17",
+                "description": "New regulatory requirement may require data model changes",
+                "rationale": "If the regulation requires capturing new data elements not in the current schema, database and data layer changes will be needed, exceeding configuration-only approach"
+              },
+              {
+                "id": "R-18",
+                "description": "Regulatory requirement may involve cross-cutting concerns",
+                "rationale": "If the regulation affects multiple subsystems (OLTM and DSRGM), coordination and testing complexity may exceed 20 person-hours"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Validation rule changes are well-supported through rules engine configuration",
+                "rationale": "Rules engines are designed to support externalized business and compliance rules"
+              },
+              {
+                "id": "NR-09",
+                "description": "Workflow modifications can be handled through configuration",
+                "rationale": "Product line architecture's workflow engine supports configuration-driven process changes"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-20",
+                "parameter": "Scope of regulatory variation points in product line design",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-21",
+                "parameter": "Granularity of rules engine configuration",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Breadth of anticipated regulatory variation",
+                "conflicting_attributes": [
+                  "Modifiability (positive: broader variation point coverage enables more configuration-based changes)",
+                  "Maintainability (negative: excessive variation points increase system complexity and testing burden)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "SC1",
+            "text": "When OLTM transaction volume increases by 300%, the OLTM subsystem can be independently scaled (horizontal or vertical) without requiring any modifications to the DSRGM subsystem",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Production system experiencing significant transaction volume growth",
+          "stimulus": "OLTM transaction volume increases by 300%",
+          "response_measure": "OLTM scales independently without DSRGM modifications",
+          "architectural_decisions": [
+            "Subsystem separation enabling independent scaling",
+            "Stateless OLTM design supporting horizontal scaling",
+            "Load balancing across OLTM instances",
+            "Shared-nothing architecture for OLTM nodes"
+          ],
+          "reasoning": "Subsystem separation is key to independent scaling. If OLTM is stateless and uses a shared database, horizontal scaling can be achieved by adding OLTM application servers behind a load balancer. DSRGM remains unaffected as it operates independently. Risk exists if OLTM and DSRGM share resources that become bottlenecks (database, network).",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-19",
+                "description": "Shared database may become bottleneck limiting OLTM scalability",
+                "rationale": "Even with independent OLTM scaling, if all instances share a single database, database connection limits and I/O capacity may prevent achieving 300% throughput increase"
+              },
+              {
+                "id": "R-20",
+                "description": "Session state management may complicate horizontal scaling",
+                "rationale": "If OLTM maintains session state locally, horizontal scaling requires session replication or sticky sessions, adding complexity"
+              },
+              {
+                "id": "R-21",
+                "description": "Data synchronization load to DSRGM may increase proportionally",
+                "rationale": "300% increase in OLTM transactions may generate 300% more data for DSRGM to process, potentially exceeding DSRGM's 4-hour window"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "DSRGM subsystem will not require code changes for OLTM scaling",
+                "rationale": "Subsystem separation ensures OLTM scaling is architecturally independent of DSRGM implementation"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-22",
+                "parameter": "Database connection pool capacity and scalability",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-23",
+                "parameter": "OLTM application server statefulness",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-24",
+                "parameter": "Load balancer capacity and algorithm efficiency",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-25",
+                "parameter": "Data synchronization bandwidth to DSRGM",
+                "correlated_attribute": "Scalability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "OLTM horizontal scaling approach",
+                "conflicting_attributes": [
+                  "Scalability (positive: horizontal scaling provides near-linear capacity increase)",
+                  "Maintainability (negative: distributed OLTM instances increase operational complexity for monitoring and troubleshooting)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "SC2",
+            "text": "When reporting data volume grows by 500%, the DSRGM subsystem can be scaled independently through additional processing nodes without impacting OLTM performance",
+            "type": "Growth"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Production system with growing reporting and analytics data volume",
+          "stimulus": "DSRGM data volume increases by 500%",
+          "response_measure": "DSRGM scales independently without impacting OLTM",
+          "architectural_decisions": [
+            "Subsystem separation enabling independent DSRGM scaling",
+            "Parallel processing architecture in DSRGM",
+            "Distributed data processing framework (e.g., MapReduce, Spark)",
+            "Partitioned data storage for parallel access"
+          ],
+          "reasoning": "DSRGM's batch processing nature makes it suitable for parallel scaling. Adding processing nodes can distribute the workload if data is partitionable and processing is parallelizable. The 4-hour window constraint becomes more challenging with 500% data growth, requiring proportional processing capacity increase. OLTM isolation depends on resource separation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-22",
+                "description": "Data partitioning strategy may not support efficient parallelization",
+                "rationale": "If data cannot be effectively partitioned, parallel processing nodes may experience load imbalance or require excessive coordination, limiting scalability"
+              },
+              {
+                "id": "R-23",
+                "description": "Shared database I/O may become bottleneck for DSRGM scaling",
+                "rationale": "If all DSRGM nodes read from the same database, disk I/O and network bandwidth may saturate, preventing linear scaling"
+              },
+              {
+                "id": "R-24",
+                "description": "500% data growth may exceed 4-hour processing window despite scaling",
+                "rationale": "If processing complexity is non-linear with data volume (e.g., joins, aggregations), adding nodes may not provide sufficient throughput"
+              },
+              {
+                "id": "R-25",
+                "description": "Data synchronization from OLTM may not scale to support 500% volume",
+                "rationale": "Network bandwidth and synchronization protocol between OLTM and DSRGM may become bottleneck"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-11",
+                "description": "OLTM performance will not be affected by DSRGM scaling",
+                "rationale": "Subsystem separation with independent infrastructure ensures DSRGM resource consumption does not impact OLTM"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-26",
+                "parameter": "Data partitioning granularity and strategy",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-27",
+                "parameter": "Degree of processing parallelism in DSRGM",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-28",
+                "parameter": "Database I/O throughput for bulk reads",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-29",
+                "parameter": "Network bandwidth for data synchronization",
+                "correlated_attribute": "Scalability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "DSRGM processing parallelism",
+                "conflicting_attributes": [
+                  "Scalability (positive: higher parallelism enables handling larger data volumes)",
+                  "Maintainability (negative: distributed batch processing is complex to debug and monitor)"
+                ]
+              },
+              {
+                "id": "T-10",
+                "parameter": "Data replication for DSRGM",
+                "conflicting_attributes": [
+                  "Scalability (positive: replicated data enables parallel reads without contention)",
+                  "Modifiability (negative: data replication adds complexity to schema changes and synchronization logic)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "SC3",
+            "text": "The product line architecture enables hosting 50 different customer configurations on shared infrastructure with resource isolation and independent scaling per tenant",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Scalability",
+          "environment": "Multi-tenant SaaS deployment with diverse customer configurations",
+          "stimulus": "Requirement to host 50 customers on shared infrastructure",
+          "response_measure": "Resource isolation and independent scaling per tenant achieved",
+          "architectural_decisions": [
+            "Multi-tenant product line architecture",
+            "Tenant isolation at application and data layers",
+            "Per-tenant resource quotas and monitoring",
+            "Containerization or virtualization for tenant isolation",
+            "Tenant-specific configuration management"
+          ],
+          "reasoning": "Multi-tenancy requires balancing resource sharing (for cost efficiency) with isolation (for performance and security). The product line architecture's configuration capabilities support tenant-specific customization. Scalability depends on whether tenants can be independently scaled and whether resource isolation prevents noisy neighbor problems. This is a high-difficulty scenario requiring sophisticated infrastructure.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-26",
+                "description": "Shared database may create cross-tenant performance interference",
+                "rationale": "If all 50 tenants share a single database instance, one tenant's heavy workload could degrade performance for others, violating isolation requirement"
+              },
+              {
+                "id": "R-27",
+                "description": "Configuration complexity scales with tenant count",
+                "rationale": "Managing 50 different configurations increases operational complexity and risk of configuration errors"
+              },
+              {
+                "id": "R-28",
+                "description": "Independent tenant scaling may be limited by shared infrastructure components",
+                "rationale": "If tenants share application servers or databases, scaling one tenant may require scaling shared resources, affecting all tenants"
+              },
+              {
+                "id": "R-29",
+                "description": "Resource quota enforcement may be insufficient",
+                "rationale": "Without robust resource limiting mechanisms, one tenant could consume excessive CPU, memory, or I/O, impacting others"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-12",
+                "description": "Product line architecture supports configuration diversity across tenants",
+                "rationale": "Configuration-driven variability is designed to handle diverse customer requirements"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-30",
+                "parameter": "Tenant isolation mechanism (shared database vs. database-per-tenant)",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-31",
+                "parameter": "Resource quota granularity and enforcement",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-32",
+                "parameter": "Degree of infrastructure sharing vs. isolation",
+                "correlated_attribute": "Scalability"
+              },
+              {
+                "id": "S-33",
+                "parameter": "Configuration management automation level",
+                "correlated_attribute": "Scalability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-11",
+                "parameter": "Multi-tenancy isolation level",
+                "conflicting_attributes": [
+                  "Scalability (positive: shared infrastructure reduces per-tenant cost, enabling more tenants)",
+                  "Performance (negative: resource sharing increases risk of cross-tenant interference)"
+                ]
+              },
+              {
+                "id": "T-12",
+                "parameter": "Tenant-specific customization depth",
+                "conflicting_attributes": [
+                  "Modifiability (positive: deep customization supports diverse customer needs)",
+                  "Maintainability (negative: extensive per-tenant customization complicates upgrades and testing)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MA1",
+            "text": "When critical OS security patches are released, the layered architecture allows application of patches with system downtime limited to less than 2 hours",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system requiring OS security patch application",
+          "stimulus": "Critical OS security patch release",
+          "response_measure": "Patch applied with less than 2 hours downtime",
+          "architectural_decisions": [
+            "Layered architecture with OS dependencies isolated",
+            "Application layer independent of OS-specific features",
+            "Deployment automation for rapid patch application",
+            "Rolling update capability for zero-downtime patching"
+          ],
+          "reasoning": "The layered architecture's OS independence allows patching without application changes. The 2-hour downtime includes stopping services, applying patches, rebooting, and restarting services. If the architecture supports rolling updates with multiple instances, downtime can be eliminated. Risk exists if the application uses OS-specific features that break with patches.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-30",
+                "description": "Application may depend on OS-specific features affected by patches",
+                "rationale": "If the application uses OS-specific APIs or system calls, patches may introduce incompatibilities requiring application changes and testing"
+              },
+              {
+                "id": "R-31",
+                "description": "Database patching may require extended downtime",
+                "rationale": "If the COTS database also requires OS patches, database downtime may exceed 2 hours due to backup, patch, and recovery procedures"
+              },
+              {
+                "id": "R-32",
+                "description": "Lack of deployment automation may extend downtime",
+                "rationale": "Manual patch application processes are error-prone and time-consuming, potentially exceeding 2-hour window"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-13",
+                "description": "Business logic layer will not require changes for OS patches",
+                "rationale": "Layered architecture ensures business logic is independent of OS implementation details"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-34",
+                "parameter": "Degree of OS-specific feature usage in application",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-35",
+                "parameter": "Deployment automation maturity",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-36",
+                "parameter": "Availability of redundant instances for rolling updates",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-13",
+                "parameter": "OS abstraction layer thickness",
+                "conflicting_attributes": [
+                  "Maintainability (positive: thick abstraction simplifies OS patching)",
+                  "Performance (negative: OS abstraction may prevent use of platform-specific optimizations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MA2",
+            "text": "When a production defect occurs, the clear layer separation enables maintenance teams to isolate the problematic layer (presentation, business logic, data) within 30 minutes",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system experiencing a defect",
+          "stimulus": "Production defect occurrence",
+          "response_measure": "Problematic layer identified within 30 minutes",
+          "architectural_decisions": [
+            "Layered architecture with clear separation of concerns",
+            "Layer-specific logging and monitoring",
+            "Well-defined interfaces between layers",
+            "Diagnostic tools for each layer"
+          ],
+          "reasoning": "Layer separation aids troubleshooting by limiting the scope of investigation. If each layer has independent logging and monitoring, defects can be traced to the layer where symptoms first appear. The 30-minute target requires good observability and diagnostic tools. Risk exists if defects span multiple layers or if logging is insufficient.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-33",
+                "description": "Cross-layer defects may be difficult to isolate",
+                "rationale": "If a defect involves interaction between layers (e.g., incorrect data transformation at layer boundary), isolating the root cause may require analyzing multiple layers, exceeding 30 minutes"
+              },
+              {
+                "id": "R-34",
+                "description": "Insufficient logging may obscure defect location",
+                "rationale": "If layers lack detailed logging of inputs, outputs, and internal state, maintenance teams may struggle to identify the problematic layer"
+              },
+              {
+                "id": "R-35",
+                "description": "Complex COTS component behavior may complicate diagnosis",
+                "rationale": "Defects within COTS components (database, rules engine) may be opaque, requiring vendor support and extending diagnosis time"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-14",
+                "description": "Layer-specific defects can be quickly isolated with proper monitoring",
+                "rationale": "If a defect is contained within a single layer, clear layer boundaries enable rapid identification"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-37",
+                "parameter": "Logging granularity and coverage per layer",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-38",
+                "parameter": "Clarity of layer interface contracts",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-39",
+                "parameter": "Availability of layer-specific diagnostic tools",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-14",
+                "parameter": "Logging verbosity",
+                "conflicting_attributes": [
+                  "Maintainability (positive: detailed logging aids defect diagnosis)",
+                  "Performance (negative: excessive logging consumes I/O and storage resources)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "MA3",
+            "text": "When a COTS component requires version upgrade, the encapsulation provided by layering ensures that less than 5% of the total codebase requires modification",
+            "type": "Growth"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system requiring COTS component version upgrade",
+          "stimulus": "COTS component version upgrade requirement",
+          "response_measure": "Less than 5% of codebase requires modification",
+          "architectural_decisions": [
+            "Layered architecture with COTS components encapsulated",
+            "Adapter or wrapper patterns for COTS APIs",
+            "Version-agnostic interfaces for COTS integration"
+          ],
+          "reasoning": "The layered architecture's encapsulation limits the impact of COTS upgrades. If COTS components are accessed through adapters, only the adapter code needs updating for API changes. The 5% threshold assumes a well-encapsulated design. Risk exists if COTS APIs are used directly across the codebase or if version upgrades introduce breaking changes.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-36",
+                "description": "COTS version upgrade may introduce breaking API changes",
+                "rationale": "Major version upgrades often include API deprecations and breaking changes that require updates beyond the encapsulation layer"
+              },
+              {
+                "id": "R-37",
+                "description": "COTS component may be directly referenced across multiple modules",
+                "rationale": "If encapsulation discipline is not maintained, COTS APIs may leak into business logic, requiring widespread changes"
+              },
+              {
+                "id": "R-38",
+                "description": "Data format changes may require migration scripts",
+                "rationale": "COTS upgrades may change data storage formats, requiring migration effort beyond code changes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-15",
+                "description": "Business logic will not require changes if COTS encapsulation is maintained",
+                "rationale": "Adapter pattern ensures business logic depends on stable interfaces, not COTS implementation details"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-40",
+                "parameter": "Degree of COTS component encapsulation",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-41",
+                "parameter": "Stability of COTS component APIs across versions",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-42",
+                "parameter": "Number of modules with direct COTS dependencies",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-15",
+                "parameter": "COTS encapsulation layer thickness",
+                "conflicting_attributes": [
+                  "Maintainability (positive: thick encapsulation simplifies COTS upgrades)",
+                  "Performance (negative: encapsulation layers add overhead and may prevent use of COTS-specific optimizations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "U1",
+            "text": "When expanding to new geographic markets, the product line architecture supports addition of new languages (up to 15 total) through configuration files without requiring UI component redesign",
+            "type": "Growth"
+          },
+          "quality_attribute": "Usability",
+          "environment": "System expansion to new geographic markets",
+          "stimulus": "Requirement to add new language support",
+          "response_measure": "Up to 15 languages supported through configuration without UI redesign",
+          "architectural_decisions": [
+            "Internationalization (i18n) framework with externalized strings",
+            "Resource bundle architecture for language-specific content",
+            "Unicode support throughout the system",
+            "Locale-aware UI components"
+          ],
+          "reasoning": "Modern internationalization frameworks support externalized language resources. If all user-facing strings are externalized to resource bundles, adding languages requires only creating new resource files. The 15-language limit may reflect testing or operational constraints rather than technical limits. Risk exists if UI components have hard-coded strings or layout assumptions.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-39",
+                "description": "UI layout may not accommodate languages with different text lengths",
+                "rationale": "Some languages (e.g., German) require significantly more space than English; if UI components have fixed layouts, text may be truncated or overflow"
+              },
+              {
+                "id": "R-40",
+                "description": "Hard-coded strings may exist in UI components",
+                "rationale": "If internationalization discipline is not maintained, some strings may be hard-coded, requiring code changes for new languages"
+              },
+              {
+                "id": "R-41",
+                "description": "Right-to-left language support may require UI redesign",
+                "rationale": "Languages like Arabic and Hebrew require right-to-left layouts, which may necessitate UI component changes beyond configuration"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-16",
+                "description": "Adding new language resource files is straightforward with i18n framework",
+                "rationale": "Internationalization frameworks are designed to support multiple languages through configuration"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-43",
+                "parameter": "Completeness of string externalization",
+                "correlated_attribute": "Usability"
+              },
+              {
+                "id": "S-44",
+                "parameter": "UI component flexibility for text length variations",
+                "correlated_attribute": "Usability"
+              },
+              {
+                "id": "S-45",
+                "parameter": "Support for bidirectional text rendering",
+                "correlated_attribute": "Usability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-16",
+                "parameter": "UI layout flexibility",
+                "conflicting_attributes": [
+                  "Usability (positive: flexible layouts accommodate diverse languages)",
+                  "Performance (negative: dynamic layouts may have higher rendering overhead than fixed layouts)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "U2",
+            "text": "When deploying for a new customer region, cultural adaptations (currency symbols, date formats, number formatting) are completed in under 4 hours through product line configuration",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Usability",
+          "environment": "New customer deployment in different cultural region",
+          "stimulus": "Requirement for cultural adaptation to new region",
+          "response_measure": "Cultural adaptations completed in under 4 hours through configuration",
+          "architectural_decisions": [
+            "Locale-aware formatting libraries",
+            "Externalized locale configuration",
+            "Product line architecture with cultural variation points",
+            "Configuration-driven number, date, and currency formatting"
+          ],
+          "reasoning": "Cultural formatting (dates, numbers, currencies) is well-supported by standard libraries and frameworks. If the product line architecture externalizes locale settings, new regions can be configured quickly. The 4-hour estimate includes configuration, validation, and testing. Risk is minimal for standard cultural adaptations but increases for non-standard requirements.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-42",
+                "description": "Non-standard regional requirements may exceed configuration capabilities",
+                "rationale": "Some regions may have unique formatting requirements not supported by standard locale libraries, requiring custom code"
+              },
+              {
+                "id": "R-43",
+                "description": "Testing time may exceed 4-hour window",
+                "rationale": "Validating cultural adaptations across all UI screens and reports may require extensive testing, potentially exceeding 4 hours"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-17",
+                "description": "Standard cultural formatting is well-supported through configuration",
+                "rationale": "Locale libraries provide comprehensive support for date, number, and currency formatting across most regions"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-46",
+                "parameter": "Coverage of locale-specific formatting in standard libraries",
+                "correlated_attribute": "Usability"
+              },
+              {
+                "id": "S-47",
+                "parameter": "Extent of automated testing for cultural adaptations",
+                "correlated_attribute": "Usability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-17",
+                "parameter": "Cultural adaptation granularity",
+                "conflicting_attributes": [
+                  "Usability (positive: fine-grained cultural adaptation improves user experience)",
+                  "Maintainability (negative: extensive cultural variations increase configuration complexity)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "U3",
+            "text": "When a customer requires workflow customization for their business processes, the product line architecture enables business analysts to configure workflows without software developer involvement",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Usability",
+          "environment": "Customer-specific workflow customization requirement",
+          "stimulus": "Request for workflow customization",
+          "response_measure": "Business analysts can configure workflows without developer involvement",
+          "architectural_decisions": [
+            "Workflow engine with visual configuration tools",
+            "Declarative workflow definition language",
+            "Product line architecture with workflow variation points",
+            "Role-based access to workflow configuration tools"
+          ],
+          "reasoning": "Enabling non-developers to configure workflows requires intuitive tools and a declarative workflow language. Modern workflow engines provide visual designers and configuration-based process definitions. Success depends on the complexity of workflow customizations and the usability of configuration tools. Risk exists if customizations require complex logic beyond configuration capabilities.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-44",
+                "description": "Complex workflow logic may exceed configuration tool capabilities",
+                "rationale": "If workflow customization requires complex conditional logic, loops, or integrations, business analysts may need developer assistance"
+              },
+              {
+                "id": "R-45",
+                "description": "Workflow configuration errors may be difficult to diagnose",
+                "rationale": "Without robust validation and testing tools, business analysts may create invalid workflows that fail at runtime"
+              },
+              {
+                "id": "R-46",
+                "description": "Lack of workflow versioning may complicate changes",
+                "rationale": "If workflow configuration lacks version control, tracking and rolling back changes may be difficult"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-18",
+                "description": "Standard workflow patterns can be configured by business analysts",
+                "rationale": "Visual workflow designers support common patterns (sequential, parallel, conditional) without coding"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-48",
+                "parameter": "Complexity of workflow customization requirements",
+                "correlated_attribute": "Usability"
+              },
+              {
+                "id": "S-49",
+                "parameter": "Usability of workflow configuration tools",
+                "correlated_attribute": "Usability"
+              },
+              {
+                "id": "S-50",
+                "parameter": "Availability of workflow validation and testing capabilities",
+                "correlated_attribute": "Usability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-18",
+                "parameter": "Workflow configuration expressiveness",
+                "conflicting_attributes": [
+                  "Usability (positive: expressive configuration supports complex workflows without coding)",
+                  "Usability (negative: overly complex configuration languages are difficult for non-developers to use)"
+                ]
+              },
+              {
+                "id": "T-19",
+                "parameter": "Workflow configuration flexibility",
+                "conflicting_attributes": [
+                  "Modifiability (positive: flexible workflow configuration supports diverse customer needs)",
+                  "Maintainability (negative: excessive workflow variability complicates testing and upgrades)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

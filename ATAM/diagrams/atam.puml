@@ -1,0 +1,69 @@
+@startuml
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam boxPadding 10
+
+box "Orchestrator" #F9F9F9
+    participant "EvaluationAgent" as Orch
+end box
+
+box "Agents" #E6F3FF
+    participant "Architect" as Arch order 20
+    participant "Manager" as Mgr order 30
+    participant "Evaluation Team" as Eval order 40
+    participant "Customer" as Cust order 50
+end box
+
+== Phase 1: Architecture Extraction ==
+Orch -> Arch: Identify Architectural Approaches
+activate Arch
+
+    Arch -> Cust: Request System Constraints/Details
+    activate Cust
+    Cust --> Arch: System Description Data
+    deactivate Cust
+
+Arch --> Orch: Architectural Approaches (JSON)
+deactivate Arch
+
+' note right of Orch: Orchestrator syncs "Approaches"\nto Manager & Eval Team Knowledge Bases
+
+== Phase 2: Utility Tree Generation ==
+Orch -> Mgr: Generate Utility Tree
+activate Mgr
+
+    group Internal Review Protocol
+        Mgr -> Arch: Validate Technical Feasibility
+        activate Arch
+        Arch --> Mgr: Approval or Critique
+        deactivate Arch
+    end
+
+Mgr --> Orch: Utility Tree (JSON)
+deactivate Mgr
+
+' note right of Orch: Orchestrator syncs "Utility Tree"\nto Eval Team Knowledge Base
+
+== Phase 3: Scenario Generation ==
+Orch -> Mgr: Generate & Prioritize Scenarios
+activate Mgr
+Mgr --> Orch: Scenarios (JSON)
+deactivate Mgr
+
+== Phase 4: Analysis & Risk Assessment ==
+Orch -> Eval: Identify Risks, Sensitivity, Tradeoffs
+activate Eval
+
+    Eval -> Arch: Request Technical Parameter Estimates
+    activate Arch
+    Arch --> Eval: Tech Specs / Clarifications
+    deactivate Arch
+
+Eval --> Orch: Analysis Records (JSON)
+deactivate Eval
+
+' == Completion ==
+' Orch -> Orch: Compile & Save Final JSON Report
+
+@enduml

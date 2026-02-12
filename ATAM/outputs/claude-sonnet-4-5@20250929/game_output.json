@@ -1,0 +1,869 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A component-based software architecture designed to facilitate game portability across different commercial and bespoke game engines. The core concept employs a 'game space' component that services game logic (plot/story) to multiple game engines (views) without requiring modification to the game itself. It utilizes a variant of the Model-View-Controller pattern where the game space acts as the Model and the game engines act as Views, connected via Adapters.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The text implies that like traditional system development cycles, the requirements document lacked or weakly articulated quality attributes, requiring the evaluation team to elicit them. Architectural decisions also had to be elicited as they were not fully listed in the documentation.",
+        "evaluator_inquiry_questions": [
+          "Does the game engine require the game state to be put in its own game state?",
+          "Does the game engine require objects to be represented in its own Game Model representation?",
+          "Does the game engine require the behaviour to be specified in the game engine's own language or format?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed environment where the game space and game engine run on different machines",
+          "Adapters are placed in the same application as the game space to minimize overhead"
+        ],
+        "runtime_constraints": [
+          "Network overhead due to distributed environment",
+          "Processing power limitations of the machine running the game engine",
+          "Mid-game scripting performance overhead (approx. 10x slower than pre-compiled code)"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "target_display_rate": "20 FPS",
+        "response_time_threshold": "< 1 second",
+        "scripting_performance_penalty": "10x slower than pre-compiled"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Model-View-Controller (MVC) / Game-based Architecture",
+          "questions": [
+            "How does the architecture break the direct link between the game space's game state and the game engine's game state?",
+            "How does the architecture break the direct link between the game space's game model and the game engine's game model?",
+            "How does the architecture ensure game behaviour is not formatted in the game engine's proprietary format?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Run two games from the same domain"
+        },
+        {
+          "id": "RS-02",
+          "description": "Run two games from two different domains"
+        },
+        {
+          "id": "RS-03",
+          "description": "Interoperate between two game engines"
+        },
+        {
+          "id": "RS-04",
+          "description": "Run two behaviour engines (internal and external)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Increase the load by increasing the number of NPCs the user can interact with"
+        },
+        {
+          "id": "RS-06",
+          "description": "Increase the load by simulating multiple number of simultaneous players"
+        },
+        {
+          "id": "RS-07",
+          "description": "Run the game space on the same machine as the game engine"
+        },
+        {
+          "id": "RS-08",
+          "description": "Run the behaviour engine and the game space on the same machine as the game engine"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Break the current tightly coupled practices employed when developing games using game engines",
+          "Make the architecture flexible to accommodate different games"
+        ],
+        "technical_constraints": [
+          "Must support commercial off-the-shelf (COTS) game engines (e.g., Torque)",
+          "Must support bespoke simulation engines",
+          "Distributed environment to offload processing from the game engine machine"
+        ],
+        "architectural_drivers": [
+          "Portability",
+          "Modifiability",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Model-View-Controller (MVC) Variant",
+          "description": "Game space acts as the Model containing game logic and state, while game engines act as Views for rendering and user interaction. Controllers are implicit in the adapter layer that mediates between them.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Separates game logic from presentation layer, allowing the same game to run on different game engines without modification"
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Changes to game logic do not require changes to game engines, and vice versa, due to clear separation of concerns"
+            }
+          ]
+        },
+        {
+          "approach_name": "Adapter Pattern",
+          "description": "Adapters are placed in the same application as the game space to translate between the game space's representation (game state, game model, behaviour) and each game engine's proprietary format",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Adapters break the direct link between game space and game engine representations, enabling support for both COTS and bespoke engines without modifying the core game logic"
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "New game engines can be supported by adding new adapters without changing the game space or existing adapters"
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Adapters are co-located with the game space to minimize overhead in the translation process"
+            }
+          ]
+        },
+        {
+          "approach_name": "Component-Based Architecture",
+          "description": "System is decomposed into distinct components: game space (containing game logic/plot), adapters (translation layer), and game engines (rendering/interaction). Each component has well-defined interfaces and responsibilities.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Component boundaries enable independent evolution of game logic, adaptation logic, and rendering engines"
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Game logic is encapsulated in reusable components that can be deployed across different engine platforms"
+            }
+          ]
+        },
+        {
+          "approach_name": "Distributed Architecture",
+          "description": "Game space and game engine run on different machines, with adapters co-located with the game space to manage network communication and state synchronization",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Offloads game logic processing from the game engine machine, allowing the engine machine to focus on rendering and user interaction. However, introduces network overhead that must be managed to maintain target display rate of 20 FPS"
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Physical separation allows independent scaling and deployment of game space and game engine components"
+            }
+          ]
+        },
+        {
+          "approach_name": "Scripting Engine Integration",
+          "description": "Supports both internal and external behaviour engines for game logic execution, with mid-game scripting capabilities despite performance penalty",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Scripting allows runtime modification of game behaviour without recompilation, though at a 10x performance cost compared to pre-compiled code"
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Scripting provides a platform-independent way to specify game behaviour that is not tied to any specific game engine's proprietary format"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Support for multiple game engines (COTS and bespoke)",
+                "scenario_id": "P1",
+                "scenario_description": "Support new COTS game engine within 2 weeks of API specification availability",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Game logic independence from rendering platform",
+                "scenario_id": "P2",
+                "scenario_description": "Migrate existing game to bespoke engine without modifying game logic code",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Runtime behavior modification capability",
+                "scenario_id": "M1",
+                "scenario_description": "Add new game behavior via scripting engine without system recompilation or restart",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Adapter layer evolution",
+                "scenario_id": "M2",
+                "scenario_description": "Update adapter to accommodate game engine API changes within 3 days",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Game logic evolution independence",
+                "scenario_id": "M3",
+                "scenario_description": "Modify game logic without requiring changes to existing game engine adapters",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Scripting performance tradeoff management",
+                "scenario_id": "M4",
+                "scenario_description": "Execute scripted behavior with response time <200ms despite 10x performance penalty compared to pre-compiled code",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Display rate under distributed architecture",
+                "scenario_id": "PF1",
+                "scenario_description": "Maintain 20 FPS display rate with network latency between game space and game engine <50ms",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Game state update throughput",
+                "scenario_id": "PF2",
+                "scenario_description": "Support 100 concurrent game state updates per second across network boundary",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Adapter translation efficiency",
+                "scenario_id": "PF3",
+                "scenario_description": "Adapter translation overhead <10ms per frame for state synchronization",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Support new COTS game engine within 2 weeks of API specification availability",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        },
+        {
+          "scenario_text": "Migrate existing game to bespoke engine without modifying game logic code",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        },
+        {
+          "scenario_text": "Add new game behavior via scripting engine without system recompilation or restart",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Update adapter to accommodate game engine API changes within 3 days",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Modify game logic without requiring changes to existing game engine adapters",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Execute scripted behavior with response time <200ms despite 10x performance penalty compared to pre-compiled code",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Maintain 20 FPS display rate with network latency between game space and game engine <50ms",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Support 100 concurrent game state updates per second across network boundary",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Adapter translation overhead <10ms per frame for state synchronization",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Support new COTS game engine within 2 weeks of API specification availability",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Portability",
+          "environment": "Normal operations with introduction of new game engine platform",
+          "stimulus": "New COTS game engine API specification becomes available",
+          "response_measure": "New adapter developed and integrated within 2 weeks",
+          "architectural_decisions": [
+            "Adapter pattern isolates game space from engine-specific representations",
+            "Adapters co-located with game space to minimize integration complexity",
+            "Component-based architecture enables independent adapter development"
+          ],
+          "reasoning": "The adapter pattern is the primary mechanism enabling this scenario. Since game logic is isolated in the game space, supporting a new engine requires only developing a new adapter that translates between the game space's canonical representation and the new engine's proprietary format. The 2-week timeline depends on adapter complexity, API documentation quality, and the degree of similarity to previously supported engines.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Incomplete or ambiguous COTS engine API specification may delay adapter development beyond 2 weeks",
+                "rationale": "Adapter development requires complete understanding of engine's state representation, event model, and rendering pipeline. Gaps in API documentation require reverse engineering or vendor consultation."
+              },
+              {
+                "id": "R-02",
+                "description": "COTS engine may have architectural assumptions incompatible with game space model",
+                "rationale": "Some engines may assume tight coupling between game logic and rendering, or may not support the distributed architecture pattern, requiring significant adapter workarounds."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Game space logic remains stable during adapter development",
+                "rationale": "The adapter pattern ensures game logic isolation, so no modifications to core game space are required regardless of engine complexity."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Semantic gap between game space representation and engine representation",
+                "correlated_attribute": "Portability"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Adapter developer familiarity with engine API",
+                "correlated_attribute": "Portability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Adapter abstraction level",
+                "conflicting_attributes": [
+                  "Portability (higher abstraction simplifies supporting diverse engines)",
+                  "Performance (higher abstraction adds translation overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Migrate existing game to bespoke engine without modifying game logic code",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Portability",
+          "environment": "Production system migration from one engine platform to another",
+          "stimulus": "Decision to migrate game from current engine to bespoke engine",
+          "response_measure": "Migration completed with zero changes to game logic code",
+          "architectural_decisions": [
+            "MVC variant separates game logic (Model) from rendering (View)",
+            "Game space encapsulates all game logic in engine-agnostic format",
+            "Adapter layer provides complete isolation between game space and engine"
+          ],
+          "reasoning": "The MVC variant architecture ensures game logic is completely independent of the rendering platform. Migration requires only developing a new adapter for the bespoke engine while the game space remains unchanged. This validates the core portability goal of the architecture.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Bespoke engine may lack features assumed by game logic, requiring game space modifications",
+                "rationale": "If game logic implicitly depends on engine capabilities (e.g., specific physics simulation, audio features), the adapter alone cannot bridge the gap."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Adapter pattern guarantees game logic isolation from engine specifics",
+                "rationale": "The architectural approach explicitly separates game state/behavior from engine representation, making zero-modification migration architecturally feasible."
+              },
+              {
+                "id": "NR-03",
+                "description": "Existing adapters remain functional during migration",
+                "rationale": "Component-based architecture allows parallel operation of multiple adapters, enabling gradual migration or multi-engine support."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Degree of feature parity between old and new engines",
+                "correlated_attribute": "Portability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "Add new game behavior via scripting engine without system recompilation or restart",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Running game system with active players",
+          "stimulus": "Game designer introduces new behavior script",
+          "response_measure": "New behavior active without recompilation or restart",
+          "architectural_decisions": [
+            "Scripting engine integration supports both internal and external behavior engines",
+            "Runtime script loading capability enabled despite performance penalty",
+            "Game space architecture supports dynamic behavior injection"
+          ],
+          "reasoning": "The scripting engine integration provides runtime modifiability at the cost of 10x performance penalty. This architectural decision prioritizes flexibility over execution efficiency, enabling live game updates and rapid iteration during development.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "10x performance penalty may violate performance scenarios if scripted behaviors are on critical path",
+                "rationale": "If scripted behaviors execute during frame rendering or state updates, the performance degradation could prevent achieving 20 FPS target or <200ms response time."
+              },
+              {
+                "id": "R-05",
+                "description": "Runtime script errors could crash game space without restart capability",
+                "rationale": "Dynamic script loading introduces runtime stability risks if scripts are not properly validated or sandboxed."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Scripting engine isolation prevents script errors from corrupting core game state",
+                "rationale": "If scripting engine is properly sandboxed, script failures can be contained without affecting pre-compiled game logic."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Proportion of game logic implemented in scripts vs. pre-compiled code",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Script validation and error handling robustness",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Use of scripting engine for behavior implementation",
+                "conflicting_attributes": [
+                  "Modifiability (scripting enables runtime changes without recompilation)",
+                  "Performance (scripting incurs 10x performance penalty)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "Update adapter to accommodate game engine API changes within 3 days",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance phase with game engine vendor API update",
+          "stimulus": "Game engine vendor releases API update with breaking changes",
+          "response_measure": "Adapter updated and tested within 3 days",
+          "architectural_decisions": [
+            "Adapter pattern localizes engine-specific code to adapter component",
+            "Component-based architecture enables independent adapter evolution",
+            "Adapters co-located with game space for simplified deployment"
+          ],
+          "reasoning": "The adapter pattern localizes the impact of engine API changes to a single component. The 3-day timeline assumes the adapter is well-structured and the API changes are documented. Co-location with game space simplifies testing and deployment.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Breaking API changes may require fundamental adapter redesign exceeding 3-day timeline",
+                "rationale": "If engine vendor changes core architectural assumptions (e.g., synchronous to asynchronous API), adapter may require substantial rework."
+              },
+              {
+                "id": "R-07",
+                "description": "Adapter update may introduce regressions affecting game functionality",
+                "rationale": "Without comprehensive integration tests, adapter changes risk breaking existing game behaviors that depend on subtle engine interactions."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Game space and other adapters remain unaffected by engine API changes",
+                "rationale": "Adapter pattern ensures changes are localized to the affected adapter component only."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Scope and documentation quality of engine API changes",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Adapter code modularity and test coverage",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M3",
+            "text": "Modify game logic without requiring changes to existing game engine adapters",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development phase with game logic enhancements",
+          "stimulus": "Game designer modifies game rules or adds new game mechanics",
+          "response_measure": "Game logic changes deployed without adapter modifications",
+          "architectural_decisions": [
+            "MVC variant separates game logic from presentation concerns",
+            "Game space defines stable interface contract with adapters",
+            "Adapter translates between stable game space representation and engine format"
+          ],
+          "reasoning": "The MVC separation ensures game logic changes do not propagate to adapters as long as the game space interface contract remains stable. This enables independent evolution of game content and rendering platforms.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "New game mechanics may introduce state elements not representable in current adapter interface",
+                "rationale": "If new game logic requires new types of state or events not anticipated in the adapter interface design, adapters must be updated to support them."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "Game logic changes within existing state model do not affect adapters",
+                "rationale": "As long as changes involve only game rules and behavior within the existing state representation, adapters remain valid."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Stability and extensibility of game space interface contract",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Game space interface abstraction level",
+                "conflicting_attributes": [
+                  "Modifiability (higher abstraction accommodates more game logic changes without adapter impact)",
+                  "Performance (higher abstraction may require more complex adapter translations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M4",
+            "text": "Execute scripted behavior with response time <200ms despite 10x performance penalty compared to pre-compiled code",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Runtime execution with scripted behavior invocation",
+          "stimulus": "Game event triggers scripted behavior execution",
+          "response_measure": "Scripted behavior completes within 200ms",
+          "architectural_decisions": [
+            "Scripting engine integration accepts 10x performance penalty for modifiability",
+            "Behavior execution architecture supports both scripted and pre-compiled paths",
+            "Performance budget allocated for scripted behavior execution"
+          ],
+          "reasoning": "This scenario quantifies the performance cost of runtime modifiability. The 200ms target with 10x penalty implies pre-compiled equivalent would execute in 20ms. This is achievable for most game behaviors but constrains the complexity of scriptable logic.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Complex scripted behaviors may exceed 200ms budget given 10x penalty",
+                "rationale": "If scripted behavior requires >20ms in pre-compiled form (e.g., complex AI, pathfinding), the 10x penalty makes 200ms target unachievable."
+              },
+              {
+                "id": "R-10",
+                "description": "Cascading scripted behavior invocations may accumulate latency beyond acceptable limits",
+                "rationale": "If one scripted behavior triggers others, cumulative latency could violate user experience requirements even if individual behaviors meet 200ms target."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Simple event handlers and state updates remain well within 200ms budget",
+                "rationale": "Most game behaviors involve simple state changes or event dispatching that execute in <5ms pre-compiled, leaving comfortable margin even with 10x penalty."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Computational complexity of scripted behaviors",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Scripting engine optimization level",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Scope of scriptable game logic",
+                "conflicting_attributes": [
+                  "Modifiability (broader scripting scope enables more runtime flexibility)",
+                  "Performance (broader scripting scope increases likelihood of performance violations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "PF1",
+            "text": "Maintain 20 FPS display rate with network latency between game space and game engine <50ms",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with distributed game space and engine",
+          "stimulus": "Continuous game state updates and rendering cycles",
+          "response_measure": "Sustained 20 FPS (50ms frame time) with network latency <50ms",
+          "architectural_decisions": [
+            "Distributed architecture separates game space and engine across network",
+            "Adapters co-located with game space to minimize translation overhead",
+            "Network communication optimized for state synchronization"
+          ],
+          "reasoning": "The 20 FPS target requires 50ms total frame time. With network latency consuming up to 50ms, this leaves minimal budget for game logic execution, adapter translation, and rendering. The architecture must carefully manage state synchronization to avoid frame drops.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Network latency approaching 50ms leaves insufficient time for game logic and rendering within 50ms frame budget",
+                "rationale": "If network latency is 50ms, game logic execution, adapter translation, and engine rendering must complete in near-zero time, which is infeasible for non-trivial games."
+              },
+              {
+                "id": "R-12",
+                "description": "Network latency variability (jitter) may cause intermittent frame drops even when average latency is acceptable",
+                "rationale": "Network jitter can cause individual frames to exceed 50ms total time even if average latency is well below 50ms."
+              },
+              {
+                "id": "R-13",
+                "description": "State synchronization overhead may compound with network latency to violate frame budget",
+                "rationale": "Adapter must serialize game state, transmit over network, and deserialize on engine side. This overhead adds to network latency and may exceed 50ms total."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Distributed architecture offloads game logic from engine machine, reducing rendering bottlenecks",
+                "rationale": "By separating game logic processing, the engine machine can dedicate resources to rendering, improving frame rate stability."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Network latency and jitter",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Game state size and update frequency",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Adapter serialization efficiency",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Distributed architecture deployment",
+                "conflicting_attributes": [
+                  "Modifiability (distributed architecture enables independent scaling and deployment)",
+                  "Performance (distributed architecture introduces network latency that constrains frame rate)"
+                ]
+              },
+              {
+                "id": "T-06",
+                "parameter": "State synchronization granularity",
+                "conflicting_attributes": [
+                  "Performance (coarse-grained updates reduce network overhead)",
+                  "Portability (fine-grained updates provide more flexibility for diverse engine representations)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "PF2",
+            "text": "Support 100 concurrent game state updates per second across network boundary",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "High-activity gameplay with frequent state changes",
+          "stimulus": "Game logic generates 100 state updates per second",
+          "response_measure": "All updates transmitted and processed within frame deadlines",
+          "architectural_decisions": [
+            "Distributed architecture with network-based state synchronization",
+            "Adapter manages batching and prioritization of state updates",
+            "Network protocol optimized for high-frequency small messages"
+          ],
+          "reasoning": "100 updates/second means one update every 10ms. With 20 FPS target (50ms frames), this allows 5 updates per frame. The adapter must efficiently batch and transmit updates to avoid overwhelming the network or engine.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "100 updates/second may saturate network bandwidth if updates are not efficiently encoded",
+                "rationale": "Without compression or delta encoding, high update frequency can consume excessive bandwidth, increasing latency and jitter."
+              },
+              {
+                "id": "R-15",
+                "description": "Update processing overhead on engine side may prevent achieving 20 FPS if updates are not batched",
+                "rationale": "Processing 5 individual updates per frame adds overhead. Batching updates reduces per-update processing cost but increases complexity."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "100 updates/second is manageable with efficient batching and delta encoding",
+                "rationale": "Modern network protocols and serialization techniques can handle this update rate with minimal overhead if properly optimized."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Average state update size",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Network bandwidth availability",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Update batching strategy",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Update batching window size",
+                "conflicting_attributes": [
+                  "Performance (larger batches reduce per-update overhead)",
+                  "Performance (larger batches increase latency between state change and rendering)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "PF3",
+            "text": "Adapter translation overhead <10ms per frame for state synchronization",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal frame rendering cycle",
+          "stimulus": "Adapter translates game state to engine format each frame",
+          "response_measure": "Translation completes within 10ms",
+          "architectural_decisions": [
+            "Adapters co-located with game space to minimize communication overhead",
+            "Adapter uses efficient serialization and translation algorithms",
+            "Adapter caches translated state to minimize redundant work"
+          ],
+          "reasoning": "With 50ms frame budget and up to 50ms network latency, the 10ms adapter overhead target is critical. This leaves 40ms for network transmission and engine rendering, which is tight but feasible with optimization.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-16",
+                "description": "Complex game state representations may require >10ms translation time",
+                "rationale": "If game state includes complex data structures (e.g., large scene graphs, detailed physics state), translation to engine format may exceed 10ms budget."
+              },
+              {
+                "id": "R-17",
+                "description": "Adapter translation time may scale poorly with game state complexity",
+                "rationale": "As games grow in complexity, state size increases, potentially causing translation time to exceed 10ms in later development stages."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "Co-location of adapter with game space eliminates inter-process communication overhead",
+                "rationale": "Running adapter in same process as game space avoids serialization and IPC costs, keeping translation overhead minimal."
+              },
+              {
+                "id": "NR-11",
+                "description": "Delta encoding and caching can reduce translation overhead for unchanged state",
+                "rationale": "Most game state remains stable between frames. Translating only changed elements significantly reduces per-frame overhead."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Game state complexity and size",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Semantic gap between game space and engine representations",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Adapter caching effectiveness",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Adapter translation abstraction level",
+                "conflicting_attributes": [
+                  "Portability (higher abstraction supports more diverse engines)",
+                  "Performance (higher abstraction increases translation complexity and overhead)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,931 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Answer the 'Big Five Questions' regarding operator knowledge and action timing",
+      "Serve as a rapid prototyping facility for interoperability studies",
+      "Support evolving mission needs and incremental functionality extensions"
+    ],
+    "technical_constraints": [
+      "Must be compliant with High Level Architecture (HLA) standards",
+      "Must run on government-owned contractor-operated infrastructure",
+      "Must support human-in-control experiments with 'fog-of-war' realism"
+    ],
+    "architectural_drivers": [
+      "Performance (Real-time & Margin)",
+      "Modifiability/Composability",
+      "Reliability",
+      "Interoperability",
+      "Fidelity"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Documentation existed in Rational Rose/UML but was considered weak for capturing discrete events. Some architectural drawings caused stakeholder confusion and required real-time refinement.",
+      "evaluator_inquiry_questions": [
+        "How are discrete simulation events represented in the static UML models?",
+        "Can you clarify the data flow in this architectural diagram to resolve stakeholder confusion?",
+        "How does the code reuse strategy align with the need for high-fidelity discrete event simulation?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Distributed simulation environment capable of hosting online, offsite, and multiple simultaneous games.",
+        "Networked command centers allowing participants to play from their own locations."
+      ],
+      "runtime_constraints": [
+        "Must support 'Firm' real-time deadlines (statistical adherence).",
+        "Must provide 'Margin' (running faster than real-time) to support future requirements."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "initialization_time": "10 minutes",
+      "exercise_turnaround_frequency": "1 exercise per month",
+      "latency_constraints": {
+        "max_instantaneous_lag": "5 seconds",
+        "max_average_lag": "3 seconds"
+      },
+      "data_collection_window": "30 seconds post-termination",
+      "timeline_fidelity": "Within 10% of EADSIM events"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Client-Server / Distributed",
+        "questions": [
+          "How does the client-server separation impact the latency requirements for the human-in-the-loop displays?",
+          "How does the publish/subscribe mechanism handle peak load during high-density missile scenarios?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0."
+      },
+      {
+        "id": "RS-02",
+        "description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game."
+      },
+      {
+        "id": "RS-03",
+        "description": "Add cruise missile infrastructure into next software release."
+      },
+      {
+        "id": "RS-04",
+        "description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week."
+      },
+      {
+        "id": "RS-05",
+        "description": "Replace existing database with an object-oriented database within 5-10 staff years."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Client-Server / Distributed",
+        "description": "The system is intended to operate as a distributed environment, allowing for client-server interactions across networked command centers and various simulation components.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Distributed architecture is fundamental for supporting interoperability studies and connecting various simulation participants and components."
+          },
+          {
+            "quality_attribute": "Modifiability/Composability",
+            "rationale": "A distributed style can facilitate incremental functionality extensions and integrating new components more easily."
+          }
+        ]
+      },
+      {
+        "approach_name": "High Level Architecture (HLA) Compliance",
+        "description": "The system must adhere to High Level Architecture (HLA) standards, which implies a federated simulation approach for managing interactions between simulation components (federates).",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "HLA is specifically designed to enable interoperability between different simulation systems."
+          },
+          {
+            "quality_attribute": "Modifiability/Composability",
+            "rationale": "HLA promotes modularity, allowing for easier integration and replacement of simulation components."
+          }
+        ]
+      },
+      {
+        "approach_name": "Event-Driven Architecture (EDA)",
+        "description": "The system's real-time nature, firm deadlines, and discrete event simulation requirements necessitate an event-driven approach. Components react to events (e.g., simulation state changes, user actions) in a timely manner, often facilitated by a publish-subscribe mechanism, which is consistent with HLA's data distribution management.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Enables real-time processing and responsiveness for firm deadlines by reacting directly to stimuli."
+          },
+          {
+            "quality_attribute": "Modifiability/Composability",
+            "rationale": "Promotes loose coupling between components, as they only need to know about events, not specific other components, allowing for easier changes and integration."
+          },
+          {
+            "quality_attribute": "Fidelity",
+            "rationale": "Ensures timely and accurate processing of discrete simulation events to maintain the realism and precision required for 'fog-of-war' scenarios."
+          }
+        ]
+      },
+      {
+        "approach_name": "Component-Based Architecture",
+        "description": "To support evolving mission needs and incremental functionality extensions, the system will be built from loosely coupled, interchangeable components (often referred to as federates within the HLA context) with well-defined interfaces. This promotes reuse and easier integration of new capabilities.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability/Composability",
+            "rationale": "Facilitates adding, removing, or modifying components independently without impacting the entire system, crucial for rapid prototyping and evolving requirements."
+          },
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Components with well-defined interfaces can more easily interact and be integrated into the distributed simulation environment, enhancing overall system interoperability."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "End-to-end latency under peak load",
+              "scenario_id": "P1",
+              "scenario_description": "Under peak load (1000 concurrent federates, 10000 events/sec), the end-to-end latency for critical events (e.g., weapon fire, unit movement) must not exceed 500ms 95% of the time.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "High-volume data distribution throughput",
+              "scenario_id": "P2",
+              "scenario_description": "The system must process and distribute 1,000,000 object updates per second across 50 federates with less than 200ms delay for 99% of updates.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "Integration of new third-party federates",
+              "scenario_id": "I1",
+              "scenario_description": "A new simulation federate (e.g., a new sensor model) developed by a third party must be integrated into the existing HLA federation within 2 person-weeks of effort.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Data exchange with external HLA-compliant systems",
+              "scenario_id": "I2",
+              "scenario_description": "The system must successfully exchange object and interaction data with an external HLA-compliant simulation system (e.g., DIS-based legacy system via gateway) with 100% data fidelity and no loss of critical events.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Addition of new features",
+              "scenario_id": "M1",
+              "scenario_description": "A new 'fog-of-war' visualization feature must be added to the command center display without requiring changes to more than 3 existing federates, and deployed within 1 month.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Replacement of existing components",
+              "scenario_id": "M2",
+              "scenario_description": "An existing federate (e.g., terrain generation) must be replaced with an updated version offering higher fidelity, requiring no changes to other federates and completed within 1 week of integration.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Fidelity",
+          "children": [
+            {
+              "refinement": "Real-time 'fog-of-war' accuracy",
+              "scenario_id": "F1",
+              "scenario_description": "The system must accurately reflect the 'fog-of-war' conditions, ensuring that only visible entities are displayed to each command center user, with less than 100ms discrepancy between actual and displayed visibility changes.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Spatial accuracy of simulated entities",
+              "scenario_id": "F2",
+              "scenario_description": "The spatial accuracy of simulated entities must be maintained within 1 meter across all federates for critical combat units.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under peak load (1000 concurrent federates, 10000 events/sec), the end-to-end latency for critical events (e.g., weapon fire, unit movement) must not exceed 500ms 95% of the time.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The system must process and distribute 1,000,000 object updates per second across 50 federates with less than 200ms delay for 99% of updates.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A new simulation federate (e.g., a new sensor model) developed by a third party must be integrated into the existing HLA federation within 2 person-weeks of effort.",
+        "primary_quality_attribute": [
+          "Interoperability",
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system must successfully exchange object and interaction data with an external HLA-compliant simulation system (e.g., DIS-based legacy system via gateway) with 100% data fidelity and no loss of critical events.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "A new 'fog-of-war' visualization feature must be added to the command center display without requiring changes to more than 3 existing federates, and deployed within 1 month.",
+        "primary_quality_attribute": [
+          "Modifiability",
+          "Fidelity"
+        ]
+      },
+      {
+        "scenario_text": "An existing federate (e.g., terrain generation) must be replaced with an updated version offering higher fidelity, requiring no changes to other federates and completed within 1 week of integration.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system must accurately reflect the 'fog-of-war' conditions, ensuring that only visible entities are displayed to each command center user, with less than 100ms discrepancy between actual and displayed visibility changes.",
+        "primary_quality_attribute": [
+          "Fidelity",
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The spatial accuracy of simulated entities must be maintained within 1 meter across all federates for critical combat units.",
+        "primary_quality_attribute": [
+          "Fidelity"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under peak load (1000 concurrent federates, 10000 events/sec), the end-to-end latency for critical events (e.g., weapon fire, unit movement) must not exceed 500ms 95% of the time.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak load (1000 concurrent federates, 10000 events/sec)",
+        "stimulus": "Critical event (e.g., weapon fire, unit movement)",
+        "response_measure": "End-to-end latency <= 500ms 95% of the time",
+        "architectural_decisions": [
+          "Client-Server / Distributed architecture",
+          "HLA Compliance (RTI overhead, DDM, Time Management)",
+          "Event-Driven Architecture (publish-subscribe mechanism)",
+          "Component-Based Architecture (federate interactions)"
+        ],
+        "reasoning": "The high volume of federates and events places significant demands on the HLA Run-Time Infrastructure (RTI) and network. While Event-Driven Architecture (EDA) supports responsiveness, the sheer scale necessitates efficient Data Distribution Management (DDM) to filter traffic and a robust RTI. Time Management (TM) choices (conservative vs. optimistic) will heavily influence latency.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P1.1",
+              "description": "The HLA Run-Time Infrastructure (RTI) might become a bottleneck under peak load (10000 events/sec, 1000 federates), leading to latency violations.",
+              "rationale": "High event rate and number of federates can overwhelm RTI's message processing and routing capabilities, especially if DDM is not optimally configured or if the RTI implementation has scalability limitations."
+            },
+            {
+              "id": "R-P1.2",
+              "description": "High volume of event data and object updates could saturate network bandwidth, causing significant message delays.",
+              "rationale": "Without specific bandwidth data, 10000 events/sec across 1000 federates (even with DDM) could generate substantial network traffic, leading to queueing delays and exceeding the 500ms latency target."
+            },
+            {
+              "id": "R-P1.3",
+              "description": "Inefficient DDM configuration could lead to excessive data being sent to federates, increasing network load and processing overhead.",
+              "rationale": "DDM is critical for filtering data, but requires careful design and implementation to be effective. Misconfiguration can negate its benefits."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P1.1",
+              "description": "Event-Driven Architecture is generally well-suited for timely reaction to critical events.",
+              "rationale": "Publish-subscribe mechanisms inherent in EDA and HLA allow for direct and immediate propagation of events to interested parties, supporting low latency requirements by avoiding polling."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P1.1",
+              "parameter": "RTI processing capacity (events/sec)",
+              "correlated_attribute": "Performance (latency, throughput)"
+            },
+            {
+              "id": "S-P1.2",
+              "parameter": "Network bandwidth",
+              "correlated_attribute": "Performance (latency, throughput)"
+            },
+            {
+              "id": "S-P1.3",
+              "parameter": "Federate processing power",
+              "correlated_attribute": "Performance (latency, overall system responsiveness)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P1.1",
+              "parameter": "HLA Time Management (Conservative vs. Lookahead)",
+              "conflicting_attributes": [
+                "Performance (low latency)",
+                "Fidelity (strict synchronization)"
+              ]
+            },
+            {
+              "id": "T-P1.2",
+              "parameter": "DDM granularity vs. configuration complexity",
+              "conflicting_attributes": [
+                "Performance (reduced network load)",
+                "Modifiability (ease of configuration/maintenance)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P2",
+          "text": "The system must process and distribute 1,000,000 object updates per second across 50 federates with less than 200ms delay for 99% of updates.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "High-volume data distribution",
+        "stimulus": "Object updates (1,000,000 per second)",
+        "response_measure": "Delay <= 200ms for 99% of updates across 50 federates",
+        "architectural_decisions": [
+          "Client-Server / Distributed architecture",
+          "HLA Compliance (DDM, Object Management)",
+          "Event-Driven Architecture (updates as events)",
+          "Component-Based Architecture (federates)"
+        ],
+        "reasoning": "This scenario presents an extremely high data volume, demanding exceptional throughput from the HLA RTI and the underlying network. Efficient Data Distribution Management (DDM) is paramount to prevent network saturation and federate overload, but the sheer rate of 1,000,000 updates/sec will challenge any system.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P2.1",
+              "description": "The HLA RTI may not be able to handle 1,000,000 object updates per second, leading to dropped updates or excessive delays.",
+              "rationale": "This is an exceptionally high data rate, and many RTI implementations may not be designed for such extreme throughput, especially when combined with DDM processing overhead."
+            },
+            {
+              "id": "R-P2.2",
+              "description": "Distributing 1,000,000 updates/sec, even with efficient DDM, could easily saturate available network bandwidth.",
+              "rationale": "Each update has a message size. Without knowing the average message size, this volume is likely to exceed typical network capacities, leading to congestion and delays."
+            },
+            {
+              "id": "R-P2.3",
+              "description": "Individual federates might struggle to process the high volume of incoming updates, even if only receiving relevant ones.",
+              "rationale": "Processing, deserializing, and integrating tens of thousands of updates per second per federate can consume significant CPU resources, leading to internal processing delays."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P2.1",
+              "description": "HLA's Data Distribution Management (DDM) provides a mechanism to filter updates, potentially reducing the load on individual federates and the network.",
+              "rationale": "DDM is designed for this purpose, allowing federates to subscribe only to relevant data, which is crucial for managing high update volumes."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P2.1",
+              "parameter": "Average object update message size",
+              "correlated_attribute": "Performance (latency, throughput)"
+            },
+            {
+              "id": "S-P2.2",
+              "parameter": "RTI implementation scalability",
+              "correlated_attribute": "Performance (latency, throughput)"
+            },
+            {
+              "id": "S-P2.3",
+              "parameter": "Network infrastructure capabilities",
+              "correlated_attribute": "Performance (latency, throughput)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P2.1",
+              "parameter": "Update frequency vs. data freshness",
+              "conflicting_attributes": [
+                "Performance (throughput, latency)",
+                "Fidelity (data freshness)"
+              ]
+            },
+            {
+              "id": "T-P2.2",
+              "parameter": "Granularity of DDM vs. overhead",
+              "conflicting_attributes": [
+                "Performance (network load)",
+                "Performance (RTI processing)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "I1",
+          "text": "A new simulation federate (e.g., a new sensor model) developed by a third party must be integrated into the existing HLA federation within 2 person-weeks of effort.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Interoperability",
+        "environment": "Integration of new component",
+        "stimulus": "Third-party federate developed",
+        "response_measure": "Integration within 2 person-weeks",
+        "architectural_decisions": [
+          "HLA Compliance (standard interfaces, SOM/FOM)",
+          "Component-Based Architecture (loosely coupled federates with defined interfaces)"
+        ],
+        "reasoning": "HLA's core purpose is interoperability, and the component-based architecture supports modularity. However, integrating third-party components within a tight deadline relies heavily on strict adherence to standards and clarity in data contracts (FOM/SOM), as well as the quality of the third-party implementation.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-I1.1",
+              "description": "The third-party federate's understanding or implementation of the Federation Object Model (FOM)/Simulation Object Model (SOM) might differ from the existing federation, leading to integration issues.",
+              "rationale": "Despite HLA standards, ambiguities or different interpretations can arise, requiring significant debugging and rework, exceeding the 2 person-week target."
+            },
+            {
+              "id": "R-I1.2",
+              "description": "The third-party federate might be built against a different HLA standard version or RTI implementation, causing compatibility problems.",
+              "rationale": "Different HLA versions (e.g., HLA 1.3, IEEE 1516-2000, IEEE 1516-2010) are not always directly compatible, and different RTI vendors have their own implementations, leading to unexpected integration hurdles."
+            },
+            {
+              "id": "R-I1.3",
+              "description": "Inadequate documentation or support from the third party could impede rapid integration.",
+              "rationale": "Even with standards, practical integration often requires specific knowledge or troubleshooting assistance, which if lacking, will extend the integration time."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-I1.1",
+              "description": "The use of HLA mandates standardized interfaces for data exchange and federation management, which inherently supports easier integration.",
+              "rationale": "HLA's core design goal is to enable interoperability between diverse simulation components through defined interfaces and protocols."
+            },
+            {
+              "id": "NR-I1.2",
+              "description": "The system's component-based nature promotes modularity and well-defined interfaces, simplifying the addition of new components.",
+              "rationale": "Loose coupling means less impact on existing components during integration, aligning with the goal of rapid integration."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-I1.1",
+              "parameter": "Clarity and completeness of FOM/SOM documentation",
+              "correlated_attribute": "Interoperability (integration effort), Modifiability"
+            },
+            {
+              "id": "S-I1.2",
+              "parameter": "HLA expertise of third-party developers",
+              "correlated_attribute": "Interoperability (integration effort)"
+            },
+            {
+              "id": "S-I1.3",
+              "parameter": "Availability of integration tools/frameworks",
+              "correlated_attribute": "Interoperability (integration effort)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-I1.1",
+              "parameter": "Strict FOM enforcement vs. development flexibility",
+              "conflicting_attributes": [
+                "Interoperability (guaranteed compatibility)",
+                "Modifiability (ease of development for third party)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "I2",
+          "text": "The system must successfully exchange object and interaction data with an external HLA-compliant simulation system (e.g., DIS-based legacy system via gateway) with 100% data fidelity and no loss of critical events.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Interoperability",
+        "environment": "Data exchange with external system",
+        "stimulus": "External HLA-compliant system (e.g., DIS via gateway) needs to exchange data",
+        "response_measure": "100% data fidelity, no loss of critical events",
+        "architectural_decisions": [
+          "HLA Compliance (standard for interoperability)",
+          "Client-Server / Distributed (networked systems)",
+          "Component-Based (gateway as a component)"
+        ],
+        "reasoning": "While HLA facilitates interoperability, the requirement for 100% data fidelity and no loss of critical events when integrating with a *legacy* DIS system *via a gateway* introduces significant challenges. The gateway acts as a translation layer, which is a prime source for semantic impedance mismatches and performance bottlenecks.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-I2.1",
+              "description": "Semantic impedance mismatch at the gateway between HLA and DIS (or any other protocol) can lead to loss of fidelity or misinterpretation of data.",
+              "rationale": "Direct mapping of concepts between different simulation protocols is rarely perfect; some data might not have a direct equivalent or might be interpreted differently, compromising data fidelity."
+            },
+            {
+              "id": "R-I2.2",
+              "description": "The gateway itself could become a performance bottleneck, unable to process the volume of data required without introducing delays or event loss.",
+              "rationale": "Gateways perform translation and routing, which can be computationally intensive, especially for high data rates, potentially leading to critical event loss or exceeding performance thresholds."
+            },
+            {
+              "id": "R-I2.3",
+              "description": "The mapping logic within the gateway might be incomplete or incorrect, failing to cover all critical events or object attributes.",
+              "rationale": "Developing comprehensive and correct mapping for complex simulation data is challenging and prone to errors, which would directly lead to data loss or corruption."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-I2.1",
+              "description": "HLA's interoperability design provides a standardized framework for data exchange, making the *concept* of interoperability feasible.",
+              "rationale": "The standard defines the mechanisms for object and interaction management, which forms the basis for shared data and events across federates."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-I2.1",
+              "parameter": "Completeness and correctness of gateway mapping rules",
+              "correlated_attribute": "Interoperability (data fidelity, event loss)"
+            },
+            {
+              "id": "S-I2.2",
+              "parameter": "Gateway processing capacity",
+              "correlated_attribute": "Interoperability (event loss, data fidelity), Performance"
+            },
+            {
+              "id": "S-I2.3",
+              "parameter": "Network reliability between systems",
+              "correlated_attribute": "Interoperability (event loss), Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-I2.1",
+              "parameter": "Gateway complexity vs. fidelity",
+              "conflicting_attributes": [
+                "Interoperability (fidelity)",
+                "Modifiability (complexity, maintenance), Performance"
+              ]
+            },
+            {
+              "id": "T-I2.2",
+              "parameter": "Real-time translation vs. batch processing",
+              "conflicting_attributes": [
+                "Interoperability (real-time exchange)",
+                "Performance (robustness, throughput)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A new 'fog-of-war' visualization feature must be added to the command center display without requiring changes to more than 3 existing federates, and deployed within 1 month.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Adding new feature",
+        "stimulus": "New 'fog-of-war' visualization feature required",
+        "response_measure": "Changes to <= 3 existing federates, deployed within 1 month",
+        "architectural_decisions": [
+          "Component-Based Architecture (loose coupling, well-defined interfaces)",
+          "Event-Driven Architecture (publish-subscribe for FOW updates)",
+          "HLA Compliance (potential for FOW data to be managed as HLA objects/interactions)"
+        ],
+        "reasoning": "The component-based and event-driven architectures should support localized changes. The key challenge lies in ensuring that the necessary 'fog-of-war' data is readily available or can be produced with minimal impact on existing federates, and that the display federate is extensible enough for rapid integration.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M1.1",
+              "description": "Despite the component-based approach, some existing federates might be more tightly coupled than expected, requiring changes to more than 3.",
+              "rationale": "Real-world implementations often deviate from ideal loose coupling due to historical reasons or complex interdependencies, leading to broader impact than anticipated."
+            },
+            {
+              "id": "R-M1.2",
+              "description": "The necessary data for the new 'fog-of-war' feature (e.g., entity visibility status) might not be readily available or published in the HLA FOM, requiring significant changes to data producers.",
+              "rationale": "New features often expose gaps in existing data models or distribution mechanisms, necessitating modifications to federates that generate this data."
+            },
+            {
+              "id": "R-M1.3",
+              "description": "The command center display federate itself might be complex, making the integration of the new visualization feature difficult within the timeframe.",
+              "rationale": "Visualization components can be intricate, and integrating new rendering logic or data subscriptions can be time-consuming, even if the data is available."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M1.1",
+              "description": "The system's component-based design inherently supports adding new features by introducing new components or modifying existing ones with localized impact.",
+              "rationale": "Loose coupling and well-defined interfaces limit the propagation of changes across the system, facilitating targeted modifications."
+            },
+            {
+              "id": "NR-M1.2",
+              "description": "An Event-Driven Architecture facilitates the distribution of 'fog-of-war' state changes as events, allowing the new visualization to subscribe without direct coupling to producers.",
+              "rationale": "Publish-subscribe naturally decouples producers from consumers, making it easier to add new consumers of specific event types."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M1.1",
+              "parameter": "Granularity of existing federates",
+              "correlated_attribute": "Modifiability (number of federates affected)"
+            },
+            {
+              "id": "S-M1.2",
+              "parameter": "Data model extensibility for 'fog-of-war' information",
+              "correlated_attribute": "Modifiability (effort to add feature)"
+            },
+            {
+              "id": "S-M1.3",
+              "parameter": "Design of the command center display federate",
+              "correlated_attribute": "Modifiability (effort to add feature)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M1.1",
+              "parameter": "Reusing existing federate logic vs. creating a new federate",
+              "conflicting_attributes": [
+                "Modifiability (time to deploy)",
+                "Modifiability (long-term maintainability/coupling)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M2",
+          "text": "An existing federate (e.g., terrain generation) must be replaced with an updated version offering higher fidelity, requiring no changes to other federates and completed within 1 week of integration.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Component replacement",
+        "stimulus": "Updated federate available",
+        "response_measure": "No changes to other federates, completed within 1 week",
+        "architectural_decisions": [
+          "Component-Based Architecture (loose coupling, well-defined interfaces)",
+          "HLA Compliance (standard interfaces, FOM/SOM contracts)"
+        ],
+        "reasoning": "This scenario directly tests the benefits of component-based design and HLA's standardized interfaces. The success hinges on the new federate strictly adhering to the existing FOM/SOM contracts and having no unforeseen performance impacts or undocumented dependencies that could affect other federates.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M2.1",
+              "description": "The 'updated version' of the federate might introduce subtle breaking changes or bugs in its HLA interface (FOM/SOM implementation), causing incompatibilities with existing federates.",
+              "rationale": "Even with standards, new versions can have unintended side effects or different interpretations of the FOM/SOM contract, requiring changes to other federates."
+            },
+            {
+              "id": "R-M2.2",
+              "description": "The higher fidelity of the new federate might introduce unexpected performance bottlenecks (e.g., higher CPU usage, increased data volume) that negatively affect other federates or the RTI.",
+              "rationale": "Higher fidelity often comes with increased computational demands which can have system-wide consequences, even if the interface itself is unchanged."
+            },
+            {
+              "id": "R-M2.3",
+              "description": "The original federate might have had undocumented side effects or implicit dependencies that the new federate does not replicate, leading to unexpected behavior elsewhere.",
+              "rationale": "Real-world systems can have implicit dependencies not fully captured in formal interfaces, making direct replacement risky."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M2.1",
+              "description": "The system's component-based design explicitly supports the replacement of individual components (federates) as long as their interfaces remain consistent.",
+              "rationale": "Loose coupling and encapsulation mean internal changes shouldn't affect external consumers, supporting the 'no changes to other federates' goal."
+            },
+            {
+              "id": "NR-M2.2",
+              "description": "HLA's use of FOM/SOM defines the contract for federate interaction, enabling replacement as long as the contract is maintained.",
+              "rationale": "The standard provides a stable interface definition, which is key for interchangeable components."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M2.1",
+              "parameter": "Strict adherence of new federate to existing FOM/SOM",
+              "correlated_attribute": "Modifiability (effort to replace, impact on other federates)"
+            },
+            {
+              "id": "S-M2.2",
+              "parameter": "Robustness of interface testing for new federate",
+              "correlated_attribute": "Modifiability (risk of breakage)"
+            },
+            {
+              "id": "S-M2.3",
+              "parameter": "Performance characteristics of the new federate",
+              "correlated_attribute": "Performance, Modifiability (system stability)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M2.1",
+              "parameter": "Fidelity gains vs. performance impact",
+              "conflicting_attributes": [
+                "Fidelity",
+                "Performance"
+              ]
+            },
+            {
+              "id": "T-M2.2",
+              "parameter": "Strict interface adherence vs. feature enhancement",
+              "conflicting_attributes": [
+                "Modifiability (ease of replacement)",
+                "Modifiability (feature extensibility)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "F1",
+          "text": "The system must accurately reflect the 'fog-of-war' conditions, ensuring that only visible entities are displayed to each command center user, with less than 100ms discrepancy between actual and displayed visibility changes.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Fidelity",
+        "environment": "Real-time visualization",
+        "stimulus": "Visibility change for an entity",
+        "response_measure": "Displayed visibility changes within 100ms of actual change, accurately reflecting FOW conditions",
+        "architectural_decisions": [
+          "Event-Driven Architecture (real-time updates)",
+          "HLA Compliance (DDM for visibility data)",
+          "Client-Server / Distributed (command centers as clients)"
+        ],
+        "reasoning": "Achieving both high fidelity ('accurately reflect') and strict performance ('less than 100ms discrepancy') for 'fog-of-war' is challenging. It requires efficient visibility calculation algorithms, rapid distribution of updates via HLA DDM, and low-latency rendering on the client side. Any delay in this chain can compromise the requirement.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-F1.1",
+              "description": "The latency in visibility calculation and subsequent distribution of these updates through the RTI might exceed the 100ms budget.",
+              "rationale": "Visibility calculations (e.g., line-of-sight, sensor ranges) can be computationally intensive, and RTI propagation adds network and processing latency, which can quickly sum up."
+            },
+            {
+              "id": "R-F1.2",
+              "description": "Inaccurate or inconsistent visibility logic used by different federates or a central service could lead to incorrect 'fog-of-war' conditions being displayed.",
+              "rationale": "Complex spatial calculations are prone to implementation differences or errors, leading to fidelity issues where the displayed state does not match the actual simulated state."
+            },
+            {
+              "id": "R-F1.3",
+              "description": "The command center display client might have its own rendering pipeline latency that adds to the overall delay, pushing it over 100ms.",
+              "rationale": "Complex graphics rendering and GUI updates can introduce significant delays, especially for dynamic changes, regardless of how quickly the data arrives."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-F1.1",
+              "description": "Event-Driven Architecture is suitable for propagating real-time changes to interested display clients.",
+              "rationale": "EDA allows for immediate reaction to visibility events, which is fundamental for real-time display updates."
+            },
+            {
+              "id": "NR-F1.2",
+              "description": "HLA's Data Distribution Management (DDM) can be used to ensure only relevant visibility updates are sent to specific command centers, optimizing network usage.",
+              "rationale": "DDM can filter data based on subscription regions, which can be mapped to a command center's view, reducing unnecessary data transfer."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-F1.1",
+              "parameter": "Complexity of visibility calculation algorithms",
+              "correlated_attribute": "Performance (latency), Fidelity (accuracy)"
+            },
+            {
+              "id": "S-F1.2",
+              "parameter": "Update frequency of visibility status",
+              "correlated_attribute": "Performance (latency), Fidelity (freshness)"
+            },
+            {
+              "id": "S-F1.3",
+              "parameter": "Performance of display rendering engine",
+              "correlated_attribute": "Performance (latency)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-F1.1",
+              "parameter": "Visibility calculation accuracy vs. performance",
+              "conflicting_attributes": [
+                "Fidelity (accuracy)",
+                "Performance (latency)"
+              ]
+            },
+            {
+              "id": "T-F1.2",
+              "parameter": "Update frequency vs. network load",
+              "conflicting_attributes": [
+                "Fidelity (freshness)",
+                "Performance (network/CPU load)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "F2",
+          "text": "The spatial accuracy of simulated entities must be maintained within 1 meter across all federates for critical combat units.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Fidelity",
+        "environment": "Spatial data consistency",
+        "stimulus": "Entity movement/position updates",
+        "response_measure": "Spatial accuracy within 1 meter across all federates for critical combat units",
+        "architectural_decisions": [
+          "HLA Compliance (Object Management, Time Management)",
+          "Event-Driven Architecture (position updates as events)",
+          "Client-Server / Distributed (data consistency across distributed components)"
+        ],
+        "reasoning": "Maintaining 1-meter spatial accuracy across a distributed HLA federation is a strict fidelity requirement. It depends critically on consistent coordinate systems, sufficient update frequency, accurate time synchronization, and robust extrapolation techniques to handle network latency and discrete updates.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-F2.1",
+              "description": "Inconsistent coordinate systems, precision settings, or floating-point representations across different federates could lead to accumulated spatial errors.",
+              "rationale": "Even small differences in how spatial data is defined or processed can lead to discrepancies over time or large simulated spaces, exceeding the 1-meter tolerance."
+            },
+            {
+              "id": "R-F2.2",
+              "description": "Delays in position updates combined with federate-specific extrapolation logic can lead to perceived spatial discrepancies between federates.",
+              "rationale": "If federates don't receive updates fast enough, their prediction models will drift, causing inconsistencies in the perceived position of entities at any given moment."
+            },
+            {
+              "id": "R-F2.3",
+              "description": "Inaccurate or drifting time synchronization between federates can cause entities to be at different perceived positions at the 'same' simulated time.",
+              "rationale": "If federates are not perfectly time-aligned, their understanding of an entity's state at a specific simulation time will differ, impacting spatial consistency."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-F2.1",
+              "description": "HLA's Object Management provides standardized mechanisms for publishing and subscribing to object attributes, including position, which supports consistency.",
+              "rationale": "HLA defines how objects are created, updated, and deleted, providing a framework for shared state and attribute consistency."
+            },
+            {
+              "id": "NR-F2.2",
+              "description": "HLA's Federation Object Model (FOM) can enforce standardized data types and units for spatial information.",
+              "rationale": "If all federates use the same definition and representation for position data, it reduces one significant source of potential error and inconsistency."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-F2.1",
+              "parameter": "Frequency of position updates for critical units",
+              "correlated_attribute": "Fidelity (accuracy), Performance"
+            },
+            {
+              "id": "S-F2.2",
+              "parameter": "Accuracy of federate extrapolation algorithms",
+              "correlated_attribute": "Fidelity (accuracy)"
+            },
+            {
+              "id": "S-F2.3",
+              "parameter": "Precision of coordinate system and data types",
+              "correlated_attribute": "Fidelity (accuracy)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-F2.1",
+              "parameter": "Update frequency vs. network bandwidth/CPU",
+              "conflicting_attributes": [
+                "Fidelity (accuracy)",
+                "Performance (network/CPU load)"
+              ]
+            },
+            {
+              "id": "T-F2.2",
+              "parameter": "Extrapolation complexity vs. CPU usage",
+              "conflicting_attributes": [
+                "Fidelity (accuracy)",
+                "Performance (CPU usage)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

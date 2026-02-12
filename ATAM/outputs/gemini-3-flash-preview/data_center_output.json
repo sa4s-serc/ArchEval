@@ -1,0 +1,442 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Accommodate needs of institutional accreditation",
+      "Organize and synchronize information from existing systems",
+      "Reduce duplication issues and problems from various data structures",
+      "Facilitate processes previously done manually",
+      "Create a centralized source for overall academic activity"
+    ],
+    "technical_constraints": [
+      "Low-cost",
+      "Open-source software",
+      "Tight development schedule",
+      "Limited human resources/developer experience",
+      "Existing systems use PHP and MySQL",
+      "Existing systems are disparate and separate"
+    ],
+    "architectural_drivers": [
+      "Security",
+      "Performance",
+      "Compliance",
+      "Modifiability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Low maturity; the system was based on an initial prototype with no standard architectural evaluation practice previously applied. Design decisions were initially driven by immediate needs under tight schedules without thorough analysis.",
+      "evaluator_inquiry_questions": [
+        "How can existing systems be integrated to minimize data duplication?",
+        "What are the available architectural options considering the low-cost and open-source constraints?",
+        "How can binary data (images, audio, video) be handled if existing databases only store file paths?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Dozens of existing information systems operating on separate servers with separate databases.",
+        "Most existing applications are web-based, coded in PHP, using MySQL instances.",
+        "Binary files (images/audio) are stored physically on server hard drives, not in the databases."
+      ],
+      "runtime_constraints": [
+        "Strict reliance on low-cost, open-source software.",
+        "Limited human resources and developer expertise (mostly fresh graduates).",
+        "Legacy systems cannot accept major behavioral changes or new adapter installations."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "system_count": "Dozens of information systems",
+      "data_types": "Text, Binary (Image, Audio, Video)",
+      "network_protocol": "HTTP/REST (for Web Services option), JDBC (for Direct Connection)"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Enterprise Service Bus (ESB)",
+        "questions": [
+          "Does the ESB support binary data transfer natively?",
+          "Can legacy systems connect to the ESB without installing new adapters?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy among them."
+      },
+      {
+        "id": "RS-02",
+        "description": "Each of the other connected applications must be able to connect to a centralized data-warehouse and pull data upon request as needed."
+      },
+      {
+        "id": "RS-03",
+        "description": "The DC system must be able to sync any duplicated master data from different applications."
+      },
+      {
+        "id": "RS-04",
+        "description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed."
+      },
+      {
+        "id": "RS-05",
+        "description": "The source system should not experience overload when another system is connected to get data."
+      },
+      {
+        "id": "RS-06",
+        "description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse."
+      },
+      {
+        "id": "RS-07",
+        "description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files."
+      },
+      {
+        "id": "RS-08",
+        "description": "Small to no change should be needed in any of the connected applications in order to implement the solution."
+      },
+      {
+        "id": "RS-09",
+        "description": "The cost in term of the required software development has to be minimum and preferably using open-source software."
+      },
+      {
+        "id": "RS-10",
+        "description": "The developed system has to be developer-friendly for enhancement purposes."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Extract, Transform, Load (ETL) / Batch Processing",
+        "description": "A scheduled process that extracts data from dozens of disparate legacy MySQL databases, transforms it into a unified schema, and loads it into the central DC database without modifying legacy application code.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Decouples the central system from legacy schemas, allowing changes in source systems to be handled in the transformation layer rather than requiring updates to the core central system."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "By scheduling synchronization during off-peak hours, the system prevents resource contention with the active legacy web applications."
+          }
+        ]
+      },
+      {
+        "approach_name": "Centralized Repository",
+        "description": "A single master database designed to consolidate academic activity data from all departments, serving as the system's 'single source of truth'.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Compliance",
+            "rationale": "Ensures institutional accreditation requirements are met by providing a consistent, auditable, and unified data set."
+          },
+          {
+            "quality_attribute": "Security",
+            "rationale": "Allows for the centralization of access control policies and audit logging across all academic data."
+          }
+        ]
+      },
+      {
+        "approach_name": "File Mirroring and Synchronization",
+        "description": "A background service that replicates physical media files (images, audio, video) from legacy server file systems to a central storage location, linking them to database records.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Compliance",
+            "rationale": "Ensures all academic evidence, including non-database binary files, is captured and available for institutional review."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Data Synchronization Throughput",
+              "scenario_id": "P1",
+              "scenario_description": "The ETL process must extract and transform data from 50+ disparate legacy MySQL databases and load it into the central DC repository within a 6-hour off-peak window without degrading legacy system performance.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Compliance",
+          "children": [
+            {
+              "refinement": "Completeness of Accreditation Evidence",
+              "scenario_id": "C1",
+              "scenario_description": "The system must synchronize and link physical binary files (images, audio, video) located on legacy server hard drives to their respective records in the central DC system to ensure full auditability for accreditation.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Data Integrity in Transit",
+              "scenario_id": "S1",
+              "scenario_description": "All data extracted from legacy systems must be encrypted during transit to the DC server and verified via checksums to ensure no unauthorized modification occurs during the ETL process.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Extensibility of Data Sources",
+              "scenario_id": "M1",
+              "scenario_description": "A new department launches a legacy-style PHP/MySQL application; the DC system must be updated to include this new data source in the sync process within 2 person-days of effort.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "The ETL process must extract and transform data from 50+ disparate legacy MySQL databases and load it into the central DC repository within a 6-hour off-peak window without degrading legacy system performance.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The system must synchronize and link physical binary files (images, audio, video) located on legacy server hard drives to their respective records in the central DC system to ensure full auditability for accreditation.",
+        "primary_quality_attribute": [
+          "Compliance",
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "All data extracted from legacy systems must be encrypted during transit to the DC server and verified via checksums to ensure no unauthorized modification occurs during the ETL process.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "A new department launches a legacy-style PHP/MySQL application; the DC system must be updated to include this new data source in the sync process within 2 person-days of effort.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "The ETL process must extract and transform data from 50+ disparate legacy MySQL databases and load it into the central DC repository within a 6-hour off-peak window without degrading legacy system performance.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Off-peak hours (nightly batch)",
+        "stimulus": "Scheduled execution of ETL jobs",
+        "response_measure": "Completion of all 50+ data syncs within 6 hours",
+        "architectural_decisions": [
+          "ETL / Batch Processing approach",
+          "Scheduled execution during off-peak hours",
+          "Decoupled transformation logic"
+        ],
+        "reasoning": "Batch processing effectively moves the heavy lifting of data integration away from the active usage hours of legacy systems. However, the requirement to process 50+ sources within a tight 6-hour window necessitates high throughput and efficient resource management on the central DC server.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Network interface saturation",
+              "rationale": "Simultaneous extraction from 50+ remote databases could saturate the central server's network bandwidth, causing job failures or timeouts."
+            },
+            {
+              "id": "R-02",
+              "description": "Legacy DB lock contention",
+              "rationale": "If ETL queries are not optimized (e.g., missing indexes), they may lock tables in legacy MySQL databases, impacting late-night legacy operations."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Database compatibility",
+              "rationale": "Using MySQL for both source and target ensures high compatibility and reduces the risk of data type conversion errors."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Number of concurrent ETL worker threads",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Sync Frequency",
+              "conflicting_attributes": [
+                "Performance",
+                "Data Freshness"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "C1",
+          "text": "The system must synchronize and link physical binary files (images, audio, video) located on legacy server hard drives to their respective records in the central DC system to ensure full auditability for accreditation.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Compliance",
+        "environment": "Normal operations",
+        "stimulus": "Existence of binary files on legacy server file systems",
+        "response_measure": "100% of binary files mirrored and correctly linked in the DC database",
+        "architectural_decisions": [
+          "File Mirroring and Synchronization service",
+          "Centralized Repository for file metadata"
+        ],
+        "reasoning": "Centralizing binary files is critical for accreditation evidence. Since legacy systems only store paths, the mirroring service must resolve these paths and physicalize the data centrally.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Storage exhaustion on DC server",
+              "rationale": "Mirroring binary files (video/audio) from 50+ servers without a retention policy or deduplication could lead to rapid disk space depletion."
+            },
+            {
+              "id": "R-04",
+              "description": "Inconsistent file paths",
+              "rationale": "Legacy systems storing relative paths or using varied OS-level permissions may cause the mirroring service to fail to locate files."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Data Integrity",
+              "rationale": "Mirroring is a read-only operation for legacy systems, ensuring no accidental deletion of original evidence."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "File system access permissions on legacy servers",
+              "correlated_attribute": "Compliance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Completeness of binary sync",
+              "conflicting_attributes": [
+                "Compliance",
+                "Storage Cost"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "All data extracted from legacy systems must be encrypted during transit to the DC server and verified via checksums to ensure no unauthorized modification occurs during the ETL process.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Security",
+        "environment": "Data in transit",
+        "stimulus": "ETL data extraction phase",
+        "response_measure": "End-to-end encryption (TLS) and successful checksum verification for every batch",
+        "architectural_decisions": [
+          "TLS-encrypted database connections",
+          "Checksum validation (e.g., SHA-256) per data block"
+        ],
+        "reasoning": "Security is a primary driver. Encryption ensures confidentiality, while checksums ensure integrity, which is vital for the validity of accreditation data.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-05",
+              "description": "Legacy TLS incompatibility",
+              "rationale": "Older PHP/MySQL installations may not support modern, secure TLS versions (e.g., TLS 1.2+), potentially forcing insecure fallback."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "Standard Cryptography",
+              "rationale": "Using industry-standard libraries for SHA-256 and TLS minimizes the risk of implementation flaws."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Encryption algorithm strength",
+              "correlated_attribute": "Security"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Encryption/Checksum overhead",
+              "conflicting_attributes": [
+                "Security",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A new department launches a legacy-style PHP/MySQL application; the DC system must be updated to include this new data source in the sync process within 2 person-days of effort.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Development/Configuration time",
+        "stimulus": "Integration of a new legacy database source",
+        "response_measure": "Integration completed in < 16 person-hours",
+        "architectural_decisions": [
+          "ETL / Batch Processing",
+          "Unified Central Schema"
+        ],
+        "reasoning": "The ETL approach decouples the central repository from source changes. Adding a new source requires only a new mapping configuration rather than a change to the core database structure.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-06",
+              "description": "Schema Divergence",
+              "rationale": "If the new application uses a significantly different schema than existing legacy apps, the 2-day window may be insufficient for complex transformation logic."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-04",
+              "description": "Modular ETL structure",
+              "rationale": "The batch processing style allows adding sources by duplicating and modifying existing scripts, which is highly efficient for similar MySQL sources."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-04",
+              "parameter": "Source-to-Target mapping complexity",
+              "correlated_attribute": "Modifiability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-04",
+              "parameter": "Generic vs. Hand-coded ETL scripts",
+              "conflicting_attributes": [
+                "Modifiability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

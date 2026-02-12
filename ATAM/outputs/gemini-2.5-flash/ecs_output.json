@@ -1,0 +1,550 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Support for interdisciplinary earth science",
+      "Concurrent ingest, production, and distribution of high data volumes",
+      "One-stop shopping (location transparency of system components and data)",
+      "Support for externally developed science algorithms/applications",
+      "Science data reprocessing (lineage, version management, processing)",
+      "Assurance of data integrity for archive",
+      "Automated operations to minimize operational costs"
+    ],
+    "technical_constraints": [
+      "Must use specific COTS products (~50 used)",
+      "Must interoperate with other systems",
+      "Must reuse legacy code where applicable",
+      "Distributed deployment across four specific data centers"
+    ],
+    "architectural_drivers": [
+      "Maintainability",
+      "Operability",
+      "Reliability",
+      "Scalability",
+      "Performance"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The system was already fielded and supported by volumes of documentation, including architecture documents provided by the client. The evaluation team reviewed these materials beforehand to understand the system's broad details and concept of operations.",
+      "evaluator_inquiry_questions": [
+        "What are the driving architectural constraints, and where are they documented?",
+        "How do components communicate and synchronize? (Mechanisms used, Restrictions on use)",
+        "What are the system partitions? (Composition, Restrictions on use and visibility)",
+        "What constitutes the system infrastructure? (Supplied functionality, Resource management)",
+        "What are the system interfaces? (Identification, Participants, Coordination mechanisms)",
+        "What is the process/thread model of the architecture?",
+        "What is the deployment model of the system?",
+        "What are the system states and modes?",
+        "What variability mechanisms and variation points are included in the architecture?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "The system is distributed at four data centers across the United States.",
+        "Deployed on about 20 Unix servers from multiple vendors at each site.",
+        "Supported by a communications infrastructure pictured as a ring connecting the subsystems."
+      ],
+      "runtime_constraints": [
+        "Must support concurrent ingest, production, and distribution of high data volumes.",
+        "Must operate 24 hours a day, 7 days a week, 365 days a year.",
+        "Must process data from 24 sensors on ten spacecraft.",
+        "Must compute about 250 standard data products."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "data_volume": "Ingest ~1.5 TB/day; Distribute ~2 TB/day",
+      "system_scale": {
+        "custom_code": "1.2 million lines",
+        "cots_products": "~50 products",
+        "external_interfaces": "34 systems"
+      },
+      "distribution_targets": "2,000 sites (Scenario Sc4)"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Distributed Object / Client-Server",
+        "questions": [
+          "How does the system ensure backward compatibility of interfaces?",
+          "What are the impacts of static linkage of client stubs on deployment?",
+          "How does the distribution of data type information affect modifiability?",
+          "What are the performance costs of location independence via name servers?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "13 (O15.1)",
+        "description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request."
+      },
+      {
+        "id": "Brainstorm_Generic_1",
+        "description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists)."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Distributed Object / Client-Server",
+        "description": "This architectural style organizes the system into client components that request services and server components that provide those services, typically across a network. The 'Distributed Object' aspect further extends this by allowing system components (objects) to be distributed across different processes or machines, interacting as if they were local. This approach emphasizes clear separation of concerns, facilitating independent development and deployment, and enabling location transparency for system components and data.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Scalability",
+            "rationale": "The separation of client and server allows server-side resources to be scaled independently to handle varying loads, supporting the requirement for 'concurrent ingest, production, and distribution of high data volumes'."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Clear separation of responsibilities between client and server, and the modular nature of distributed objects, simplifies maintenance and updates. This supports 'Support for externally developed science algorithms/applications' and 'reuse legacy code where applicable'."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Components (objects or services) can be modified, replaced, or added independently, reducing the impact on other parts of the system. This is crucial for integrating new 'science algorithms/applications'."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Redundant server instances and distributed object patterns can be implemented to ensure high availability and fault tolerance, essential for the 'Must operate 24 hours a day, 7 days a week, 365 days a year' requirement."
+          },
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Distributed object systems often rely on standardized communication protocols, which facilitates interaction with '34 external interfaces' and other systems."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Workloads can be distributed across multiple servers, potentially improving overall system throughput for 'concurrent ingest, production, and distribution'. However, network latency is a consideration."
+          },
+          {
+            "quality_attribute": "Location Transparency",
+            "rationale": "A core benefit of distributed object systems, directly addressing the business goal of 'One-stop shopping (location transparency of system components and data)' by abstracting the physical location of services from clients."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Response time for data ingest",
+              "scenario_id": "P1",
+              "scenario_description": "Under peak load (1000 concurrent ingests/sec), new data ingest completes within 500ms.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Throughput for data processing",
+              "scenario_id": "P2",
+              "scenario_description": "The system processes 10TB of raw data per day, producing derived products within 24 hours of ingest.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Latency for user queries",
+              "scenario_id": "P3",
+              "scenario_description": "A user queries for a specific data product, and the response is returned within 2 seconds, 95% of the time.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "System availability",
+              "scenario_id": "R1",
+              "scenario_description": "The system must operate 24/7/365 with 99.9% uptime, excluding planned maintenance.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Data integrity and consistency",
+              "scenario_id": "R2",
+              "scenario_description": "In the event of a system failure during data processing, all data (ingested, in-process, and derived) remains consistent and recoverable within 1 hour.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Fault tolerance",
+              "scenario_id": "R3",
+              "scenario_description": "The failure of any single component (e.g., server, database instance) does not lead to data loss or service interruption for more than 5 minutes.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Integration of new science algorithms",
+              "scenario_id": "M1",
+              "scenario_description": "A new science algorithm can be integrated, tested, and deployed into production within 2 weeks without affecting existing operations.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Database schema changes",
+              "scenario_id": "M2",
+              "scenario_description": "A significant change to a core data product's schema can be implemented and deployed without requiring a full system redeployment or extended downtime (>1 hour).",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Scalability",
+          "children": [
+            {
+              "refinement": "Handling increased data volume",
+              "scenario_id": "S1",
+              "scenario_description": "The system can scale to handle a 50% increase in data ingest volume and processing requirements within 3 months, by adding commodity hardware.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Supporting more concurrent users",
+              "scenario_id": "S2",
+              "scenario_description": "The system supports a 2x increase in concurrent users (from 100 to 200) accessing data products, with no degradation in query response times, by adding resources.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Data access control",
+              "scenario_id": "SE1",
+              "scenario_description": "Only authorized personnel with appropriate roles can access sensitive raw data, and all access attempts are logged.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Protection against external threats",
+              "scenario_id": "SE2",
+              "scenario_description": "The system must withstand common web application attacks (e.g., XSS, SQL injection) and denial-of-service attempts without compromise or significant service degradation.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Authentication and Authorization",
+              "scenario_id": "SE3",
+              "scenario_description": "Users accessing the system via external interfaces are authenticated against an enterprise identity provider, and their authorization is managed by role-based access control.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Manageability/Operability",
+          "children": [
+            {
+              "refinement": "System monitoring and alerting",
+              "scenario_id": "O1",
+              "scenario_description": "System administrators can monitor key performance indicators (CPU, memory, network, disk I/O, application logs) and receive alerts for critical failures or performance degradations within 5 minutes of occurrence.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Deployment and configuration",
+              "scenario_id": "O2",
+              "scenario_description": "A new version of a core service can be deployed and configured across the distributed environment within 30 minutes, with minimal impact on running services.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Troubleshooting and logging",
+              "scenario_id": "O3",
+              "scenario_description": "When an error occurs, detailed logs are available to allow developers and operations staff to identify the root cause within 1 hour.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "Integration with external systems",
+              "scenario_id": "I1",
+              "scenario_description": "The system successfully exchanges data with 34 external interfaces using established protocols (e.g., REST, FTP, messaging queues) without requiring custom adapters for each.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Usability",
+          "children": [
+            {
+              "refinement": "Accessing distributed components (Location Transparency)",
+              "scenario_id": "U1",
+              "scenario_description": "A client application can access any data product or service component without needing to know its physical location or specific network address.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under peak load (1000 concurrent ingests/sec), new data ingest completes within 500ms.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The system processes 10TB of raw data per day, producing derived products within 24 hours of ingest.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A user queries for a specific data product, and the response is returned within 2 seconds, 95% of the time.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The system must operate 24/7/365 with 99.9% uptime, excluding planned maintenance.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "In the event of a system failure during data processing, all data (ingested, in-process, and derived) remains consistent and recoverable within 1 hour.",
+        "primary_quality_attribute": [
+          "Reliability",
+          "Data Consistency"
+        ]
+      },
+      {
+        "scenario_text": "The failure of any single component (e.g., server, database instance) does not lead to data loss or service interruption for more than 5 minutes.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "A new science algorithm can be integrated, tested, and deployed into production within 2 weeks without affecting existing operations.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "A significant change to a core data product's schema can be implemented and deployed without requiring a full system redeployment or extended downtime (>1 hour).",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system can scale to handle a 50% increase in data ingest volume and processing requirements within 3 months, by adding commodity hardware.",
+        "primary_quality_attribute": [
+          "Scalability"
+        ]
+      },
+      {
+        "scenario_text": "The system supports a 2x increase in concurrent users (from 100 to 200) accessing data products, with no degradation in query response times, by adding resources.",
+        "primary_quality_attribute": [
+          "Scalability"
+        ]
+      },
+      {
+        "scenario_text": "Only authorized personnel with appropriate roles can access sensitive raw data, and all access attempts are logged.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "The system must withstand common web application attacks (e.g., XSS, SQL injection) and denial-of-service attempts without compromise or significant service degradation.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "Users accessing the system via external interfaces are authenticated against an enterprise identity provider, and their authorization is managed by role-based access control.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "System administrators can monitor key performance indicators (CPU, memory, network, disk I/O, application logs) and receive alerts for critical failures or performance degradations within 5 minutes of occurrence.",
+        "primary_quality_attribute": [
+          "Manageability",
+          "Operability"
+        ]
+      },
+      {
+        "scenario_text": "A new version of a core service can be deployed and configured across the distributed environment within 30 minutes, with minimal impact on running services.",
+        "primary_quality_attribute": [
+          "Manageability",
+          "Operability"
+        ]
+      },
+      {
+        "scenario_text": "When an error occurs, detailed logs are available to allow developers and operations staff to identify the root cause within 1 hour.",
+        "primary_quality_attribute": [
+          "Manageability",
+          "Operability"
+        ]
+      },
+      {
+        "scenario_text": "The system successfully exchanges data with 34 external interfaces using established protocols (e.g., REST, FTP, messaging queues) without requiring custom adapters for each.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "A client application can access any data product or service component without needing to know its physical location or specific network address.",
+        "primary_quality_attribute": [
+          "Usability",
+          "Location Transparency"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under peak load (1000 concurrent ingests/sec), new data ingest completes within 500ms.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak load conditions (1000 concurrent ingests/sec)",
+        "stimulus": "Concurrent data ingest requests",
+        "response_measure": "New data ingest completes within 500ms (client-side acknowledgment)",
+        "architectural_decisions": [
+          "Use of efficient, low-latency communication protocols (e.g., gRPC, custom binary) for client-server and inter-service communication.",
+          "Stateless server components for ingest services to enable horizontal scaling and load balancing.",
+          "Implementation of asynchronous processing for backend data persistence and transformation, decoupling initial ingest acknowledgment from full processing.",
+          "Deployment of distributed caching mechanisms to reduce latency for frequently accessed metadata or lookup data during ingest.",
+          "Utilization of load balancers to distribute ingest requests across multiple ingest server instances."
+        ],
+        "reasoning": "The Distributed Object / Client-Server architecture facilitates the creation of dedicated ingest services that can be scaled independently. By employing efficient communication protocols and stateless servers, the overhead per request is minimized. Asynchronous processing allows the system to quickly acknowledge a client's ingest request (meeting the 500ms goal) even if the full backend processing takes longer, effectively managing client-perceived latency. Distributed caching reduces internal lookup times, and load balancing ensures that the 1000 concurrent requests are evenly distributed, preventing any single point of congestion and maximizing throughput to meet the performance target.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P1-1",
+              "description": "Network latency and bandwidth constraints between client and ingest services, or between internal distributed components, could cause response times to exceed 500ms under peak load.",
+              "rationale": "The distributed nature heavily relies on network performance. High latency or insufficient bandwidth will directly impact end-to-end response times, potentially violating the 500ms requirement."
+            },
+            {
+              "id": "R-P1-2",
+              "description": "The backend database or persistent storage layer becomes a bottleneck, unable to handle the sustained write load from 1000 ingests/sec, leading to processing backlogs and eventual client-side delays if ingest queues overflow.",
+              "rationale": "While ingest services can be scaled, the ultimate bottleneck often shifts to the shared persistent storage. If the database cannot keep up, the system will eventually slow down or fail to meet the performance goal."
+            },
+            {
+              "id": "R-P1-3",
+              "description": "Overhead introduced by distributed transactions or strong consistency requirements across multiple distributed components could significantly impact ingest performance, pushing response times beyond the 500ms limit.",
+              "rationale": "Ensuring ACID properties or strong consistency in a distributed system adds coordination overhead (e.g., two-phase commit), which directly increases latency per operation."
+            },
+            {
+              "id": "R-P1-4",
+              "description": "Serialization/deserialization of complex data structures for 1000 requests/sec can become a CPU bottleneck on either client or server, especially if data payloads are large.",
+              "rationale": "Converting data between object representations and wire formats is a computational task. At high concurrency and volume, this overhead can consume significant CPU resources, impacting processing time."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P1-1",
+              "description": "The architectural approach inherently supports horizontal scalability of ingest services by adding more server instances, directly addressing the ability to handle '1000 concurrent ingests/sec' through distribution of workload.",
+              "rationale": "The client-server and distributed object model are designed for scaling out by adding more independent server components to handle increased demand, provided backend dependencies can also scale."
+            },
+            {
+              "id": "NR-P1-2",
+              "description": "Failure of an individual ingest service instance due to overload or other issues can be isolated by load balancers, allowing other instances to continue processing, thus preventing a single point of failure for the ingest mechanism itself.",
+              "rationale": "Load balancing and stateless services enable fault isolation. If one instance fails, traffic is rerouted, maintaining overall system availability for ingest (though data for the failed request might need re-submission)."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P1-1",
+              "parameter": "Network Latency (client to ingest service)",
+              "correlated_attribute": "Performance (response time)"
+            },
+            {
+              "id": "S-P1-2",
+              "parameter": "Average ingest message size",
+              "correlated_attribute": "Performance (data transfer time, processing time)"
+            },
+            {
+              "id": "S-P1-3",
+              "parameter": "Database write throughput (IOPS and bandwidth)",
+              "correlated_attribute": "Performance (backend processing time, overall ingest capacity)"
+            },
+            {
+              "id": "S-P1-4",
+              "parameter": "CPU utilization per ingest request on server",
+              "correlated_attribute": "Performance (server processing capacity, concurrency limit)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P1-1",
+              "parameter": "Level of data consistency required during ingest",
+              "conflicting_attributes": [
+                "Performance (higher consistency often means higher latency)",
+                "Reliability (stronger consistency improves data integrity)"
+              ]
+            },
+            {
+              "id": "T-P1-2",
+              "parameter": "Complexity of asynchronous processing vs. simplicity of synchronous processing",
+              "conflicting_attributes": [
+                "Performance (asynchronous processing improves perceived response time)",
+                "Maintainability (asynchronous processing adds complexity in error handling and monitoring)"
+              ]
+            },
+            {
+              "id": "T-P1-3",
+              "parameter": "Efficiency of communication protocol",
+              "conflicting_attributes": [
+                "Performance (more efficient protocols reduce latency)",
+                "Interoperability (highly efficient, custom protocols may limit interoperability with standard tools/systems)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

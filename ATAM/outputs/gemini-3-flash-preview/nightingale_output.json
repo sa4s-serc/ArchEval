@@ -1,0 +1,408 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Support the kickoff customer's diverse uses (treatment tracking, payments, trend spotting)",
+      "Serve as a basis for an entire product family of health care management systems",
+      "Replace multiple legacy systems that are old, difficult to maintain, and unresponsive",
+      "Support diverse cultural, regional, language, and currency differences"
+    ],
+    "technical_constraints": [
+      "Buy rather than build (use off-the-shelf software components)",
+      "Two-year implementation time frame",
+      "No lost jobs via retraining of existing employees"
+    ],
+    "architectural_drivers": [
+      "Performance",
+      "Usability",
+      "Maintainability",
+      "Modifiability",
+      "Security",
+      "Scalability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Incomplete and unclear; whole sections were missing, and the architecture was largely presented as inadequately defined box-and-line diagrams.",
+      "evaluator_inquiry_questions": [
+        "Can you verbally fill in the blanks regarding missing architectural sections?",
+        "Can you explain the inconsistencies between the layered view and the runtime view (e.g., missing transaction manager and CORBA components)?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Different customer offices run different hardware configurations.",
+        "The DSRGM subsystem is deployed on UNIX platforms.",
+        "The database is hosted on Sun platforms."
+      ],
+      "runtime_constraints": [
+        "Must respond faster than the legacy system's 5-second transaction time.",
+        "Must support high availability during normal business hours.",
+        "Must accommodate high user turnover with ease of learning."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "peak_transaction_response_time": "0.75 seconds",
+      "peak_throughput": "150 transactions per second",
+      "hardware_replacement_cycle": "26 weeks",
+      "double_peak_load_response_time": "4 seconds"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "COTS-based Layered Architecture",
+        "questions": [
+          "How difficult is it to replace the commercial database with one from another vendor?",
+          "How difficult is it to replace the rules engine with compiled C++ code?",
+          "How are operating system dependencies encapsulated to allow for OS replacement?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Previously public data is made private, and access is adjusted accordingly."
+      },
+      {
+        "id": "RS-02",
+        "description": "Data in the information hub is replicated to a branch clinic, and performance is degraded."
+      },
+      {
+        "id": "RS-03",
+        "description": "A rule in the rule engine fires, and data access is too slow."
+      },
+      {
+        "id": "RS-29",
+        "description": "A fire in the data center forces the information hub to be moved to a new location."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Layered Architecture",
+        "description": "The system is organized into distinct layers (e.g., presentation, business logic, data access) to encapsulate dependencies and isolate the impact of changes.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Layering allows for the replacement of specific layers, such as the database or UI, without affecting the entire system, facilitating the replacement of legacy components."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "By separating concerns, the system becomes easier to understand and repair compared to the legacy systems."
+          }
+        ]
+      },
+      {
+        "approach_name": "COTS (Commercial Off-The-Shelf) Integration",
+        "description": "Integration of pre-built software components such as rules engines and databases to minimize custom development.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Using third-party components allows for modular upgrades and leverages vendor-supported features."
+          },
+          {
+            "quality_attribute": "Time-to-Market",
+            "rationale": "Supports the two-year implementation constraint by reducing the amount of code that needs to be built from scratch."
+          }
+        ]
+      },
+      {
+        "approach_name": "Broker Pattern (via CORBA)",
+        "description": "Use of Common Object Request Broker Architecture (CORBA) to facilitate communication between distributed objects in a heterogeneous environment.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Scalability",
+            "rationale": "Provides a framework for distributing components across multiple servers to handle increased load."
+          },
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Allows different parts of the system, potentially running on different platforms, to communicate seamlessly."
+          }
+        ]
+      },
+      {
+        "approach_name": "Rule-Based System",
+        "description": "Externalizing business logic into a rules engine to allow for dynamic configuration of workflows and calculations.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Enables the system to support diverse cultural, regional, and currency differences by changing rules rather than core code."
+          },
+          {
+            "quality_attribute": "Usability",
+            "rationale": "Allows business users to adapt the system to their specific operational needs (treatment tracking, payments)."
+          }
+        ]
+      },
+      {
+        "approach_name": "Software Product Line (SPL) Architecture",
+        "description": "Designing the system with a common core and explicit variation points to support a family of related healthcare products.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Facilitates the creation of new product instances within the family by configuring the core architecture."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Centralizes the maintenance of the core platform while allowing specialized versions to coexist."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Support diverse regional and currency differences",
+              "scenario_id": "M1",
+              "scenario_description": "A business user updates regional tax rules and currency conversion rates via the rules engine without modifying core source code.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Ease of system evolution via product lines",
+              "scenario_id": "M2",
+              "scenario_description": "A new product instance for a specific healthcare market is created by configuring variation points in the Software Product Line architecture.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Scalability",
+          "children": [
+            {
+              "refinement": "Handle increased concurrent user load",
+              "scenario_id": "S1",
+              "scenario_description": "The system maintains response times under 2 seconds when concurrent user traffic increases by 50% during peak hours, utilizing the Broker pattern for distribution.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "Integration with heterogeneous legacy systems",
+              "scenario_id": "I1",
+              "scenario_description": "A new third-party laboratory system is integrated into the environment using CORBA interfaces with no changes to the existing business logic.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Maintainability",
+          "children": [
+            {
+              "refinement": "Isolation of component changes",
+              "scenario_id": "Mt1",
+              "scenario_description": "The legacy database is replaced with a modern COTS database by updating only the data access layer, leaving the presentation and business layers unaffected.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "A business user updates regional tax rules and currency conversion rates via the rules engine without modifying core source code.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "A new product instance for a specific healthcare market is created by configuring variation points in the Software Product Line architecture.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system maintains response times under 2 seconds when concurrent user traffic increases by 50% during peak hours, utilizing the Broker pattern for distribution.",
+        "primary_quality_attribute": [
+          "Scalability"
+        ]
+      },
+      {
+        "scenario_text": "A new third-party laboratory system is integrated into the environment using CORBA interfaces with no changes to the existing business logic.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "The legacy database is replaced with a modern COTS database by updating only the data access layer, leaving the presentation and business layers unaffected.",
+        "primary_quality_attribute": [
+          "Maintainability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A business user updates regional tax rules and currency conversion rates via the rules engine without modifying core source code.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Normal operations (Configuration phase)",
+        "stimulus": "Changes in regional tax laws or currency rates",
+        "response_measure": "Update completed by non-technical user without code changes or system redeployment",
+        "architectural_decisions": [
+          "Externalized Rule-Based System",
+          "Metadata-driven configuration"
+        ],
+        "reasoning": "By externalizing logic into a rules engine, the system decouples business policy from the execution engine, allowing runtime updates.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Rule complexity and validation",
+              "rationale": "As the number of regional rules grows, ensuring consistency and preventing logical conflicts without a developer's oversight becomes difficult."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Core stability",
+              "rationale": "Changes to rules are isolated from the core application binaries, reducing the risk of introducing regression bugs in the primary logic."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Rules engine interpreter speed",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Logic externalization",
+              "conflicting_attributes": [
+                "Modifiability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "The system maintains response times under 2 seconds when concurrent user traffic increases by 50% during peak hours, utilizing the Broker pattern for distribution.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Scalability",
+        "environment": "Peak load",
+        "stimulus": "50% increase in concurrent user traffic",
+        "response_measure": "Response time < 2 seconds",
+        "architectural_decisions": [
+          "Broker Pattern (CORBA)",
+          "Distributed Object Communication"
+        ],
+        "reasoning": "The Broker pattern allows for horizontal scaling by distributing object requests across multiple server instances.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Marshalling/Unmarshalling overhead",
+              "rationale": "High-frequency CORBA calls can introduce significant latency due to the serialization process required for distributed communication."
+            },
+            {
+              "id": "R-03",
+              "description": "Broker as a Single Point of Failure",
+              "rationale": "If the Naming Service or Broker fails, the entire distributed system becomes unreachable."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Location Transparency",
+              "rationale": "Clients do not need to know the physical location of services, allowing for dynamic re-allocation of resources."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Network Bandwidth",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Distribution Granularity",
+              "conflicting_attributes": [
+                "Scalability",
+                "Latency"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "Mt1",
+          "text": "The legacy database is replaced with a modern COTS database by updating only the data access layer, leaving the presentation and business layers unaffected.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Maintainability",
+        "environment": "System evolution/Upgrade",
+        "stimulus": "Requirement to replace legacy database technology",
+        "response_measure": "Zero changes required in Presentation or Business Logic layers",
+        "architectural_decisions": [
+          "Layered Architecture",
+          "Data Access Layer (DAL) Abstraction"
+        ],
+        "reasoning": "Strict layering ensures that dependencies only point downward, and the DAL encapsulates database-specific logic.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-04",
+              "description": "Layer bypassing (Leaky Abstractions)",
+              "rationale": "If business logic uses database-specific features (e.g., unique SQL dialects) that leak through the DAL, the benefit of layering is lost."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "Parallel Development",
+              "rationale": "Teams can work on the UI and the Data Layer independently as long as the interface between layers remains stable."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "API Stability between layers",
+              "correlated_attribute": "Modifiability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Layering Depth",
+              "conflicting_attributes": [
+                "Maintainability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

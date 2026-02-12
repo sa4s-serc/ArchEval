@@ -1,0 +1,1064 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The SNAM (Sistema Nacional de Alarma de Maremotos) is the Chilean national tsunami warning system. Its core function is to allow the generation and monitoring of tsunami warnings. The system captures seismic data, evaluates scenarios, and disseminates bulletins. A key component is the Warning Decision-making Subsystem, which interfaces with external entities like the National Seismic Center (CSN) and the National Emergency Office (ONEMI).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The initial architectural design was provided as three specific views: Contextual, Functional, and Deployment. These were consistent with each other and previously revised by the Architect role.",
+        "evaluator_inquiry_questions": [
+          "I have a question about the architecture.",
+          "I think that according to the difficulty and relevance of this attribute, it should be a priority of [value] due to [reason]."
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Deployment view includes an Information Capture Server, Decision Making Server, and Data Base Server.",
+          "Client terminals include ResearchClient, SensorsReader, ExpertClient, and BulletinClient.",
+          "External entities include CSN and ONEMI terminals."
+        ],
+        "runtime_constraints": [
+          "Must operate in scenarios with No Internet connection or No phone connection.",
+          "Must prevent unauthorized external bulletin generation."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "data_transmission_time_csn_snam": "1 minute 20 seconds (Current)",
+        "target_data_transmission_time": "50 seconds (Goal)",
+        "snam_to_onemi_latency": "2 minutes 30 seconds",
+        "unofficial_alert_dissemination_rate": "5% (Current) to 1% (Goal)",
+        "database_uptime": "94%",
+        "query_response_time": "5 seconds",
+        "test_error_detection_rate": "25%"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Three-Layer Architecture / Client-Server",
+          "questions": [
+            "How does the system handle alternative sending channels if the primary connection fails?",
+            "How are pre-modeled scenarios accessed if the primary database server fails?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "No Internet connection."
+        },
+        {
+          "id": "RS-02",
+          "description": "Failure of the primary server data pre-modeled scenarios."
+        },
+        {
+          "id": "RS-03",
+          "description": "Communication between servers is cut."
+        },
+        {
+          "id": "RS-04",
+          "description": "Denial-of-service attack."
+        },
+        {
+          "id": "RS-05",
+          "description": "Attempt to generate newsletter externally by unauthorized users."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Reduce maximum sending time of technical data from 1'20\" to 50\"",
+          "Reduce unofficial alert dissemination from 5% to 1%",
+          "Ensure unit goals are represented in the development and future operation",
+          "Generate and monitor tsunami warnings effectively"
+        ],
+        "technical_constraints": [
+          "System must integrate with external entities (CSN, ONEMI)",
+          "Must support alternative communication channels (e.g., if internet/phone fails)"
+        ],
+        "architectural_drivers": [
+          "Security",
+          "Reliability",
+          "Performance",
+          "Maintainability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "End-to-end warning dissemination latency",
+                "scenario_id": "P1",
+                "scenario_description": "Data transmission from CSN to SNAM completes in <50 seconds under normal seismic event conditions, including mandatory data validation steps (10-15s validation budget within 50s total)",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Bulletin dissemination speed",
+                "scenario_id": "P2",
+                "scenario_description": "SNAM to ONEMI bulletin dissemination completes in <2 minutes 30 seconds",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Database query responsiveness",
+                "scenario_id": "P3",
+                "scenario_description": "Database query response time <5 seconds under normal operational load",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Concurrent event processing capacity",
+                "scenario_id": "P4",
+                "scenario_description": "System handles concurrent seismic events (multiple earthquakes in different regions) without performance degradation in warning dissemination",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "System availability during critical events",
+                "scenario_id": "R1",
+                "scenario_description": "System maintains 99% uptime during seismic events",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Failure detection time",
+                "scenario_id": "R2a",
+                "scenario_description": "Primary server failure detected within 5 seconds of occurrence",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Failover recovery time",
+                "scenario_id": "R2b",
+                "scenario_description": "Automatic service restoration to backup server within 10 seconds of primary failure detection",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Communication path redundancy",
+                "scenario_id": "R3",
+                "scenario_description": "Communication redundancy ensures bulletin delivery despite network cuts or single-point failures (mapped from RS-01, RS-03)",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Data integrity validation",
+                "scenario_id": "R4",
+                "scenario_description": "Data integrity validation completes within allocated time budget (10-15s) without blocking warning dissemination, ensuring accuracy without compromising speed",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Bulletin integrity protection",
+                "scenario_id": "S1",
+                "scenario_description": "Unauthorized bulletin generation attempts are blocked 100% of the time (mapped from RS-05)",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Availability under attack",
+                "scenario_id": "S2",
+                "scenario_description": "System withstands DDoS attacks while maintaining core warning dissemination functions (mapped from RS-04)",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Unofficial alert mitigation",
+                "scenario_id": "S3",
+                "scenario_description": "Reduce unofficial alert dissemination from 5% to <1% through authentication mechanisms",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Maintainability",
+            "children": [
+              {
+                "refinement": "Test coverage effectiveness",
+                "scenario_id": "M1",
+                "scenario_description": "Automated test coverage detects 90% of errors (improvement from current 25%)",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Deployment downtime minimization",
+                "scenario_id": "M2",
+                "scenario_description": "System modifications deployable without exceeding 15 minutes of downtime using zero-downtime deployment architecture",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Operational troubleshooting efficiency",
+                "scenario_id": "M3",
+                "scenario_description": "Operational staff can diagnose and resolve system issues within 10 minutes using monitoring dashboards",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Data transmission from CSN to SNAM completes in less than 50 seconds under normal seismic event conditions, including mandatory data validation steps (10-15 second validation budget within the 50-second total window)",
+          "primary_quality_attribute": [
+            "Performance",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "SNAM to ONEMI bulletin dissemination completes in less than 2 minutes 30 seconds along the critical warning path",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Database query response time remains under 5 seconds under normal operational load for historical data access",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "System handles concurrent seismic events (multiple earthquakes in different geographic regions) without performance degradation in warning dissemination speed or accuracy",
+          "primary_quality_attribute": [
+            "Performance",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "System maintains 99% uptime during seismic events, ensuring continuous monitoring and warning capabilities",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Primary server failure is detected within 5 seconds of occurrence through health monitoring mechanisms",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Automatic service restoration to backup server completes within 10 seconds of primary failure detection, minimizing warning dissemination interruption",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Communication redundancy ensures bulletin delivery despite network cuts or single-point communication failures between CSN, SNAM, and ONEMI",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Data integrity validation completes within allocated time budget (10-15 seconds) without blocking warning dissemination, ensuring accuracy without compromising life-safety response speed",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Unauthorized bulletin generation attempts by external users are blocked 100% of the time through authentication and authorization controls",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "System withstands distributed denial-of-service (DDoS) attacks while maintaining core warning dissemination functions through traffic filtering and priority queuing",
+          "primary_quality_attribute": [
+            "Security",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Unofficial alert dissemination is reduced from 5% to less than 1% through multi-factor authentication mechanisms and role-based access control",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "Automated test coverage detects 90% of errors before deployment, representing significant improvement from the current 25% detection rate",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "System modifications are deployable without exceeding 15 minutes of downtime using zero-downtime deployment architecture (blue-green or rolling updates)",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "Operational staff can diagnose and resolve system issues within 10 minutes using centralized monitoring dashboards and diagnostic tools",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Data transmission from CSN to SNAM completes in <50 seconds under normal seismic event conditions, including mandatory data validation steps (10-15s validation budget within 50s total)",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal seismic event conditions with active data validation",
+          "stimulus": "Seismic event detected by CSN sensors triggering data transmission to SNAM",
+          "response_measure": "End-to-end latency <50 seconds (including 10-15s validation)",
+          "architectural_decisions": [
+            "Inline Data Validation Pipeline with parallel processing",
+            "Redundant Communication Paths for optimized routing",
+            "Direct network connections between CSN and SNAM"
+          ],
+          "reasoning": "The 50-second constraint requires validation to occur in parallel with transmission rather than sequentially. The inline validation pipeline processes data streams concurrently, allocating 10-15 seconds for validation within the total budget. Redundant paths enable route optimization and load balancing to minimize network latency.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Validation pipeline complexity may introduce processing delays exceeding 15-second budget under high data volumes",
+                "rationale": "Complex validation algorithms combined with large seismic datasets could cause validation bottlenecks that violate the time constraint"
+              },
+              {
+                "id": "R-02",
+                "description": "Network congestion on all redundant paths simultaneously could exceed 50-second total latency",
+                "rationale": "If multiple communication paths experience degradation concurrently, no fallback route exists to maintain performance"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Single path network failure will not violate latency requirement",
+                "rationale": "Redundant communication paths provide automatic failover with minimal switching overhead"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Validation algorithm complexity",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Network bandwidth allocation",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Data payload size",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Validation thoroughness",
+                "conflicting_attributes": [
+                  "Reliability (positive: more comprehensive validation)",
+                  "Performance (negative: increased processing time)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "SNAM to ONEMI bulletin dissemination completes in <2 minutes 30 seconds",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with bulletin generation and dissemination active",
+          "stimulus": "SNAM generates bulletin for public warning dissemination to ONEMI",
+          "response_measure": "Dissemination latency <150 seconds",
+          "architectural_decisions": [
+            "Redundant Communication Paths between SNAM and ONEMI",
+            "Priority queuing for critical warning messages",
+            "Pre-established persistent connections"
+          ],
+          "reasoning": "The 150-second window is less critical than P1 but still requires reliable, fast delivery. Redundant paths ensure delivery despite single-point failures. Priority queuing (from DDoS mitigation layer) ensures warning messages bypass normal traffic. Persistent connections eliminate connection establishment overhead.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "ONEMI endpoint processing delays could consume significant portion of 150-second budget",
+                "rationale": "If ONEMI's receiving infrastructure has slow ingestion or acknowledgment mechanisms, end-to-end latency may be violated despite fast network transmission"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Network transmission time is unlikely to exceed budget given 150-second window",
+                "rationale": "Even with moderate network congestion, bulletin message sizes are small enough for transmission well under 150 seconds"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "ONEMI endpoint processing capacity",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Message serialization format efficiency",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Message detail/richness",
+                "conflicting_attributes": [
+                  "Usability (positive: more informative bulletins)",
+                  "Performance (negative: larger message size, longer transmission)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P4",
+            "text": "System handles concurrent seismic events (multiple earthquakes in different regions) without performance degradation in warning dissemination",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Multiple simultaneous seismic events in different geographic regions",
+          "stimulus": "Concurrent earthquake detection in multiple regions triggering parallel warning workflows",
+          "response_measure": "No degradation in P1 or P2 latency requirements under concurrent load",
+          "architectural_decisions": [
+            "Parallel processing architecture with independent event pipelines",
+            "Resource partitioning for concurrent event handling",
+            "Load balancing across redundant communication paths"
+          ],
+          "reasoning": "Each seismic event must be processed independently without resource contention. Parallel pipelines ensure one event does not block another. Resource partitioning (CPU, memory, network bandwidth) prevents starvation. Load balancing distributes traffic across redundant paths to avoid bottlenecks.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Resource exhaustion under extreme concurrent event scenarios (>5 simultaneous events) may cause performance degradation",
+                "rationale": "System capacity limits for CPU, memory, and network bandwidth may be exceeded if too many events occur simultaneously"
+              },
+              {
+                "id": "R-05",
+                "description": "Validation pipeline may become bottleneck under concurrent load if not properly parallelized",
+                "rationale": "If validation resources are shared across events rather than partitioned, concurrent events will compete for validation capacity"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Two concurrent events will not cause performance degradation",
+                "rationale": "System is designed with sufficient resource headroom to handle typical concurrent event scenarios (2-3 events)"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Number of concurrent events",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Resource allocation per event pipeline",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Resource over-provisioning",
+                "conflicting_attributes": [
+                  "Performance (positive: handles more concurrent events)",
+                  "Cost (negative: higher infrastructure costs)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "System maintains 99% uptime during seismic events",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Seismic event conditions with potential infrastructure stress",
+          "stimulus": "Seismic event occurs, potentially affecting system infrastructure",
+          "response_measure": "System availability \u226599% during event periods",
+          "architectural_decisions": [
+            "Hot-Standby Failover Architecture with active-passive configuration",
+            "Redundant Communication Paths for network resilience",
+            "Geographic distribution of critical components"
+          ],
+          "reasoning": "99% uptime allows only ~87 hours downtime per year. Hot-standby failover ensures rapid recovery from primary failures. Redundant paths eliminate network single points of failure. Geographic distribution protects against localized infrastructure damage from seismic events.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Correlated failures during major seismic events could affect both primary and standby systems",
+                "rationale": "If primary and standby systems are geographically co-located or share infrastructure, a major earthquake could disable both simultaneously"
+              },
+              {
+                "id": "R-07",
+                "description": "State synchronization lag between primary and standby may cause data loss during failover",
+                "rationale": "If synchronization is not real-time, recent data may be lost when failing over to standby system"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Single component failure will not violate 99% uptime requirement",
+                "rationale": "Hot-standby architecture provides rapid failover (R2b: <10 seconds) which is negligible compared to annual uptime budget"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Geographic separation distance between primary and standby",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-09",
+                "parameter": "State synchronization frequency",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "State synchronization frequency",
+                "conflicting_attributes": [
+                  "Reliability (positive: less data loss on failover)",
+                  "Performance (negative: synchronization overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R2b",
+            "text": "Automatic service restoration to backup server within 10 seconds of primary failure detection",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Primary server failure detected by health monitoring",
+          "stimulus": "Primary server failure detection triggers automatic failover",
+          "response_measure": "Service restoration on backup server <10 seconds after detection",
+          "architectural_decisions": [
+            "Hot-Standby Failover Architecture with pre-warmed backup",
+            "Automated failover orchestration without manual intervention",
+            "Continuous state synchronization to minimize recovery time"
+          ],
+          "reasoning": "10-second recovery window requires backup server to be fully operational (hot standby) rather than cold standby. Automated orchestration eliminates human reaction time. Continuous state sync ensures backup has current data and can immediately assume primary role.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Failover orchestration logic bugs could delay or prevent automatic recovery",
+                "rationale": "Complex failover logic may contain edge cases that cause orchestration failures, requiring manual intervention"
+              },
+              {
+                "id": "R-09",
+                "description": "Network partition scenarios may cause split-brain condition with both primary and backup active",
+                "rationale": "If health monitoring incorrectly detects primary as failed due to network issues, both systems may attempt to serve requests simultaneously"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Backup server capacity is sufficient to handle full production load",
+                "rationale": "Hot-standby architecture requires backup to be identically provisioned to primary, ensuring no performance degradation post-failover"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Failover orchestration complexity",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Health check timeout thresholds",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Health check sensitivity",
+                "conflicting_attributes": [
+                  "Reliability (positive: faster failure detection)",
+                  "Stability (negative: false positive failovers)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R3",
+            "text": "Communication redundancy ensures bulletin delivery despite network cuts or single-point failures",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Network infrastructure degradation or partial failure",
+          "stimulus": "Network path failure between critical system components",
+          "response_measure": "Bulletin delivery continues via alternate paths without manual intervention",
+          "architectural_decisions": [
+            "Redundant Communication Paths with diverse routing",
+            "Automatic path failover with health monitoring",
+            "Multiple independent network providers/technologies"
+          ],
+          "reasoning": "Single-point network failures must not disrupt critical warning dissemination. Diverse routing ensures paths do not share common failure points. Automatic failover eliminates manual switching delays. Multiple providers/technologies (e.g., fiber + satellite) protect against provider-specific outages.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "Shared infrastructure between 'redundant' paths may create hidden single points of failure",
+                "rationale": "If redundant paths share physical conduits, routers, or data centers, a single infrastructure failure could disable multiple paths"
+              },
+              {
+                "id": "R-11",
+                "description": "Path failover logic may not detect degraded (but not failed) paths, causing performance issues",
+                "rationale": "If failover only triggers on complete path failure, severely degraded paths may remain in use, violating latency requirements"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "Single network path failure will not prevent bulletin delivery",
+                "rationale": "Multiple independent paths ensure at least one route remains available for message delivery"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Path diversity (physical separation)",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Path health monitoring granularity",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Number of redundant paths",
+                "conflicting_attributes": [
+                  "Reliability (positive: more failover options)",
+                  "Cost (negative: higher infrastructure and maintenance costs)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R4",
+            "text": "Data integrity validation completes within allocated time budget (10-15s) without blocking warning dissemination, ensuring accuracy without compromising speed",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal seismic event processing with concurrent validation",
+          "stimulus": "Seismic data received requiring validation before bulletin generation",
+          "response_measure": "Validation completes in 10-15 seconds without blocking critical path",
+          "architectural_decisions": [
+            "Inline Data Validation Pipeline with parallel processing",
+            "Streaming validation architecture",
+            "Tiered validation with critical checks prioritized"
+          ],
+          "reasoning": "Validation must ensure data accuracy (reliability) while meeting strict timing constraints (performance). Inline pipeline processes data as it arrives rather than waiting for complete dataset. Streaming architecture validates chunks in parallel. Tiered approach performs critical checks first, deferring non-critical validation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Validation pipeline may pass corrupted data if validation algorithms have insufficient coverage",
+                "rationale": "Time-constrained validation may not detect all data corruption scenarios, allowing bad data to propagate to bulletins"
+              },
+              {
+                "id": "R-13",
+                "description": "Parallel validation processes may have race conditions causing inconsistent validation results",
+                "rationale": "If validation chunks have dependencies, parallel processing may validate data in incorrect order or with stale context"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Validation will not block warning dissemination under normal data volumes",
+                "rationale": "Inline pipeline architecture ensures validation occurs concurrently with transmission, meeting 10-15 second budget"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Validation algorithm computational complexity",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Data chunk size for parallel validation",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Validation coverage breadth",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Validation comprehensiveness",
+                "conflicting_attributes": [
+                  "Reliability (positive: detects more data errors)",
+                  "Performance (negative: longer validation time)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "Unauthorized bulletin generation attempts are blocked 100% of the time",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with external access attempts",
+          "stimulus": "Unauthorized user attempts to generate or modify bulletin",
+          "response_measure": "100% blocking of unauthorized bulletin generation",
+          "architectural_decisions": [
+            "Authentication and Authorization Framework with multi-factor authentication",
+            "Role-based access control (RBAC) for bulletin operations",
+            "Cryptographic signing of bulletins for integrity verification"
+          ],
+          "reasoning": "100% blocking requires defense-in-depth: authentication verifies identity, authorization verifies permissions, and cryptographic signing ensures bulletins cannot be forged. Multi-factor authentication prevents credential compromise. RBAC ensures only authorized roles can generate bulletins.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Insider threats with legitimate credentials could generate unauthorized bulletins",
+                "rationale": "Authentication framework cannot distinguish between legitimate and malicious use of valid credentials by authorized users"
+              },
+              {
+                "id": "R-15",
+                "description": "Authentication system vulnerabilities could allow credential bypass",
+                "rationale": "Implementation flaws in authentication logic (e.g., SQL injection, session hijacking) could allow attackers to bypass controls"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "External attackers without credentials cannot generate bulletins",
+                "rationale": "Multi-factor authentication and RBAC provide strong barriers against external unauthorized access"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Authentication mechanism strength",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Authorization granularity",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Authentication complexity",
+                "conflicting_attributes": [
+                  "Security (positive: harder to compromise)",
+                  "Usability (negative: more friction for legitimate users)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "System withstands DDoS attacks while maintaining core warning dissemination functions",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Active distributed denial-of-service attack",
+          "stimulus": "Large volume of malicious traffic targeting system endpoints",
+          "response_measure": "Core warning functions (P1, P2) continue to meet latency requirements during attack",
+          "architectural_decisions": [
+            "DDoS Mitigation Layer with traffic filtering and rate limiting",
+            "Priority queuing for critical warning messages",
+            "Separate network paths for critical vs. non-critical traffic"
+          ],
+          "reasoning": "DDoS attacks aim to exhaust system resources. Traffic filtering blocks malicious requests at network edge before they consume application resources. Rate limiting prevents resource exhaustion. Priority queuing ensures warning messages bypass attack traffic. Separate paths isolate critical functions from attack surface.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-16",
+                "description": "Sophisticated application-layer DDoS attacks may bypass network-layer filtering",
+                "rationale": "Attacks mimicking legitimate traffic patterns may pass through filters and consume application resources"
+              },
+              {
+                "id": "R-17",
+                "description": "DDoS mitigation layer itself could become bottleneck or single point of failure",
+                "rationale": "If mitigation layer lacks sufficient capacity or redundancy, it may fail under extreme attack volumes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Network-layer DDoS attacks will not disrupt warning dissemination",
+                "rationale": "Traffic filtering and priority queuing at network edge prevent attack traffic from reaching critical application components"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-19",
+                "parameter": "DDoS mitigation layer capacity",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-20",
+                "parameter": "Traffic filtering rule specificity",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Traffic filtering aggressiveness",
+                "conflicting_attributes": [
+                  "Security (positive: blocks more attack traffic)",
+                  "Availability (negative: may block legitimate traffic)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S3",
+            "text": "Reduce unofficial alert dissemination from 5% to <1% through authentication mechanisms",
+            "type": "Growth"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with potential for unofficial alerts",
+          "stimulus": "Users attempt to disseminate alerts without proper authorization",
+          "response_measure": "Unofficial alert rate reduced from 5% to <1%",
+          "architectural_decisions": [
+            "Authentication and Authorization Framework with multi-factor authentication",
+            "Role-based access control for alert dissemination",
+            "Audit logging of all alert generation activities"
+          ],
+          "reasoning": "Reducing unofficial alerts from 5% to <1% requires stronger identity verification and access controls. Multi-factor authentication makes credential sharing/theft harder. RBAC ensures only authorized roles can disseminate alerts. Audit logging enables detection and investigation of unauthorized attempts.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-18",
+                "description": "User resistance to authentication friction may lead to workarounds that bypass controls",
+                "rationale": "If authentication is too cumbersome, users may share credentials or find ways to circumvent controls, undermining security"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "Authentication mechanisms will significantly reduce unauthorized alert dissemination",
+                "rationale": "Multi-factor authentication and RBAC create substantial barriers to unauthorized access, making 5% to <1% reduction achievable"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-21",
+                "parameter": "Authentication user experience friction",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-22",
+                "parameter": "Audit log monitoring effectiveness",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-10",
+                "parameter": "Authentication strictness",
+                "conflicting_attributes": [
+                  "Security (positive: fewer unauthorized alerts)",
+                  "Usability (negative: slower alert generation for legitimate users)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "Automated test coverage detects 90% of errors (improvement from current 25%)",
+            "type": "Growth"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Development and testing phase before deployment",
+          "stimulus": "Code changes introduced requiring validation",
+          "response_measure": "Automated tests detect 90% of errors before production deployment",
+          "architectural_decisions": [
+            "Comprehensive automated test suite with unit, integration, and end-to-end tests",
+            "Continuous integration pipeline with mandatory test gates",
+            "Test coverage monitoring and enforcement"
+          ],
+          "reasoning": "Improving error detection from 25% to 90% requires significant expansion of test coverage across all system layers. Unit tests validate component logic, integration tests validate component interactions, end-to-end tests validate complete workflows. CI pipeline enforces test execution before deployment. Coverage monitoring ensures tests remain comprehensive as code evolves.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-19",
+                "description": "Test suite maintenance burden may become unsustainable as system complexity grows",
+                "rationale": "Comprehensive test coverage requires large test codebases that must be maintained alongside production code, potentially slowing development"
+              },
+              {
+                "id": "R-20",
+                "description": "Tests may have false confidence if they do not accurately represent production scenarios",
+                "rationale": "If test environments or data do not match production conditions, tests may pass while production errors remain undetected"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-11",
+                "description": "Automated testing will significantly improve error detection before deployment",
+                "rationale": "Expanding from 25% to 90% coverage with comprehensive test types will catch most common error categories"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-23",
+                "parameter": "Test environment fidelity to production",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-24",
+                "parameter": "Test execution time",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-11",
+                "parameter": "Test coverage breadth",
+                "conflicting_attributes": [
+                  "Maintainability (positive: detects more errors)",
+                  "Development velocity (negative: more tests to write and maintain)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "System modifications deployable without exceeding 15 minutes of downtime using zero-downtime deployment architecture",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "Production system requiring updates",
+          "stimulus": "New system version ready for deployment",
+          "response_measure": "Deployment completes with <15 minutes downtime",
+          "architectural_decisions": [
+            "Blue-green or rolling update deployment strategy",
+            "Stateless application design for easy instance replacement",
+            "Database migration automation with backward compatibility"
+          ],
+          "reasoning": "15-minute downtime constraint requires deployment strategies that minimize service interruption. Blue-green deploys new version alongside old, switching traffic after validation. Rolling updates gradually replace instances. Stateless design allows instances to be replaced without session loss. Backward-compatible database migrations allow old and new code to coexist during transition.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-21",
+                "description": "Database schema changes may require longer downtime if backward compatibility is not maintained",
+                "rationale": "Breaking database changes require all application instances to be updated simultaneously, preventing gradual rollout"
+              },
+              {
+                "id": "R-22",
+                "description": "Deployment rollback may exceed 15-minute window if issues are detected late",
+                "rationale": "If problems are discovered after deployment completes, rolling back may take longer than forward deployment"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-12",
+                "description": "Application code updates will not exceed 15-minute downtime",
+                "rationale": "Blue-green or rolling update strategies enable near-zero downtime for stateless application deployments"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-25",
+                "parameter": "Database schema change frequency",
+                "correlated_attribute": "Maintainability"
+              },
+              {
+                "id": "S-26",
+                "parameter": "Deployment validation thoroughness",
+                "correlated_attribute": "Maintainability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-12",
+                "parameter": "Deployment validation depth",
+                "conflicting_attributes": [
+                  "Reliability (positive: catches deployment issues early)",
+                  "Maintainability (negative: longer deployment time)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

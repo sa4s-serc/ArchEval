@@ -1,0 +1,345 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Common Avionics Architecture System (CAAS)",
+      "date": "2003-07-01",
+      "ref": "https://www.sei.cmu.edu/documents/2021/2003_004_001_14150.pdf",
+      "evaluator_organization": "Software Engineering Institute (SEI)",
+      "phase_1_attendees": [
+        "Architects (Contractor) ",
+        "Program Managers (Contractor) ",
+        "TAPO Program Office Representatives ",
+        "160th Special Operations Aviation Regiment (User Community) "
+      ],
+      "phase_2_attendees": [
+        "Program Office Representatives ",
+        "User Community Representatives ",
+        "Contractor Representatives ",
+        "Developers ",
+        "Testers ",
+        "Maintainers ",
+        "Administrators ",
+        "Users "
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "The CAAS is a common avionics system designed for a family of U.S. Army Special Operations helicopters (A/MH-6, MH-47, and MH-60). It aims to provide a single, open, scalable architecture to modernize avionics, replacing proprietary legacy systems. The system manages cockpit workload, enhances situational awareness ('aviate, navigate, and communicate'), and is built on a foundation of commercial standards to facilitate portability and third-party upgrades.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The CAAS was already well into development at the time of evaluation. Evaluators performed a pre-exercise review of architecture documentation to capture approaches.",
+        "evaluator_inquiry_questions": [
+          "How does the cyclic executive ensure real-time performance? ",
+          "How is the system partitioned to ensure availability and safety? "
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Hardware is portable between platforms ('plug and play' architecture).",
+          "Applications are location-transparent and can migrate to other hardware for load balancing.",
+          "Every application is resident on every box."
+        ],
+        "runtime_constraints": [
+          "Inviolable timing and memory walls between applications (POSIX partitioning).",
+          "Applications must not overrun processing time limits or memory allotments."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "boot_time_limit": "2 seconds (warm boot) ",
+        "power_interruption_limit": "1.9 seconds ",
+        "guaranteed_resources": {
+          "sockets": "Number of sockets is known and guaranteed "
+        }
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Layered and Partitioned Style",
+          "questions": [
+            "Does the partitioning strategy successfully isolate failures? ",
+            "Do layers effectively isolate high-level graphics services? ",
+            "Does the client-server approach effectively decouple system parts? "
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Invalid data is entered by the pilot, and the system does not crash."
+        },
+        {
+          "id": "RS-02",
+          "description": "Invalid data comes from an actor on any bus, and the system does not crash."
+        },
+        {
+          "id": "RS-03",
+          "description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+        },
+        {
+          "id": "RS-04",
+          "description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+        },
+        {
+          "id": "RS-05",
+          "description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+        },
+        {
+          "id": "RS-06",
+          "description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+        },
+        {
+          "id": "RS-07",
+          "description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Minimize systems acquisition and sustainment costs ",
+          "Reduce the total ownership cost over the life of the avionics system ",
+          "Modernize the system with minimal impact to Army Special Operations readiness ",
+          "Ensure that new CAASs work well with other programs "
+        ],
+        "technical_constraints": [
+          "Large set of applicable standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) ",
+          "Must support multiple helicopter platforms (A/MH-6, MH-47, MH-60) "
+        ],
+        "architectural_drivers": [
+          "Availability ",
+          "Performance ",
+          "Modifiability ",
+          "Affordability ",
+          "Reliability "
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Consistent Partitioning Strategy",
+          "description": "Definition of a partition using 'brick-wall partitioning' (POSIX) to establish inviolable timing and memory walls between applications.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Prevents conflicts and crashes from propagating."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Allows applications to be changed independently."
+            }
+          ]
+        },
+        {
+          "approach_name": "Encapsulation (RSI/RSP)",
+          "description": "Applications can share only their state via the network using Remote Service Interface (RSI) and Remote Service Provider (RSP) to isolate network implementation details.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Isolates partitions and network details."
+            }
+          ]
+        },
+        {
+          "approach_name": "Interface Strategy",
+          "description": "Accessing components only via their interfaces is strictly followed.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Eliminates back-door exploitation of implementation details."
+            }
+          ]
+        },
+        {
+          "approach_name": "Layers",
+          "description": "Used to partition and isolate high-level graphics services.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Isolates system services."
+            }
+          ]
+        },
+        {
+          "approach_name": "Virtual Machine",
+          "description": "A flight-ready operating system that's consistent with POSIX and has a standard POSIX API and Ada 95 support.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Provides Level-A design assurance and standard API."
+            }
+          ]
+        },
+        {
+          "approach_name": "Redundant Software",
+          "description": "For flight-critical functions, redundant software is introduced using a master/slave protocol to manage failover.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Ensures critical functions continue during failure."
+            }
+          ]
+        },
+        {
+          "approach_name": "Locational Transparency",
+          "description": "Applications do not know where other applications reside; location is bound at configuration time.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Unaffected when applications migrate to other hardware."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Simplifies load balancing and scheduling changes."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "The OFP doesn't crash",
+                "scenario_id": "A1",
+                "scenario_description": "Invalid data is entered by the pilot, and the system does not crash."
+              },
+              {
+                "refinement": "The OFP doesn't crash",
+                "scenario_id": "A2",
+                "scenario_description": "Invalid data comes from an actor on any bus, and the system does not crash."
+              },
+              {
+                "refinement": "The OFP doesn't crash",
+                "scenario_id": "A3",
+                "scenario_description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+              },
+              {
+                "refinement": "Graceful degradation in the presence of failures",
+                "scenario_id": "A4",
+                "scenario_description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+              },
+              {
+                "refinement": "Graceful degradation in the presence of failures",
+                "scenario_id": "A5",
+                "scenario_description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+              },
+              {
+                "refinement": "No degradation in the presence of failures for which there are redundant components/paths",
+                "scenario_id": "A6",
+                "scenario_description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+              },
+              {
+                "refinement": "No degradation in the presence of failures for which there are redundant components/paths",
+                "scenario_id": "A7",
+                "scenario_description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Changes to the CAAS are reflected in the simulation and training system concurrently with the airframe changes, without coding it twice.",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Affordability"
+          ]
+        },
+        {
+          "scenario_text": "No single point of failure in the system will affect the system's safety or performance.",
+          "primary_quality_attribute": [
+            "Availability",
+            "Safety"
+          ]
+        },
+        {
+          "scenario_text": "Multiple versions of the system must be fielded at the same time. Those versions should be distinguishable and should not have a negative impact on the rest of the system.",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Configuration Management"
+          ]
+        },
+        {
+          "scenario_text": "75% of the CAAS is built from reused components increasing new business opportunities.",
+          "primary_quality_attribute": [
+            "Reusability"
+          ]
+        },
+        {
+          "scenario_text": "Given maximum 'knob twiddling' to the level that the system's performance is degraded, the system can prioritize its flight-critical functions, so they are NOT degraded.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Safety"
+          ]
+        },
+        {
+          "scenario_text": "Given the need for a second ARC231, the radio can be incorporated into the existing system by reusing existing software at minimal or no cost.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "An application doesn't crash, but starts producing bad data. The system can detect the errant data and when applications crash.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "General Analysis",
+            "text": "Overall evaluation of architectural approaches against quality goals (Composite of 15 scenarios analyzed).",
+            "type": "Composite"
+          },
+          "quality_attribute": "Various (Modifiability, Performance, Availability)",
+          "environment": "Various (Normal operation, Failure modes, Maintenance)",
+          "stimulus": "Various (Hardware failure, New requirements, System integration)",
+          "response_measure": "System stability, correctness, and meeting performance budgets.",
+          "architectural_decisions": [
+            "Use of POSIX partitions ",
+            "Locational transparency ",
+            "Layering strategy "
+          ],
+          "reasoning": "The architecture was found to be well partitioned. POSIX provides strong guarantees for timing and memory, ensuring availability. Locational transparency allows flexible deployment.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "OFP has no built-in hooks to aid in simulation/training capability.",
+                "rationale": "This hinders the goal of making the same operational software drive both the simulators and the actual helicopters."
+              },
+              {
+                "id": "R-Theme-Perf",
+                "description": "Unknown performance requirements and certain performance goals not being met.",
+                "rationale": "Several analyzed scenarios dealt with performance and revealed risks about unknown requirements."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "The number of sockets used by the system is known and guaranteed.",
+                "rationale": "Allows reliable performance estimation to be carried out."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Isolating operating system dependencies",
+                "correlated_attribute": "Portability "
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Letting users set I/O parameters (e.g., turbine gas temperature limits)",
+                "conflicting_attributes": [
+                  "Flexibility/Usability (Positive)",
+                  "Safety (Negative) "
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

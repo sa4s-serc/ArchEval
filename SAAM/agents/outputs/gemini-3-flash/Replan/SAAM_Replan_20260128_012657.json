@@ -1,0 +1,393 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Replan",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Allow meeting coordinators to send availability requests to a set of individuals and graphically represent availability periods."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Layered Architecture (3-Tier)",
+          "Client-Server (Web-based)"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "Team A",
+            "name": "Team A's Encapsulated Architecture",
+            "description": "A structured web architecture where business logic is strictly isolated within the backend service layer, keeping the presentation layer thin and focused only on visual rendering.",
+            "architecture_characteristics": "High Modularity, High Maintainability, High Testability",
+            "key_components": [
+              {
+                "component_id": "JSP_A",
+                "component_name": "JSP Presentation Layer",
+                "responsibilities": "Handles UI rendering and HTML embedding; acts as the view for the end-user.",
+                "dependencies": [
+                  "Java_A"
+                ],
+                "change_sensitivity": "Low"
+              },
+              {
+                "component_id": "Java_A",
+                "component_name": "Java Business Logic Layer",
+                "responsibilities": "Contains 76% of the system structure; executes core scheduling algorithms; manages data validation and business rules.",
+                "dependencies": [
+                  "DB_A"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "DB_A",
+                "component_name": "Database",
+                "responsibilities": "Persistent storage for participant availability and meeting metadata.",
+                "dependencies": [],
+                "change_sensitivity": "Medium"
+              }
+            ],
+            "data_flow": "User requests enter through JSP, which invokes methods in the Java classes. The Java layer processes logic and interacts with the Database for persistence, returning results back to the JSP for display.",
+            "architectural_constraints": [
+              "Strict separation of concerns between UI and Logic",
+              "Heavy reliance on Java execution environment"
+            ],
+            "notes": "This architecture easily accommodates UI redesigns or migrating to different front-end frameworks because logic is not coupled to the JSP. It is difficult to implement 'quick and dirty' UI-specific logic without modifying the core Java classes."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A meeting coordinator selects a group of 50 geographically distributed participants and triggers an availability request; the system persists the request in the Database and generates a visual heatmap of free/busy times in the JSP Presentation Layer within 3 seconds.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "JSP Presentation Layer",
+            "Java Business Logic Layer",
+            "Database"
+          ],
+          "feasibility_note": "Directly supported by the current three-tier architecture. The logic for calculating overlaps resides in the Business Logic Layer while the JSP handles the graphical rendering.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Core functionality required for meeting coordinators to manage scheduling complexity."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A developer needs to add a new visualization component for 'weighted availability' (prioritizing certain participants) by modifying only the Java Business Logic Layer and the JSP Presentation Layer without altering the Database schema.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "JSP Presentation Layer",
+            "Java Business Logic Layer"
+          ],
+          "feasibility_note": "Indirect support. Requires modification of the presentation logic and the calculation engine, but leverages existing data structures.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Ensures the system can evolve to meet more complex scheduling heuristics without database refactoring."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A maintainer must update the system to handle new IANA time zone transitions to ensure geographic distribution logic remains accurate, requiring an update to the Java Business Logic Layer's date-time libraries.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Java Business Logic Layer"
+          ],
+          "feasibility_note": "Directly supported. The strict isolation of business logic allows for library updates or logic changes regarding time zones without impacting the UI or DB schema.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Essential for long-term reliability given the 'geographic distribution' requirement of the system."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A system administrator monitors and scales the Database and Java Business Logic Layer to support a peak load of 500 concurrent meeting coordinators sending requests simultaneously across different continents.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Java Business Logic Layer",
+            "Database"
+          ],
+          "feasibility_note": "Directly supported via architectural layering, which allows for independent scaling of the backend service layer and the database tier.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "System must remain responsive for global users regardless of their physical location or concurrent load."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The current architecture is specifically designed for three-tier separation where Java handles algorithms and JSP handles rendering. The 3-second performance target is achievable through the existing encapsulated logic layer.",
+          "supporting_components": [
+            "JSP_A",
+            "Java_A",
+            "DB_A"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the architecture facilitates this change by keeping the DB schema intact, it requires modifications across both the Business Logic Layer (to process weights) and the Presentation Layer (to render new visual attributes), indicating a cross-cutting change.",
+          "supporting_components": [
+            "JSP_A",
+            "Java_A"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "The architecture's 'High Modularity' and 'Strict separation of concerns' allow for internal logic updates (like time zone libraries) within the Java Business Logic Layer without affecting the UI or persistence layers.",
+          "supporting_components": [
+            "Java_A"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "The decoupled nature of the Java and Database tiers allows for independent scaling. The architecture is built to support backend service scaling without requiring structural redesign.",
+          "supporting_components": [
+            "Java_A",
+            "DB_A"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "Team A",
+          "classification": "Direct",
+          "affected_components": [
+            "JSP_A",
+            "Java_A",
+            "DB_A"
+          ],
+          "change_description": "No architectural changes; standard implementation of the scheduling algorithm and heatmap rendering within existing components.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Potential latency in rendering 50 participants' data if the heatmap logic is not optimized within the Java layer."
+          ],
+          "alternative_approaches": "Utilize client-side JavaScript libraries within the JSP to offload heatmap rendering from the server if the 3-second limit is breached."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "Team A",
+          "classification": "Indirect",
+          "affected_components": [
+            "Java_A",
+            "JSP_A"
+          ],
+          "change_description": "Update Java classes to include weighting heuristics in the scheduling algorithm; update JSP to interpret and display weighted availability visually.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "High sensitivity of Java_A means changes to core logic for weighting might introduce regressions in standard availability calculations."
+          ],
+          "alternative_approaches": "Implement weighting as a strategy pattern within the Java layer to minimize impact on existing logic."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "Team A",
+          "classification": "Direct",
+          "affected_components": [
+            "Java_A"
+          ],
+          "change_description": "Update internal date-time handling libraries (e.g., Joda-Time or Java Time API) and transition logic.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Regression testing required for existing geographic distribution calculations."
+          ],
+          "alternative_approaches": "None required; this is a standard maintenance task supported by the encapsulation."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "Team A",
+          "classification": "Direct",
+          "affected_components": [
+            "Java_A",
+            "DB_A"
+          ],
+          "change_description": "Scale instances of the Java execution environment and implement database connection pooling/sharding if necessary.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "The 'Heavy reliance on Java execution environment' constraint might lead to memory bottlenecks under high concurrent load."
+          ],
+          "alternative_approaches": "Introduce a caching layer between Java_A and DB_A to reduce database load during peak coordinator activity."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "JSP_A",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-01",
+            "S-02"
+          ]
+        },
+        {
+          "component": "Java_A",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-04"
+          ]
+        },
+        {
+          "component": "DB_A",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-01",
+            "S-04"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "Java_A",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-04"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "Java_A is the primary point of contention, involved in 100% of the evaluated scenarios. It faces high operational risk due to 'widespread' changes in S-02 which could introduce regressions in core scheduling logic. Furthermore, S-04 identifies potential memory bottlenecks, making this component a critical failure point for both system stability and feature delivery."
+        },
+        {
+          "component": "DB_A",
+          "scenario_ids": [
+            "S-01",
+            "S-04"
+          ],
+          "priority": "Medium",
+          "rank": 2,
+          "impacted_roles": [
+            "System Administrator",
+            "End-user"
+          ],
+          "rationale": "DB_A is critical for system scalability. Evaluation of S-04 indicates that high concurrent loads require database sharding or connection pooling to avoid performance degradation. Failure to address this hotspot impacts the System Administrator's ability to maintain uptime and the End-user's experience during peak activity."
+        },
+        {
+          "component": "JSP_A",
+          "scenario_ids": [
+            "S-01",
+            "S-02"
+          ],
+          "priority": "Low",
+          "rank": 3,
+          "impacted_roles": [
+            "End-user",
+            "Developer"
+          ],
+          "rationale": "While JSP_A is impacted by 'widespread' UI changes in S-02 and potential latency in S-01, the risks are primarily related to presentation rather than system integrity. Alternative approaches like client-side rendering can mitigate the risks identified in S-01, making it the least critical of the three hotspots."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: Strong encapsulation of date-time and utility logic as evidenced by S-03, where library updates and transition logic were localized with low effort and risk.",
+          "Strength 2: Direct support for core business features; the architecture handles the primary scheduling and heatmap rendering requirements (S-01) with no structural changes required to existing components.",
+          "Strength 3: Scalability via horizontal expansion; the Java execution environment and database layers are capable of being scaled or sharded (S-04) to meet increased coordinator activity."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: High sensitivity and rigidity within the core logic (Java_A), where implementing weighting heuristics (S-02) results in widespread changes and high regression risks for standard calculations.",
+          "Weakness 2: Potential performance bottlenecks in the server-side rendering pipeline; JSP_A and Java_A may face latency issues when processing large datasets (50+ participants) for heatmap generation (S-01).",
+          "Weakness 3: Resource contention in the Java execution environment; the architecture faces memory bottlenecks under high concurrency (S-04), indicating a heavy reliance on a single processing layer."
+        ],
+        "modifiability_assessment": "The architecture is moderately modifiable for maintenance and additive features, but exhibits rigidity in its core scheduling engine. While localized changes are easy, algorithmic modifications require widespread updates, suggesting a need for better decoupling within the Java_A component."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Refactor Java_A business logic using the Strategy Pattern for scheduling and weighting heuristics.",
+          "rationale": "This addresses the 'widespread' change impact identified in S-02, allowing new weighting rules to be added without risking regressions in the core scheduling logic.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Introduce a caching layer and implement database connection pooling between Java_A and DB_A.",
+          "rationale": "Mitigates the memory bottlenecks and database load issues identified in S-04, ensuring system stability during peak coordinator usage.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Migrate heatmap rendering from server-side JSP logic to client-side JavaScript libraries.",
+          "rationale": "Offloads processing from the server to the client, addressing the latency risks identified in S-01 and improving the end-user experience.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

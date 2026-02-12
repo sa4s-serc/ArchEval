@@ -1,0 +1,398 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Answer the 'Big Five Questions' regarding operator knowledge and action timing",
+      "Serve as a rapid prototyping facility for interoperability studies",
+      "Support evolving mission needs and incremental functionality extensions"
+    ],
+    "technical_constraints": [
+      "Must be compliant with High Level Architecture (HLA) standards",
+      "Must run on government-owned contractor-operated infrastructure",
+      "Must support human-in-control experiments with 'fog-of-war' realism"
+    ],
+    "architectural_drivers": [
+      "Performance (Real-time & Margin)",
+      "Modifiability/Composability",
+      "Reliability",
+      "Interoperability",
+      "Fidelity"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "Documentation existed in Rational Rose/UML but was considered weak for capturing discrete events. Some architectural drawings caused stakeholder confusion and required real-time refinement.",
+      "evaluator_inquiry_questions": [
+        "How are discrete simulation events represented in the static UML models?",
+        "Can you clarify the data flow in this architectural diagram to resolve stakeholder confusion?",
+        "How does the code reuse strategy align with the need for high-fidelity discrete event simulation?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Distributed simulation environment capable of hosting online, offsite, and multiple simultaneous games.",
+        "Networked command centers allowing participants to play from their own locations."
+      ],
+      "runtime_constraints": [
+        "Must support 'Firm' real-time deadlines (statistical adherence).",
+        "Must provide 'Margin' (running faster than real-time) to support future requirements."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "initialization_time": "10 minutes",
+      "exercise_turnaround_frequency": "1 exercise per month",
+      "latency_constraints": {
+        "max_instantaneous_lag": "5 seconds",
+        "max_average_lag": "3 seconds"
+      },
+      "data_collection_window": "30 seconds post-termination",
+      "timeline_fidelity": "Within 10% of EADSIM events"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Client-Server / Distributed",
+        "questions": [
+          "How does the client-server separation impact the latency requirements for the human-in-the-loop displays?",
+          "How does the publish/subscribe mechanism handle peak load during high-density missile scenarios?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0."
+      },
+      {
+        "id": "RS-02",
+        "description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game."
+      },
+      {
+        "id": "RS-03",
+        "description": "Add cruise missile infrastructure into next software release."
+      },
+      {
+        "id": "RS-04",
+        "description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week."
+      },
+      {
+        "id": "RS-05",
+        "description": "Replace existing database with an object-oriented database within 5-10 staff years."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "High Level Architecture (HLA) Federation",
+        "description": "The system is designed as an HLA-compliant federation where individual simulation components (federates) interact through a Runtime Infrastructure (RTI). This supports the distributed nature of the wargaming environment.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "HLA standards ensure that disparate simulation systems and command center interfaces can exchange data consistently."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "The federated approach allows for incremental functionality extensions and the replacement of specific simulation modules (e.g., weapon target assigners) without system-wide impact."
+          }
+        ]
+      },
+      {
+        "approach_name": "Publish-Subscribe Pattern",
+        "description": "Communication between simulation entities is handled via a publish-subscribe mechanism, likely mediated by the HLA RTI, where data providers publish state changes and consumers subscribe only to relevant updates.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Optimizes network bandwidth by ensuring that high-density data (like missile tracks) is only sent to interested nodes, helping meet 'Firm' real-time deadlines."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Decouples the producers of simulation data from the consumers, facilitating the addition of new sensor or weapon types."
+          }
+        ]
+      },
+      {
+        "approach_name": "Distributed Client-Server",
+        "description": "The architecture separates simulation execution servers from distributed participant consoles (clients) located at various command centers to support remote play and 'fog-of-war' realism.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Distributes the processing load for human-in-the-loop displays and UI logic away from the central simulation engine."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Enables the system to isolate client-side failures from the core simulation execution."
+          }
+        ]
+      },
+      {
+        "approach_name": "Discrete Event Simulation (DES)",
+        "description": "The core simulation engine utilizes a discrete event model to manage state transitions and time progression, allowing for both real-time execution and 'faster than real-time' (Margin) processing.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Fidelity",
+            "rationale": "Ensures event causality and timing are maintained within 10% of reference models like EADSIM."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Allows the simulation to skip periods of inactivity to support the 'Margin' requirement for future growth."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Real-time Latency",
+              "scenario_id": "P1",
+              "scenario_description": "The system must process 1,000 concurrent missile tracks and update all federates within 100ms during peak simulation load.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Throughput",
+              "scenario_id": "P2",
+              "scenario_description": "The simulation engine must support a 'Margin' mode executing at 2x real-time speed for future growth scenarios.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Fidelity",
+          "children": [
+            {
+              "refinement": "Simulation Accuracy",
+              "scenario_id": "F1",
+              "scenario_description": "Engagement simulation outcomes for standard wargaming scenarios must stay within a 10% margin of error compared to EADSIM reference data.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Federate Extensibility",
+              "scenario_id": "M1",
+              "scenario_description": "A new weapon system federate or sensor model is integrated into the HLA federation within 10 person-days of development.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "Federation Consistency",
+              "scenario_id": "I1",
+              "scenario_description": "A 3rd party command center console connects to the RTI and synchronizes its local world state with the federation within 1 second.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "Fault Isolation",
+              "scenario_id": "R1",
+              "scenario_description": "A distributed participant console fails or disconnects; the central simulation engine continues execution without data loss or interruption.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under peak load (1,000 concurrent missile tracks), the system must maintain a latency of less than 100ms for updates between federates.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The simulation engine must support a 'Margin' mode executing at 2x real-time speed for rapid scenario analysis.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Engagement simulation outcomes for standard wargaming scenarios must stay within a 10% margin of error compared to EADSIM reference data.",
+        "primary_quality_attribute": [
+          "Fidelity"
+        ]
+      },
+      {
+        "scenario_text": "A developer can integrate a new weapon system federate or sensor model into the HLA federation within 10 person-days of development.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "A 3rd party command center console connects to the RTI and synchronizes its local world state with the federation within 1 second.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "A distributed participant console fails or disconnects; the central simulation engine continues execution without data loss or interruption.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under peak load (1,000 concurrent missile tracks), the system must maintain a latency of less than 100ms for updates between federates.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak Load",
+        "stimulus": "1,000 concurrent missile tracks generating state updates",
+        "response_measure": "End-to-end latency < 100ms",
+        "architectural_decisions": [
+          "HLA Runtime Infrastructure (RTI) for data distribution",
+          "Publish-Subscribe pattern for filtering data"
+        ],
+        "reasoning": "The RTI manages all data exchange. While Pub-Sub reduces unnecessary traffic, the RTI itself introduces a serialization and management overhead that scales with the number of objects (tracks) and subscribers.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "RTI Centralized Bottleneck",
+              "rationale": "If the selected RTI implementation uses a centralized component for message routing, 1,000 tracks may exceed the throughput capacity, causing latency spikes beyond 100ms."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Data Filtering Efficiency",
+              "rationale": "The use of HLA Data Distribution Management (DDM) ensures that federates only receive updates for tracks within their interest area, significantly reducing client-side processing load."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Update Frequency (Hz)",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "HLA Standard Compliance",
+              "conflicting_attributes": [
+                "Interoperability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A developer can integrate a new weapon system federate or sensor model into the HLA federation within 10 person-days of development.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Development/Integration",
+        "stimulus": "Requirement to add a new federate (e.g., new sensor model)",
+        "response_measure": "Integration completed within 10 person-days",
+        "architectural_decisions": [
+          "HLA Federation Object Model (FOM) standardization",
+          "Federated Architecture"
+        ],
+        "reasoning": "By adhering to a standardized FOM and the HLA interface specification, the internal logic of the new federate is decoupled from the rest of the system, allowing for parallel development and rapid integration.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "FOM Complexity",
+              "rationale": "If the Federation Object Model is overly complex or poorly documented, the 10-day target may be missed due to time spent mapping internal data structures to the FOM."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Modular Decoupling",
+              "rationale": "The federated approach ensures that adding a new weapon system does not require recompilation or modification of existing federates."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "FOM Mapping Tool Availability",
+              "correlated_attribute": "Modifiability"
+            }
+          ],
+          "tradeoff_points": []
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "A distributed participant console fails or disconnects; the central simulation engine continues execution without data loss or interruption.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Partial System Failure",
+        "stimulus": "Participant console network disconnect or software crash",
+        "response_measure": "Core simulation remains stable; no data loss in central engine",
+        "architectural_decisions": [
+          "Distributed Client-Server separation",
+          "Asynchronous Pub-Sub communication"
+        ],
+        "reasoning": "The central simulation engine (server) does not depend on synchronous acknowledgments from participant consoles (clients) to progress simulation time, isolating the core from edge failures.",
+        "findings": {
+          "risks": [],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "Fault Isolation",
+              "rationale": "The RTI's ability to detect and drop disconnected federates prevents a single console crash from hanging the entire federation."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "RTI Timeout Thresholds",
+              "correlated_attribute": "Reliability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Asynchronous State Updates",
+              "conflicting_attributes": [
+                "Reliability",
+                "Fidelity"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

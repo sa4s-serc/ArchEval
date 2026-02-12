@@ -1,0 +1,380 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "UUM Learning Zone",
+      "date": "2010-06-13",
+      "ref": "https://www.academia.edu/33276426/Software_architecture_evaluation_using_Architecture_Tradeoff_Analysis_Method_ATAM_A_case_study_UUM_learning_zone_system",
+      "evaluator_organization": "Universiti Utara Malaysia",
+      "phase_1_attendees": [
+        "Architect",
+        "Evaluators",
+        "Stakeholders",
+        "System Analyst"
+      ],
+      "phase_2_attendees": [
+        "Architect",
+        "Evaluators",
+        "Stakeholders",
+        "System Analyst"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "A Learning Management System (LMS) based on Moodle 1.9 (Open Source) used by Universiti Utara Malaysia. It automates the administration of training events and provides an online environment for content creation, delivery, communication, collaboration, and assessment. It includes modules for assignments, chats, forums, lessons, Turnitin, and web meetings, supporting synchronous and asynchronous e-learning activities.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already a fully implemented, operational web-based system (Moodle version 1.9) at the time of evaluation. The evaluation was retrospective, treating the existing implementation as the architecture to be analyzed.",
+        "evaluator_inquiry_questions": [
+          "How long will the system be available for a virtual meet\u2019s web cam live chat when there is a network failure?",
+          "Can the system authenticate a user if they try to log on with either wrong user id or password?",
+          "Does the architecture process any task with the fastest speed?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system relies on network infrastructure susceptible to congestion during high traffic (virtual meets).",
+          "Web-based system architecture accessed via internet/intranet."
+        ],
+        "runtime_constraints": [
+          "Must support heavy file uploads (Video, audio, PDF, etc.) which was a limitation in the previous system.",
+          "Scalability for Virtual Meet module handles 1-100 persons.",
+          "Must conform to SCORM (Sharable Content Object Reference Model) standards."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "virtual_meet_capacity": "1-100 persons",
+        "voting_calculation": {
+          "formula": "30% x total number of scenarios",
+          "total_scenarios": "8"
+        },
+        "recovery_time": "Minimal amount of time"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Authentication and Virtual Meet",
+          "questions": [
+            "How does the system handle invalid login attempts regarding main page access?",
+            "How does the system recover from network failure due to congestion during live video chats?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Entering a wrong user name and password"
+        },
+        {
+          "id": "RS-02",
+          "description": "Clicking an icon to process information with speed"
+        },
+        {
+          "id": "RS-03",
+          "description": "Sending an encapsulated, secured e-mail"
+        },
+        {
+          "id": "RS-04",
+          "description": "Adding new web pages to my wiki module"
+        },
+        {
+          "id": "RS-05",
+          "description": "Integrating mybox for my file storage"
+        },
+        {
+          "id": "RS-06",
+          "description": "Downloading of lecture slides"
+        },
+        {
+          "id": "RS-07",
+          "description": "When Network fails during virtual meet and later recovered"
+        },
+        {
+          "id": "RS-08",
+          "description": "The system should be able to handle user errors"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Enhancing quality teaching and learning within the university community",
+          "Managing the delivery and administration of programs of learning via the internet",
+          "Provide a cheaper, open-source alternative to the previous system (Learning Care)"
+        ],
+        "technical_constraints": [
+          "Must be based on Moodle (Modular Object-Oriented Dynamic Learning Environment)",
+          "Must be Open Source Software (OSS) under GNU license",
+          "Must support SCORM standards",
+          "Must operate on multiple platforms (Windows, Solaris, Linux, Mac OS, UNIX)"
+        ],
+        "architectural_drivers": [
+          "Availability",
+          "Security",
+          "Performance",
+          "Modifiability",
+          "Reliability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Authentication Mechanism",
+          "description": "Checks for user authentication credentials. If valid, launches main page; if invalid, displays error message and denies access to the main page.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Security",
+              "rationale": "Prevents unauthorized access to the system by strictly enforcing valid login credentials."
+            }
+          ]
+        },
+        {
+          "approach_name": "Virtual Meet Module",
+          "description": "Provides shared video/webcam chat functionality scalable for 1-100 users.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Designed to recover from network congestion failures in a minimal amount of time."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Confidentiality",
+                "scenario_id": "S_Sec_1",
+                "scenario_description": "Sending an encapsulated, secured e-mail",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Authentication",
+                "scenario_id": "S_Sec_2",
+                "scenario_description": "Entering a wrong user name and password, display invalid login, try again",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Latency",
+                "scenario_id": "S_Perf_1",
+                "scenario_description": "Downloading of lecture slides",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Latency",
+                "scenario_id": "S_Perf_2",
+                "scenario_description": "Clicking an icon to process information with speed",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Simplification",
+                "scenario_id": "S_Mod_1",
+                "scenario_description": "Adding new web pages to my wiki module",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Simplification",
+                "scenario_id": "S_Mod_2",
+                "scenario_description": "Integrating mybox for my file storage",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "Hardware failure",
+                "scenario_id": "S_Avail_1",
+                "scenario_description": "When Network fails during virtual meet and later recovered",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Entering a wrong user name and password",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "Clicking an icon to process information with speed",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When Network fails during virtual meet and later recovered",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "Sending an encapsulated, secured e-mail",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "Downloading of lecture slides",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The system should be able to handle user errors",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Adding new web pages to my wiki module",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Integrating mybox for my file storage",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "S_Sec_2",
+            "text": "Entering a wrong user name and password, display invalid login, try again",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operation",
+          "stimulus": "User enters invalid username or password",
+          "response_measure": "System displays 'Invalid login', main page is not launched",
+          "architectural_decisions": [
+            "Strict authentication check before loading main interface",
+            "Error message display logic"
+          ],
+          "reasoning": "The system architecture ensures that the main application interface is never exposed without a successful credential check, regardless of the number of attempts.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-1",
+                "description": "Authentication mechanism successfully blocks invalid access.",
+                "rationale": "The system consistently denies access to the main page upon invalid login."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-1",
+                "parameter": "Valid User ID and Password",
+                "correlated_attribute": "Security (Access to Main Page)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S_Avail_1",
+            "text": "When Network fails during virtual meet and later recovered",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Virtual meet (Live web cam chat)",
+          "stimulus": "Network failure due to congestion",
+          "response_measure": "Recovery in minimal amount of time",
+          "architectural_decisions": [
+            "Scalable Virtual Meet Module",
+            "Congestion recovery logic"
+          ],
+          "reasoning": "The system is designed to handle congestion and restore service quickly once network stability returns.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-2",
+                "description": "System recovers from network failure quickly.",
+                "rationale": "Availability is maintained through effective recovery mechanisms."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-2",
+                "parameter": "Network Congestion",
+                "correlated_attribute": "Availability (Virtual Meet Service)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S_Perf_2",
+            "text": "Clicking an icon to process information with speed",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal Operation",
+          "stimulus": "User clicks an icon",
+          "response_measure": "Process task with fastest speed",
+          "architectural_decisions": [
+            "Component interaction optimization"
+          ],
+          "reasoning": "The system processes tasks with minimal time, though speed is sensitive to the number of components involved.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-3",
+                "description": "Task processing speed is minimal and fast.",
+                "rationale": "Performance requirements are satisfied."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-3",
+                "parameter": "Number of components involved in processing",
+                "correlated_attribute": "Performance (Speed)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

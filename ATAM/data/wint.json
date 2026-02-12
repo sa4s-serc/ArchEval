@@ -1,0 +1,856 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Warfighter Information Network-Tactical (WIN-T)",
+      "date": "2005-09-01",
+      "ref": "https://www.sei.cmu.edu/library/using-the-sei-architecture-tradeoff-analysis-method-to-evaluate-win-t-a-case-study/",
+      "evaluator_organization": "Software Engineering Institute (SEI)",
+      "phase_1_attendees": [
+        "Project Directors",
+        "Software Developers"
+      ],
+      "phase_2_attendees": [
+        "Systems Architect",
+        "Project Directors",
+        "Software Developers",
+        "User Representatives",
+        "Testers",
+        "Administrators",
+        "Users"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "WIN-T is the Army's tactical telecommunications system designed to provide a secure, high-speed, high-capacity, and high-mobility backbone communications network. It enables mobile communications using the Internet Protocol (IP) to provide integrated voice, data, and video. It connects the Global Information Grid (GIG) to the Future Force, extending from the Maneuver Battalion to the Theater Rear boundary.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The documentation was recently consolidated following the merger of two competing contractor teams. As a result, the initial architecture documentation contained inconsistencies, was excessively complex, and diagrams often had mixed heritage, leading to confusion and potential errors.",
+        "evaluator_inquiry_questions": [
+          "How will the system handle the self-organization of nodes when requirements for the algorithms are not fully defined?",
+          "What are the specific interface definitions for the Service-Oriented Architecture given the reliance on emerging standards?",
+          "How does the architecture accommodate the transition from radio firmware to high-level network operations without explicit performance models?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system must support mobile nodes (vehicles) communicating via Line-of-Sight radios and satellite links.",
+          "The topology includes tiered nodes ranging from Maneuver Battalions to Theater Rear boundaries, requiring 'on-the-move' connectivity."
+        ],
+        "runtime_constraints": [
+          "Network bandwidth is severely limited during peak operational traffic, requiring strict QoS throttling.",
+          "The system must support 'on-the-move' throughput while traveling at speeds up to 25-45 mph."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "network_reliability_probability": "0.98 (at the halt), 0.90 (mobile)",
+        "information_dissemination_latency": {
+          "critical_survival_info": "<= 5 seconds",
+          "time_sensitive_info": "< 8 seconds"
+        },
+        "mobile_throughput": "256 Kbps at 25 mph",
+        "information_assurance_protection": "95% of attacks"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Service-Oriented Architecture (SOA) & Message Bus",
+          "questions": [
+            "How does the Enterprise Application Integration Platform handle message latency across low-bandwidth satellite links?",
+            "How is loose coupling maintained between the NetOps management software and the radio transmission subsystems?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-69",
+          "description": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes."
+        },
+        {
+          "id": "RS-49",
+          "description": "A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced."
+        },
+        {
+          "id": "RS-18",
+          "description": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely."
+        },
+        {
+          "id": "RS-57",
+          "description": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Provide a single integrating communications network to function as the Army's tactical portion of the GIG",
+          "Link FCS with higher Army echelons and the GIG",
+          "Provide a reliable and secure network with high speed, high capacity, and high quality of service (QoS)",
+          "Support mobile communications and replace legacy systems (MSE, TRI-TAC, ISYSCON, Trojan Spirit)",
+          "Deploy a user-friendly human machine interface (HMI) for the WIN-T operator",
+          "Minimize the amount of network management the WIN-T operator must perform (automate planning)",
+          "Operable and maintainable within budget and schedule",
+          "Transparent to combat users and operators"
+        ],
+        "technical_constraints": [
+          "Long life cycle (fielding from 2008 through 2020, expected lifetime 20+ years)",
+          "Interoperable with Army Enterprise network, FCS, Joint networks, and Coalition network",
+          "Upgradeable (early spirals, block upgrades, COTS upgrades, security upgrades)"
+        ],
+        "architectural_drivers": [
+          "Interoperability",
+          "Network Reliability",
+          "Network Management",
+          "Information Dissemination",
+          "Information Assurance",
+          "Mobile Throughput",
+          "Modularity",
+          "Adaptability",
+          "Resilience",
+          "Usability",
+          "Security",
+          "Performance",
+          "Scalability",
+          "Flexibility",
+          "Maintainability",
+          "Supportability",
+          "Survivability",
+          "Mobility",
+          "Affordability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Enterprise Application Integration Platform (Message Bus)",
+          "description": "Combination of a common data model, common command set, API (JMS), and messaging infrastructure to allow disparate systems to communicate through shared interfaces.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Allows different systems to communicate through a shared set of interfaces."
+            }
+          ]
+        },
+        {
+          "approach_name": "Service-Oriented Architecture (SOA)",
+          "description": "Architectural style aiming to achieve loose coupling among interacting software agents.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability (Loose Coupling)",
+              "rationale": "Achieves loose coupling among interacting software agents."
+            }
+          ]
+        },
+        {
+          "approach_name": "Infrastructure API",
+          "description": "Large collection of ready-made software components providing capabilities like service-oriented classes and methods.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Provides reusable components and libraries."
+            }
+          ]
+        },
+        {
+          "approach_name": "Enterprise Information Dashboard (EID) and UI Frameworks",
+          "description": "Web site providing single point of access (SSO) and UI Frameworks (like MVC) to decouple graphical interface from code.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Usability",
+              "rationale": "Provides single point of access."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decouples graphical interface from application code (MVC)."
+            }
+          ]
+        },
+        {
+          "approach_name": "Workflow Engine",
+          "description": "Capability to orchestrate and collaborate homogeneous and disparate services using BPEL standard.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Orchestrates disparate services."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Modularity",
+            "children": [
+              {
+                "refinement": "Replace an architectural component",
+                "scenario_id": "1",
+                "scenario_description": "Replace DBMS with a new version during maintenance and accomplish replacement within 1 person month.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Separately implementable",
+                "scenario_id": "3",
+                "scenario_description": "A contractor at one site implements a service that uses a service developed at a different site during development. Contractor implements the service knowing only the interface definition of the used service.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Well-defined interfaces",
+                "scenario_id": "2",
+                "scenario_description": "NCES-provided version of a WIN-T service becomes available (UDDI) during block upgrade. WIN-T-provided service is replaced by NCES-provided service, any service that uses UDDI does not have to change, and the work takes 1 calendar month.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Adaptability",
+            "children": [
+              {
+                "refinement": "Ability to accommodate new requirements",
+                "scenario_id": "4",
+                "scenario_description": "There is a requirement to model a new radio during maintenance. Changes to the architecture to accommodate the new radio are localized (ideal solution requires only a database change).",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ability to accommodate new requirements",
+                "scenario_id": "7",
+                "scenario_description": "Add fault correlation capability to WIN-T during maintenance, and the task completed in no more than 6 person months.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Ability to accommodate new technologies",
+                "scenario_id": "6",
+                "scenario_description": "Introduce a wearable head mounted display during maintenance, and modifications are limited to UI modules.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ability to field a subset of the current requirements (functionality)",
+                "scenario_id": "8",
+                "scenario_description": "Add block 0.5 NetOps capability during development with minimal infrastructure in 07 time frame.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Ability to support various platforms",
+                "scenario_id": "5",
+                "scenario_description": "There is a requirement to port to a new computer platform with same family of OS during maintenance. No software above the VM is changed; port takes no more than 3 months.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Resilience",
+            "children": [
+              {
+                "refinement": "Ability to accommodate unanticipated user actions",
+                "scenario_id": "9",
+                "scenario_description": "Power user modifies planning workflow during operations. The system performs sanity check on user's modifications and warns of potential problems; rolls back to known good workflow definition.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ability to accommodate unanticipated user actions",
+                "scenario_id": "10",
+                "scenario_description": "Na\u00efve user attempts to disable firewalls during operations and system refuses to allow changes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Usability",
+            "children": [
+              {
+                "refinement": "Minimize user training",
+                "scenario_id": "11",
+                "scenario_description": "Non-signal operator training during unit training takes no more than 4 hours; operator able to perform assigned tasks; requires no classroom training.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Minimize user training",
+                "scenario_id": "12",
+                "scenario_description": "A signal user transfers from the 1 CAV to the 4 ID during operations, and the person can use the system immediately with only minimal briefing, embedded training, and on-line help.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Minimize user training",
+                "scenario_id": "13",
+                "scenario_description": "Small unit training must be conducted during operations and not impact on operations; minimal reconfiguration.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Enable user to perform tasks in allocated time",
+                "scenario_id": "14",
+                "scenario_description": "User performs a hasty replan (new frequency allocation) during operations. The system allows hasty plan using parts of existing plans within 15 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Support on-the-move, protective gear, at-the-halt operation",
+                "scenario_id": "15",
+                "scenario_description": "Switch from at-the-halt to on-the-move operation during operations, and the system allows user to immediately switch GUI.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Authenticate users",
+                "scenario_id": "16",
+                "scenario_description": "User wants to log in using an approved authentication means during operations, and equipment recognizes the user and accords him appropriate permissions.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Intrusion detection",
+                "scenario_id": "17",
+                "scenario_description": "User attempts to access an area he is not authorized to access during operations. User is denied access, and a security alert and audit trail is generated.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Intrusion detection",
+                "scenario_id": "18",
+                "scenario_description": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Virus detection",
+                "scenario_id": "19",
+                "scenario_description": "Antivirus software initiates a scan during operations, and system continues to operate without degradation while scan is in progress.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Multiple levels of security",
+                "scenario_id": "20",
+                "scenario_description": "Operator has to perform management tasks in security domains except TS during operations. System allows operator to manage domains from a single domain without security compromise.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Policy based security management",
+                "scenario_id": "21",
+                "scenario_description": "Commanding General wants to override current security policy to allow a node to broadcast on a certain frequency during operations. The system reports the violation but provides a mechanism to allow the override to be effected.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Minimize NetOps bandwidth",
+                "scenario_id": "22",
+                "scenario_description": "Following a complete replan during peak operational traffic system does not allow management traffic to intrude on the operational bandwidth.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Meet IER message latency requirements",
+                "scenario_id": "23",
+                "scenario_description": "There is a change in latency requirements for a certain class of traffic during a change in Ops tempo. The system meets new message latency requirements.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Meet IER message completion requirements",
+                "scenario_id": "24",
+                "scenario_description": "New messages are added to the critical message list during operations. The system meets the message completion requirements.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Service response time meets operator expectations",
+                "scenario_id": "25",
+                "scenario_description": "User at NetOps cell performs a significant 'replan' during operations. It is completed within 1 hour.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Cold start/warm start/hot start/shutdown latency",
+                "scenario_id": "26",
+                "scenario_description": "A node is cold started during operations, and the start is completed within 30 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "Ease of interfacing with using applications",
+                "scenario_id": "28",
+                "scenario_description": "WIN-T hosts JNMS in NOSC-Y, the army is the combatant commander and JNMS software runs.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Ease of interfacing with using applications",
+                "scenario_id": "29",
+                "scenario_description": "WIN-T is hosting JNMS in NOSC-Y, and during maintenance, JNMS wants to change COTS products. Both systems run; minimal impact on code.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Ease of interfacing with other systems",
+                "scenario_id": "27",
+                "scenario_description": "WIN-T interoperates with JNMS, the army is not the combatant commander. The system supports exchange of messages within acceptable time frame using appropriate formats.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Ease of interfacing with other systems",
+                "scenario_id": "31",
+                "scenario_description": "There is a need to interface with a new NCES compliant system on the GIG (obtain medical records) during operation. There is no change to WIN-T.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Ease of interfacing with other systems",
+                "scenario_id": "30",
+                "scenario_description": "A non-IDM aware software application runs during operations. Messages are handled in accordance with IDM policies.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Information Dissemination",
+            "children": [
+              {
+                "refinement": "Right data to the right destination at the right time",
+                "scenario_id": "32",
+                "scenario_description": "Application has published some situational awareness data during operations, and the data is available within the required time.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Autonomous Operation",
+            "children": [
+              {
+                "refinement": "Subsets of nodes able to operate in isolation",
+                "scenario_id": "33",
+                "scenario_description": "A set of nodes is isolated from the network during operations and nodes are able to interoperate with each other; nodes retain critical data for 72 hours.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Standards Compliance",
+            "children": [
+              {
+                "refinement": "DoD",
+                "scenario_id": "34",
+                "scenario_description": "WIN-T transitions from compliance with COE and NCES to compliance with NCES only during development with no impact to delivery and cost objectives.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Scalability",
+            "children": [
+              {
+                "refinement": "Increase number of units supported",
+                "scenario_id": "35",
+                "scenario_description": "The number of deployed nodes increases from 500 to 3000+ nodes during operations, and system still meets all performance requirements.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Increase number of users supported",
+                "scenario_id": "48",
+                "scenario_description": "WIN-T is required to take over management of all edge devices during maintenance. This is accommodated within 1 spiral; maintain performance requirements without increasing footprint.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Flexibility",
+            "children": [
+              {
+                "refinement": "Policy based management",
+                "scenario_id": "46",
+                "scenario_description": "A policy is changed at a higher level node during operations. Lower level nodes automatically disseminate and reconfigure to the new policies.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Response to changing operational environment",
+                "scenario_id": "36",
+                "scenario_description": "The Ops tempo changes during operations and proper policies for the new Ops tempo are executed within 5 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Response to changing operational environment",
+                "scenario_id": "37",
+                "scenario_description": "A node that was 'zeroized' has to be rebuilt during operations. The node configuration is restored to the appropriate current state within 30 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Maintainability",
+            "children": [
+              {
+                "refinement": "Ability to accommodate new technologies",
+                "scenario_id": "47",
+                "scenario_description": "SOAP changes to no longer use XML during maintenance. There is minimal impact on system; accommodated within 1 spiral.",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Supportability",
+            "children": [
+              {
+                "refinement": "Ability to use organic support for distribution",
+                "scenario_id": "39",
+                "scenario_description": "A new patch is developed during operations. The patch is distributed over the network without contractor intervention or support.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Survivability",
+            "children": [
+              {
+                "refinement": "Survive NOSC failure",
+                "scenario_id": "41",
+                "scenario_description": "NOSC-Y operations cell becomes inoperable during operations, and the planning cell takes over with minimal disruption and within 10 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Survive NOSC failure",
+                "scenario_id": "44",
+                "scenario_description": "All NOSC-Ys go out during the execution of provisioning, and a NOSC-X takes over and plans and manages the network within 10 minutes; resynchronizes within 30 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Survive link failure",
+                "scenario_id": "45",
+                "scenario_description": "A previously partitioned network reconnects during operations and the two segments synchronize within 30 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Mobility",
+            "children": [
+              {
+                "refinement": "Ability to plan en route",
+                "scenario_id": "42",
+                "scenario_description": "A change in the battlefield situation occurs when enroute aboard transport aircraft. The system supports planning, and plan rehearsal and subsequent download to the network.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Affordability",
+            "children": [
+              {
+                "refinement": "Ability to manage recurring COTS costs",
+                "scenario_id": "43",
+                "scenario_description": "A COTS package becomes inordinately expensive and one or more open source options are available during maintenance. Evaluate open source options; pick an option; install replacement for a comparable cost to the original COTS package.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A collection of vehicles collects in a 'parking lot.' The networks can self-organize and nodes configure themselves within 5 minutes.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Numerous disparate COTS products have to be integrated. Products are integrated without changing them or the architecture (combined with #49).",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A new baseline version of the software is distributed to a portion of a force that interoperates. Units with different versions interoperate.",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "A new mapping of IP addresses to force elements has occurred. The system allows organic personnel to make changes and update the IP addresses.",
+          "primary_quality_attribute": [
+            "Flexibility",
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties.",
+          "primary_quality_attribute": [
+            "Security",
+            "Survivability"
+          ]
+        },
+        {
+          "scenario_text": "A legacy application replaces an organic service with a WIN-T service. All documentation and APIs are sufficient; service implementations are available.",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A software problem is detected that affects all nodes. Problem is detected, isolated, logged; information is conveyed to maintainers for development of a patch.",
+          "primary_quality_attribute": [
+            "Maintainability",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "High-priority information needs to be moved across the network, but the current setup prohibits the timely transfer. WIN-T has to reconfigure itself within the current policies to allow the transfer to occur; reconfigures back at completion.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Flexibility"
+          ]
+        },
+        {
+          "scenario_text": "NCES services become available. Developers can evaluate newly available services and switch over where appropriate.",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "WIN-T has the requirement to interface with a lower level system (ISYSCON, TIM). WIN-T interoperates without any changes to other systems.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "QoS and SoS request comes from FCS. System propagates that request up to the GIG and honors the request as appropriate.",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Performance"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "69",
+            "text": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Operational (Deployment)",
+          "stimulus": "Vehicles assemble and power on equipment",
+          "response_measure": "Self-organize and configure within 5 minutes",
+          "architectural_decisions": [
+            "Hailing band transmission for initial discovery",
+            "Configuration parameters to limit neighbors",
+            "QoS throttling",
+            "Cost function and override list for node selection",
+            "NetOps software manages configuration via policies"
+          ],
+          "reasoning": "Self-organization algorithms are not fully defined. No performance models exist to predict behavior during startup. Scale of the problem drives complexity.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Feasibility and performance cannot be evaluated because algorithms are not fully defined.",
+                "rationale": "Lack of definition prevents verification of the 5-minute requirement."
+              },
+              {
+                "id": "R2",
+                "description": "No performance models to determine performance envelope.",
+                "rationale": "Cannot predict if the system will meet the deadline."
+              },
+              {
+                "id": "R3",
+                "description": "Uncertain requirements regarding scale make it difficult to determine if design is sufficient.",
+                "rationale": "May lead to overdesign or underdesign."
+              },
+              {
+                "id": "R4",
+                "description": "Architecture is not schema neutral (knowledgeable of radio MIB format).",
+                "rationale": "New schemas will have cost impact on architecture."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR1",
+                "description": "High degree of flexibility through configuration parameters.",
+                "rationale": "Allows adjustment to different operational needs."
+              },
+              {
+                "id": "NR2",
+                "description": "Algorithmic solution is flexible to any potential network.",
+                "rationale": "Not constrained by fixed topology."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "18",
+            "text": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Operational (Unit Overrun)",
+          "stimulus": "Unauthorized intrusion/capture of node",
+          "response_measure": "Detect intrusion, alert, remote 'zeroize'",
+          "architectural_decisions": [
+            "Service components instantiated with algorithmic detection means",
+            "Rules engine usage",
+            "Remote destruction capability"
+          ],
+          "reasoning": "Automatic detection is non-trivial and may require human intervention. Correction involves disabling/destroying the node. Feasibility is an algorithmic/heuristic problem, not purely architectural.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R5",
+                "description": "Requirements, doctrinal, safety, and security issues are not worked out.",
+                "rationale": "Ambiguity in how destruction should be handled."
+              },
+              {
+                "id": "R6",
+                "description": "No currently identified service or component allocated for destruction.",
+                "rationale": "Missing functionality in architecture."
+              },
+              {
+                "id": "R7",
+                "description": "Services must be able to authenticate logins/access from other locations; feature not included yet.",
+                "rationale": "Security vulnerability for the remote destruction feature itself."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

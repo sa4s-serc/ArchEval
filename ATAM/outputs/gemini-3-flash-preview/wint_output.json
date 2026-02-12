@@ -1,0 +1,433 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Provide a single integrating communications network to function as the Army's tactical portion of the GIG",
+      "Link FCS with higher Army echelons and the GIG",
+      "Provide a reliable and secure network with high speed, high capacity, and high quality of service (QoS)",
+      "Support mobile communications and replace legacy systems (MSE, TRI-TAC, ISYSCON, Trojan Spirit)",
+      "Deploy a user-friendly human machine interface (HMI) for the WIN-T operator",
+      "Minimize the amount of network management the WIN-T operator must perform (automate planning)",
+      "Operable and maintainable within budget and schedule",
+      "Transparent to combat users and operators"
+    ],
+    "technical_constraints": [
+      "Long life cycle (fielding from 2008 through 2020, expected lifetime 20+ years)",
+      "Interoperable with Army Enterprise network, FCS, Joint networks, and Coalition network",
+      "Upgradeable (early spirals, block upgrades, COTS upgrades, security upgrades)"
+    ],
+    "architectural_drivers": [
+      "Interoperability",
+      "Network Reliability",
+      "Network Management",
+      "Information Dissemination",
+      "Information Assurance",
+      "Mobile Throughput",
+      "Modularity",
+      "Adaptability",
+      "Resilience",
+      "Usability",
+      "Security",
+      "Performance",
+      "Scalability",
+      "Flexibility",
+      "Maintainability",
+      "Supportability",
+      "Survivability",
+      "Mobility",
+      "Affordability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The documentation was recently consolidated following the merger of two competing contractor teams. As a result, the initial architecture documentation contained inconsistencies, was excessively complex, and diagrams often had mixed heritage, leading to confusion and potential errors.",
+      "evaluator_inquiry_questions": [
+        "How will the system handle the self-organization of nodes when requirements for the algorithms are not fully defined?",
+        "What are the specific interface definitions for the Service-Oriented Architecture given the reliance on emerging standards?",
+        "How does the architecture accommodate the transition from radio firmware to high-level network operations without explicit performance models?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "The system must support mobile nodes (vehicles) communicating via Line-of-Sight radios and satellite links.",
+        "The topology includes tiered nodes ranging from Maneuver Battalions to Theater Rear boundaries, requiring 'on-the-move' connectivity."
+      ],
+      "runtime_constraints": [
+        "Network bandwidth is severely limited during peak operational traffic, requiring strict QoS throttling.",
+        "The system must support 'on-the-move' throughput while traveling at speeds up to 25-45 mph."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "network_reliability_probability": "0.98 (at the halt), 0.90 (mobile)",
+      "information_dissemination_latency": {
+        "critical_survival_info": "<= 5 seconds",
+        "time_sensitive_info": "< 8 seconds"
+      },
+      "mobile_throughput": "256 Kbps at 25 mph",
+      "information_assurance_protection": "95% of attacks"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Service-Oriented Architecture (SOA) & Message Bus",
+        "questions": [
+          "How does the Enterprise Application Integration Platform handle message latency across low-bandwidth satellite links?",
+          "How is loose coupling maintained between the NetOps management software and the radio transmission subsystems?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-69",
+        "description": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes."
+      },
+      {
+        "id": "RS-49",
+        "description": "A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced."
+      },
+      {
+        "id": "RS-18",
+        "description": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely."
+      },
+      {
+        "id": "RS-57",
+        "description": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Service-Oriented Architecture (SOA)",
+        "description": "Utilizes standardized services to facilitate interoperability between Future Combat Systems (FCS), higher Army echelons, and the Global Information Grid (GIG).",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Provides a common interface for disparate systems to communicate across the tactical network."
+          },
+          {
+            "quality_attribute": "Modularity",
+            "rationale": "Allows specific functional components to be updated or replaced without impacting the entire system."
+          }
+        ]
+      },
+      {
+        "approach_name": "Enterprise Application Integration (EAI) Message Bus",
+        "description": "A centralized messaging backbone used to manage communication between the NetOps management software and radio transmission subsystems.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Handles message translation and routing between different subsystems."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Manages message latency and delivery across low-bandwidth satellite and radio links."
+          }
+        ]
+      },
+      {
+        "approach_name": "Self-Organizing Mesh Networking",
+        "description": "Algorithms that allow mobile nodes (vehicles) to dynamically discover each other and configure the network topology without manual intervention.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Mobility",
+            "rationale": "Supports 'on-the-move' connectivity and rapid network formation in tactical environments."
+          },
+          {
+            "quality_attribute": "Network Management",
+            "rationale": "Reduces the burden on operators by automating the planning and configuration of network nodes."
+          }
+        ]
+      },
+      {
+        "approach_name": "Quality of Service (QoS) Throttling",
+        "description": "Traffic prioritization mechanisms that manage limited network bandwidth by ensuring critical data is delivered before routine traffic during peak operational loads.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Ensures latency requirements for critical information are met during peak traffic periods."
+          },
+          {
+            "quality_attribute": "Information Dissemination",
+            "rationale": "Guarantees the delivery of time-sensitive data over constrained links."
+          }
+        ]
+      },
+      {
+        "approach_name": "Modular COTS-Based Architecture",
+        "description": "The use of Commercial-Off-The-Shelf hardware and software components integrated via standard interfaces to support long life cycles and upgradeability.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Facilitates the replacement of obsolete components with newer technology over the 20+ year expected lifetime."
+          },
+          {
+            "quality_attribute": "Affordability",
+            "rationale": "Reduces development costs by leveraging existing commercial technologies and standards."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "Seamless data exchange between FCS and GIG via SOA",
+              "scenario_id": "I1",
+              "scenario_description": "The system must facilitate standardized data exchange between tactical units and the Global Information Grid using Service-Oriented Architecture interfaces.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Critical command data delivery over satellite links in < 500ms during peak load",
+              "scenario_id": "P1",
+              "scenario_description": "During peak operational traffic, C2 data must be prioritized via QoS to ensure delivery under 500ms across satellite/radio links.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Mobility",
+          "children": [
+            {
+              "refinement": "Network reconfiguration for 50 mobile nodes within 30 seconds of topology change",
+              "scenario_id": "M1",
+              "scenario_description": "The self-organizing mesh network must dynamically update routing for 50 vehicles within 30 seconds of a change in physical topology.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Maintainability",
+          "children": [
+            {
+              "refinement": "Replacement of obsolete COTS modules with minimal integration effort (< 40 man-hours)",
+              "scenario_id": "MT1",
+              "scenario_description": "The architecture must support the replacement of hardware or software modules with minimal integration effort to ensure long-term upgradeability.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Detection and mitigation of unauthorized data injection on the message bus",
+              "scenario_id": "S1",
+              "scenario_description": "A rogue node attempts to inject malicious packets into the EAI Message Bus; the system must detect and isolate the node within 10 seconds.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "Automated failover during primary link failure in DIL environments",
+              "scenario_id": "A1",
+              "scenario_description": "The primary satellite link is lost; the system must automatically failover to an organic radio link within 5 seconds to maintain critical command services.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "The system must facilitate standardized data exchange between tactical units and the Global Information Grid using Service-Oriented Architecture interfaces.",
+        "primary_quality_attribute": [
+          "Interoperability"
+        ]
+      },
+      {
+        "scenario_text": "During peak operational traffic, C2 data must be prioritized via QoS to ensure delivery under 500ms across satellite/radio links.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The self-organizing mesh network must dynamically update routing for 50 vehicles within 30 seconds of a change in physical topology.",
+        "primary_quality_attribute": [
+          "Mobility"
+        ]
+      },
+      {
+        "scenario_text": "The architecture must support the replacement of hardware or software modules with minimal integration effort to ensure long-term upgradeability.",
+        "primary_quality_attribute": [
+          "Maintainability"
+        ]
+      },
+      {
+        "scenario_text": "A rogue node attempts to inject malicious packets into the EAI Message Bus; the system must detect and isolate the node within 10 seconds.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "The primary satellite link is lost; the system must automatically failover to an organic radio link within 5 seconds to maintain critical command services.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "During peak operational traffic, C2 data must be prioritized via QoS to ensure delivery under 500ms across satellite/radio links.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak operational load in DIL environment",
+        "stimulus": "High volume of concurrent tactical data traffic",
+        "response_measure": "C2 data latency < 500ms",
+        "architectural_decisions": [
+          "Quality of Service (QoS) Throttling",
+          "EAI Message Bus prioritization"
+        ],
+        "reasoning": "QoS mechanisms ensure that packets marked as high-priority (C2) bypass queues occupied by routine traffic, maintaining low latency even when bandwidth is constrained.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Starvation of non-critical traffic",
+              "rationale": "Aggressive QoS prioritization for C2 data may lead to the complete starvation of routine situational awareness data, potentially degrading the overall common operating picture."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "C2 Latency Compliance",
+              "rationale": "Static priority queuing is a mature technology that reliably guarantees latency bounds for the highest priority class."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "QoS Traffic Classification Rules",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Bandwidth Allocation Ratios",
+              "conflicting_attributes": [
+                "Performance (Latency for C2)",
+                "Availability (Throughput for Routine Data)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "The self-organizing mesh network must dynamically update routing for 50 vehicles within 30 seconds of a change in physical topology.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Mobility",
+        "environment": "High-mobility tactical movement",
+        "stimulus": "Rapid change in node positions and connectivity",
+        "response_measure": "Network reconfiguration < 30 seconds",
+        "architectural_decisions": [
+          "Self-Organizing Mesh Networking"
+        ],
+        "reasoning": "Distributed routing protocols allow nodes to discover neighbors and update path tables without a central controller, facilitating rapid adaptation to movement.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Convergence delay at scale",
+              "rationale": "As the number of nodes increases beyond 50, the control plane overhead for route discovery may grow exponentially, exceeding the 30s threshold."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Hello packet frequency",
+              "correlated_attribute": "Mobility"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Routing Update Frequency",
+              "conflicting_attributes": [
+                "Mobility (Fast Reconfiguration)",
+                "Performance (Effective Bandwidth for Data)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "A rogue node attempts to inject malicious packets into the EAI Message Bus; the system must detect and isolate the node within 10 seconds.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Security",
+        "environment": "Active cyber-adversary environment",
+        "stimulus": "Unauthorized data injection",
+        "response_measure": "Detection and isolation < 10 seconds",
+        "architectural_decisions": [
+          "EAI Message Bus monitoring",
+          "SOA-based identity management"
+        ],
+        "reasoning": "Centralizing communication through a message bus allows for a single point of inspection for anomaly detection and enforcement of security policies.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Processing overhead of Deep Packet Inspection (DPI)",
+              "rationale": "Performing security inspection on every message on the bus may introduce latency that violates the 500ms performance requirement (P1)."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Encryption key rotation interval",
+              "correlated_attribute": "Security"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Security Inspection Depth",
+              "conflicting_attributes": [
+                "Security (Integrity)",
+                "Performance (Latency)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

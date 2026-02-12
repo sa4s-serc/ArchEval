@@ -1,0 +1,882 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "WRCS",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "To improve non-functional qualities such as portability, modifiability and extendibility."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Monolithic Client-Server",
+          "Component-Based (DLL-based modular design)",
+          "Inter-Process Communication (IPC)"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "WRCS Legacy Monolithic Architecture",
+            "description": "A Windows-native revision control system built on a monolithic executable with supporting DLL components. The architecture uses a central executable (main.exe) that orchestrates interactions between specialized DLLs and auxiliary executables. Communication occurs through direct function calls, DLL invocations, and Dynamic Data Exchange (DDE) - a legacy Windows IPC mechanism. This represents a reverse-engineered view of the existing production system.",
+            "architecture_characteristics": "Currently optimized for Windows platform integration with moderate modularity through DLL separation. Limited portability due to Windows-specific dependencies (DDE, DLL architecture). Modifiability is constrained by tight coupling between main.exe and DLLs. Extendibility is partially supported through the hook.dll menu extensor mechanism, but overall extensibility is limited by monolithic design patterns.",
+            "key_components": [
+              {
+                "component_id": "main.exe",
+                "component_name": "Main Application Executable",
+                "responsibilities": "Serves as the central orchestrator and entry point for the WRCS system. Manages the user interface, coordinates interactions between all DLL components, handles user commands, and maintains application state. Acts as the primary integration point for all revision control operations.",
+                "dependencies": [
+                  "wrcs.dll",
+                  "hook.dll",
+                  "visdiff.exe"
+                ],
+                "change_sensitivity": "High - Any changes to main.exe affect the entire system. This is the integration hub, so modifications here ripple across all components. Changes to UI, workflow, or component coordination all require modifications here."
+              },
+              {
+                "component_id": "wrcs.dll",
+                "component_name": "Core Revision Control Library",
+                "responsibilities": "Implements the fundamental revision control functionality including version tracking, file change management, repository operations, check-in/check-out logic, merge operations, and history management. Contains the business logic for multi-user collaboration and file versioning.",
+                "dependencies": [],
+                "change_sensitivity": "High - This is the business logic core. Changes to revision control algorithms, storage formats, or core functionality require modifications here. However, it appears to have minimal dependencies on other components, which is positive for isolated testing."
+              },
+              {
+                "component_id": "hook.dll",
+                "component_name": "Extension Gateway & Menu Integration",
+                "responsibilities": "Provides an extensibility mechanism allowing third-party or custom extensions to integrate with WRCS. Supports menu extensors that can add custom commands and functionality. Acts as a controlled gateway to WRCS functionality, potentially enforcing security or validation rules.",
+                "dependencies": [
+                  "wrcs.dll"
+                ],
+                "change_sensitivity": "Medium - Changes here affect extensibility and third-party integrations. Modifying the extension API could break existing menu extensors. However, this component provides a valuable abstraction layer for future extensibility improvements."
+              },
+              {
+                "component_id": "visdiff.exe",
+                "component_name": "Visual Difference Viewer",
+                "responsibilities": "Provides visual comparison and difference display between file versions. Launched as a separate process to display side-by-side or unified diff views of file changes. Handles rendering and user interaction for diff operations.",
+                "dependencies": [],
+                "change_sensitivity": "Low - This is a relatively isolated component. Changes to diff visualization, comparison algorithms, or UI can be made independently. Could be replaced or upgraded with minimal impact on other components."
+              }
+            ],
+            "data_flow": "User interactions begin at main.exe, which presents the UI and receives commands. When revision control operations are requested, main.exe invokes wrcs.dll to perform core version control functions (check-in, check-out, history retrieval). For extensibility features, main.exe communicates with hook.dll, which provides a controlled interface to WRCS capabilities and manages menu extensions. When users request file comparisons, main.exe launches visdiff.exe as a separate process, likely passing file paths via command-line arguments or DDE. Communication between components primarily uses direct DLL function calls and legacy DDE (Dynamic Data Exchange) for inter-process messaging, particularly with visdiff.exe. Data persistence (repository storage) is likely managed by wrcs.dll, though the storage mechanism is not explicitly documented.",
+            "architectural_constraints": [
+              "Windows Platform Lock-in: Heavy reliance on Windows-specific technologies (DLLs, DDE) severely limits portability to other operating systems",
+              "DDE Communication: Use of legacy Dynamic Data Exchange limits modernization options and creates compatibility risks with newer Windows versions",
+              "Monolithic Main Executable: main.exe serves as a central hub creating tight coupling and single point of failure",
+              "Binary Component Distribution: DLL-based architecture makes it difficult to deploy partial updates or support multiple platform targets",
+              "Unclear Interface Contracts: Reverse-engineered architecture suggests undocumented APIs between components, increasing modification risk",
+              "Limited Separation of Concerns: UI, orchestration, and integration logic appear concentrated in main.exe",
+              "Process Boundary Communication: visdiff.exe requires inter-process communication, adding complexity and potential performance overhead"
+            ],
+            "notes": "WHAT THIS ARCHITECTURE CAN EASILY ACCOMMODATE:\n- Adding new menu extensions through hook.dll's existing extensor mechanism\n- Replacing or enhancing visdiff.exe independently (low coupling)\n- Modifications to diff visualization without affecting core revision control\n- Incremental improvements to core revision control algorithms within wrcs.dll\n\nWHAT THIS ARCHITECTURE CANNOT EASILY ACCOMMODATE:\n- Cross-platform deployment (Linux, macOS) due to Windows-specific DLL and DDE dependencies\n- Microservices or distributed architecture patterns - requires complete redesign\n- Web-based or cloud-native deployment models\n- Independent scaling of components (monolithic deployment unit)\n- Modern API-based integrations (REST, GraphQL) without significant refactoring\n- Containerization or cloud deployment without Windows container complexity\n- Plugin architectures beyond the limited menu extensor capability\n- Separation of UI from business logic for alternative clients (CLI, web, mobile)\n\nRISK ASSESSMENT FOR BUSINESS GOALS:\n- Portability: HIGH RISK - Current architecture fundamentally incompatible with non-Windows platforms\n- Modifiability: MEDIUM-HIGH RISK - Tight coupling through main.exe creates ripple effects; unclear interfaces increase change risk\n- Extendibility: MEDIUM RISK - hook.dll provides some extension capability, but limited to menu integration; no broader plugin architecture\n\nRECOMMENDATION FOR STAKEHOLDERS:\nThis architecture represents a typical legacy Windows application design. To achieve the stated business goals (portability, modifiability, extendibility), significant architectural refactoring will be required. Consider a phased approach: 1) Document and formalize component interfaces, 2) Extract business logic from platform-specific code, 3) Introduce abstraction layers for platform dependencies, 4) Migrate from DDE to modern IPC mechanisms, 5) Consider service-oriented or layered architecture patterns for better separation of concerns."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A developer needs to port the WRCS system to run natively on Linux (Ubuntu 22.04 LTS) while maintaining all current revision control functionality including check-in, check-out, branching, merging, and visual difference viewing.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Main Application Executable",
+            "Core Revision Control Library",
+            "Extension Gateway & Menu Integration",
+            "Visual Difference Viewer"
+          ],
+          "feasibility_note": "Significant architectural challenge. Current Windows-native implementation relies on DDE (Windows-specific IPC), Windows DLLs, and likely Win32 API calls throughout. Would require replacing DDE with cross-platform IPC (sockets, pipes), converting DLLs to shared libraries (.so), and abstracting platform-specific UI and file system calls. Monolithic architecture makes selective porting difficult.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Portability is explicitly mentioned as a key non-functional quality to improve. Linux support expands market reach and addresses customers with heterogeneous development environments."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A maintainer needs to add support for a new file comparison algorithm (e.g., semantic diff for JSON files) to the Visual Difference Viewer without modifying the Main Application Executable or Core Revision Control Library.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Visual Difference Viewer",
+            "Extension Gateway & Menu Integration"
+          ],
+          "feasibility_note": "Moderately challenging. Current architecture uses direct function calls and DLL invocations, suggesting tight coupling. The Extension Gateway exists but its current extensibility model is unclear. Would likely require refactoring Visual Difference Viewer to support plugin architecture or strategy pattern for comparison algorithms. Current monolithic design may not support clean isolation.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Modifiability and extendibility are core concerns. Maintainers need to enhance functionality without risking regression in core components or requiring full system rebuilds."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "An end-user working on a large project (5000+ files) needs to check out a specific branch, view differences between two revisions of a configuration file, and commit changes back to the repository, completing the entire workflow in under 2 minutes on standard hardware.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Main Application Executable",
+            "Core Revision Control Library",
+            "Visual Difference Viewer"
+          ],
+          "feasibility_note": "Directly supported by current architecture. This represents core revision control functionality that the system was designed to handle. Performance depends on Core Revision Control Library efficiency and Main Application's orchestration logic. DDE communication overhead may impact performance at scale.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Core business functionality that defines the system's value proposition. End-users need reliable, performant access to fundamental revision control operations for daily development work."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A developer needs to integrate WRCS with a third-party IDE (e.g., Visual Studio Code) by creating a plugin that invokes WRCS operations (check-in, check-out, diff, history) programmatically through a documented API without requiring DDE knowledge.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Extension Gateway & Menu Integration",
+            "Main Application Executable",
+            "Core Revision Control Library"
+          ],
+          "feasibility_note": "Challenging with current architecture. DDE is a legacy, Windows-specific protocol that modern IDEs don't typically support. Extension Gateway's current design is unclear but likely focused on menu integration rather than programmatic API access. Would require exposing Core Revision Control Library functions through a modern API (REST, COM, or direct library linking) and documenting interfaces.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Extendibility requirement. Developers need to integrate WRCS into modern development toolchains. API-driven integration is essential for automation, CI/CD pipelines, and IDE workflows."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A system administrator needs to deploy WRCS to 50 developer workstations with custom configuration (repository paths, user permissions, diff tool preferences) using an automated deployment script, without manual GUI interaction on each machine.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Main Application Executable",
+            "Extension Gateway & Menu Integration"
+          ],
+          "feasibility_note": "Partially supported. Current architecture may support configuration files, but monolithic Windows executable design suggests possible reliance on registry settings or GUI-based configuration. Would need documented configuration file format, command-line installation options, and separation of configuration from executable. DDE registration may complicate silent installation.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Enterprise scalability and manageability. System administrators need to deploy and configure WRCS efficiently across development teams without manual intervention, supporting DevOps practices."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "A maintainer needs to upgrade the Visual Difference Viewer to use a new UI framework (e.g., from Win32 to WPF or Qt) while keeping all other components unchanged, completing the upgrade within one development sprint (2 weeks) with minimal risk to core functionality.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Visual Difference Viewer",
+            "Main Application Executable"
+          ],
+          "feasibility_note": "High risk with current architecture. Monolithic design with direct function calls and DDE communication suggests tight coupling between components. Visual Difference Viewer likely shares data structures and calling conventions with Main Application. UI framework change would require well-defined interfaces and abstraction layers that may not exist. Two-week timeline unrealistic without significant prior refactoring.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Modifiability concern. Maintainers need to modernize UI components independently to keep pace with platform evolution, improve user experience, and attract new users without full system rewrites."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "An end-user needs to recover from a system crash during a commit operation, with WRCS automatically detecting the incomplete transaction on restart and offering options to complete, rollback, or review the pending changes without data loss or repository corruption.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Main Application Executable",
+            "Core Revision Control Library"
+          ],
+          "feasibility_note": "Depends on current implementation of Core Revision Control Library. Robust revision control systems implement transaction logging and recovery mechanisms. Current architecture doesn't explicitly show transaction management components. Monolithic design may make it difficult to isolate transaction state. DDE communication adds complexity for crash recovery scenarios.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Reliability and data integrity are critical for revision control systems. End-users need confidence that their work is protected even during system failures, preventing lost work and repository corruption."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A developer needs to add support for Git repository import/export functionality as a new module, allowing users to migrate projects between WRCS and Git, without modifying the Core Revision Control Library's internal data structures.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Core Revision Control Library",
+            "Main Application Executable",
+            "Extension Gateway & Menu Integration"
+          ],
+          "feasibility_note": "Very challenging. Requires deep integration with Core Revision Control Library to access revision history, metadata, and file versions. Current monolithic architecture with direct function calls suggests limited abstraction between data access and business logic. Would need well-defined repository abstraction layer and data access APIs that likely don't exist. Extension Gateway may not support this level of core functionality extension.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Extendibility and market competitiveness. Developers need interoperability with dominant version control systems to facilitate migration, hybrid workflows, and reduce vendor lock-in concerns."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A system administrator needs to monitor WRCS usage across the organization by collecting metrics (number of commits, active users, repository sizes, operation response times) through a centralized logging system without impacting end-user performance by more than 5%.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Main Application Executable",
+            "Core Revision Control Library"
+          ],
+          "feasibility_note": "Requires instrumentation and observability features not evident in current architecture. Monolithic design may lack separation of concerns needed for clean instrumentation. Would need to add logging/metrics collection points throughout components, implement metrics aggregation, and provide export mechanism (file, network, Windows Event Log). DDE communication complicates distributed tracing.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Enterprise management and capacity planning. System administrators need visibility into system usage patterns to optimize infrastructure, identify bottlenecks, ensure compliance, and justify licensing costs."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "A maintainer needs to fix a critical security vulnerability in the Core Revision Control Library (e.g., path traversal bug) and deploy the patch to all users within 24 hours, without requiring changes to Main Application Executable or other components.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Core Revision Control Library",
+            "Main Application Executable"
+          ],
+          "feasibility_note": "Moderately feasible if Core Revision Control Library is truly modular as a DLL with stable interfaces. However, monolithic architecture with direct function calls suggests potential interface dependencies and version coupling. Would require: stable API contracts, version compatibility testing, and deployment mechanism for DLL updates. 24-hour timeline requires mature CI/CD, automated testing, and deployment infrastructure.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Modifiability and security. Maintainers need to respond rapidly to security vulnerabilities with surgical fixes that minimize risk of introducing regressions or requiring extensive user coordination."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "An end-user working remotely over a high-latency connection (200ms RTT) needs to perform standard operations (browse repository, view file history, compare revisions) with acceptable responsiveness (UI feedback within 1 second for most operations).",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Main Application Executable",
+            "Core Revision Control Library"
+          ],
+          "feasibility_note": "Depends on client-server architecture not fully described. Current architecture shows Windows-native components but doesn't clarify network communication model. If WRCS uses a centralized repository server, high latency would impact operations requiring server round-trips. Monolithic client design may not implement caching, prefetching, or asynchronous operations needed for good remote performance.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Usability in distributed development environments. End-users increasingly work remotely and need acceptable performance regardless of network conditions to maintain productivity."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "A developer needs to extend WRCS to support custom merge strategies for domain-specific file types (e.g., database schema files, configuration files) by implementing and registering a plugin without recompiling the core system.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Core Revision Control Library",
+            "Extension Gateway & Menu Integration"
+          ],
+          "feasibility_note": "Requires plugin architecture not evident in current design. Extension Gateway exists but its scope is unclear\u2014likely limited to menu/UI extensions rather than core algorithm extensions. Merge logic is likely embedded in Core Revision Control Library without extension points. Would require refactoring to support strategy pattern, plugin discovery/loading mechanism, and stable plugin API.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Extendibility for specialized workflows. Developers in specific domains (database development, infrastructure-as-code) need customized merge behavior that generic algorithms can't provide, without forking the codebase."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Indirect",
+          "rationale": "The architecture is fundamentally Windows-native with critical dependencies on Windows-specific technologies (DDE for IPC, DLL architecture, likely Win32 API calls). Porting to Linux requires replacing all platform-specific components with cross-platform equivalents. The monolithic design with tight coupling makes selective porting impossible - this requires a comprehensive architectural transformation.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While visdiff.exe has low coupling and could theoretically be modified independently, the requirement to avoid modifying main.exe suggests a plugin architecture is needed. The current architecture lacks a documented plugin mechanism for visdiff.exe. The Extension Gateway (hook.dll) is designed for menu integration, not for extending comparison algorithms within visdiff.exe. This requires architectural changes to support algorithm extensibility.",
+          "supporting_components": [
+            "visdiff.exe"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "This scenario represents the core use case the architecture was designed to support. The Main Application Executable orchestrates the workflow, Core Revision Control Library handles check-out and commit operations, and Visual Difference Viewer provides diff functionality. All necessary components and data flows exist. Performance depends on implementation quality within wrcs.dll, but the architectural structure directly supports this workflow.",
+          "supporting_components": [
+            "main.exe",
+            "wrcs.dll",
+            "visdiff.exe"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "The current architecture relies on DDE (legacy Windows IPC) and direct DLL function calls, neither of which provides a modern, documented API suitable for third-party IDE integration. Modern IDEs expect REST APIs, COM interfaces, command-line interfaces, or well-documented library APIs. The Extension Gateway exists but is focused on menu integration, not programmatic API access. Requires exposing wrcs.dll functionality through a modern, documented interface layer.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The monolithic Windows executable design typically relies on registry settings, GUI-based configuration, or undocumented configuration mechanisms. Automated deployment requires: documented configuration file formats, command-line installation parameters, silent install capability, and separation of configuration from code. The architecture description doesn't indicate these capabilities exist. DDE registration may require additional setup steps that complicate automation.",
+          "supporting_components": [],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "While visdiff.exe is noted as having low coupling, the two-week timeline and 'minimal risk' requirements are incompatible with the current architecture. The use of DDE for communication with main.exe and likely shared data structures/calling conventions means changing the UI framework requires careful interface management. Without documented, stable interfaces and abstraction layers, this change carries high risk and requires more time than specified. The architectural constraint of unclear interface contracts makes this particularly risky.",
+          "supporting_components": [
+            "visdiff.exe"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "Robust transaction management and crash recovery require architectural features not evident in the current design: transaction logging, state persistence, recovery mechanisms, and atomic operations. The monolithic architecture with DDE communication complicates transaction boundaries and state management across process boundaries (main.exe to wrcs.dll operations). While wrcs.dll may implement some transaction logic, the architecture doesn't explicitly show transaction management as a first-class concern.",
+          "supporting_components": [],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "Git import/export requires deep access to repository internals (revision history, metadata, branching structure, file versions) without modifying internal data structures. This requires a well-defined repository abstraction layer and data access API that the monolithic architecture likely lacks. The tight coupling through direct function calls and absence of documented interfaces makes it impossible to add this functionality without touching wrcs.dll internals. The Extension Gateway is insufficient for this level of core functionality extension.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "The architecture lacks observability features: instrumentation points, metrics collection, logging infrastructure, and export mechanisms. The monolithic design without clear separation of concerns makes it difficult to add cross-cutting instrumentation cleanly. Requires adding logging/metrics throughout main.exe and wrcs.dll, implementing aggregation, and providing export capability (files, network, Windows Event Log). The 5% performance constraint requires careful implementation of asynchronous logging.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "While wrcs.dll is a separate DLL (suggesting modularity), the monolithic architecture with direct function calls and unclear interface contracts creates version coupling risks. The 24-hour deployment timeline requires: stable API contracts, comprehensive automated testing, version compatibility verification, and mature deployment infrastructure - capabilities not evident in the architecture. The 'unclear interface contracts' constraint specifically increases the risk of breaking changes when updating wrcs.dll.",
+          "supporting_components": [
+            "wrcs.dll"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "The architecture description doesn't clarify the client-server model or network communication patterns. High-latency tolerance requires: client-side caching, asynchronous operations, prefetching, optimistic UI updates, and efficient network protocols. The monolithic client design and DDE usage suggest synchronous operation patterns. Without explicit support for distributed operation and latency mitigation, the architecture cannot guarantee acceptable performance over high-latency connections.",
+          "supporting_components": [],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "Custom merge strategies require a plugin architecture with well-defined extension points in the merge logic. The Extension Gateway (hook.dll) is designed for menu integration, not for extending core algorithms within wrcs.dll. Merge logic is likely embedded in wrcs.dll without strategy pattern or plugin support. Requires refactoring wrcs.dll to support pluggable merge strategies, implementing plugin discovery/loading, and defining a stable plugin API - none of which exist in the current architecture.",
+          "supporting_components": [],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "wrcs.dll",
+            "hook.dll",
+            "visdiff.exe"
+          ],
+          "change_description": "Complete platform abstraction layer required: (1) Replace DDE with cross-platform IPC (sockets, D-Bus, or message queues), (2) Convert DLLs to shared libraries (.so) with platform-agnostic build system, (3) Abstract all Win32 API calls behind platform-independent interfaces, (4) Replace Windows-specific UI framework with cross-platform alternative (Qt, GTK, or web-based), (5) Abstract file system operations for Windows/Linux path differences, (6) Implement platform detection and conditional compilation strategy.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "DDE has no direct Linux equivalent - requires complete IPC redesign",
+            "Monolithic architecture prevents incremental porting - all-or-nothing approach",
+            "Unclear interface contracts increase risk of breaking functionality during abstraction",
+            "UI framework likely tightly coupled to Windows controls",
+            "Testing complexity: must verify functional equivalence across platforms",
+            "Potential hidden Windows dependencies throughout codebase"
+          ],
+          "alternative_approaches": "Rather than direct porting, consider: (1) Wrap WRCS in a client-server architecture where Windows client communicates with Linux server via REST API, (2) Use Wine/compatibility layer for interim Linux support while planning full rewrite, (3) Implement new Linux-native client that communicates with existing Windows-based repository server, (4) Prioritize extracting wrcs.dll business logic into platform-independent library first, then build platform-specific UIs around it."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "visdiff.exe",
+            "main.exe"
+          ],
+          "change_description": "Implement plugin architecture for visdiff.exe: (1) Refactor visdiff.exe to use strategy pattern for comparison algorithms, (2) Define plugin interface for custom diff algorithms (file type detection, comparison logic, result formatting), (3) Implement plugin discovery mechanism (directory scanning, manifest files), (4) Create plugin loading infrastructure with version compatibility checking, (5) Modify main.exe to pass algorithm selection preferences to visdiff.exe, (6) Document plugin API and provide SDK/examples.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Current visdiff.exe likely has hardcoded comparison logic requiring refactoring",
+            "DDE communication between main.exe and visdiff.exe may not support passing algorithm preferences",
+            "No existing plugin infrastructure to build upon",
+            "Plugin API versioning and compatibility management needed",
+            "Security concerns: plugins could introduce vulnerabilities or instability",
+            "Testing burden: must verify core functionality unaffected while supporting plugins"
+          ],
+          "alternative_approaches": "Alternative approaches: (1) Allow visdiff.exe to be completely replaced by third-party tools via configuration, avoiding plugin complexity, (2) Implement algorithm selection through configuration files rather than plugins, with built-in algorithms for common formats, (3) Create separate specialized diff viewers for different file types (visdiff-json.exe, visdiff-xml.exe) launched based on file extension, (4) Use hook.dll to intercept diff requests and route to appropriate external tools."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. This is core functionality directly supported by existing components.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Performance at scale (5000+ files) depends on wrcs.dll implementation efficiency - may require optimization",
+            "DDE communication overhead between main.exe and visdiff.exe could impact performance",
+            "Repository storage format efficiency affects checkout/commit speed",
+            "No explicit caching mechanism mentioned - may need performance tuning"
+          ],
+          "alternative_approaches": "If performance issues arise: (1) Implement client-side caching of repository metadata to reduce server round-trips, (2) Add incremental checkout capability to avoid processing unchanged files, (3) Optimize DDE communication or replace with faster IPC mechanism, (4) Implement background prefetching of likely-needed data, (5) Add progress indicators and async operations to improve perceived performance."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "wrcs.dll",
+            "hook.dll",
+            "main.exe"
+          ],
+          "change_description": "Create modern API layer: (1) Design and document public API for core operations (check-in, check-out, diff, history, branch, merge), (2) Implement API adapter layer that wraps wrcs.dll functions with modern interface (options: REST API via embedded HTTP server, COM interface for Windows interop, command-line interface with structured output, or direct C API with language bindings), (3) Add authentication/authorization if API is network-accessible, (4) Implement API versioning strategy, (5) Create comprehensive API documentation with examples, (6) Develop client libraries/SDKs for popular languages.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "DDE is unsuitable for modern IDE integration - complete replacement needed",
+            "wrcs.dll interfaces likely undocumented and unstable",
+            "No existing API layer or service boundary",
+            "Security model unclear - API needs authentication/authorization",
+            "Concurrency model unknown - API must handle concurrent requests safely",
+            "Error handling and status reporting may need enhancement for API consumers"
+          ],
+          "alternative_approaches": "Incremental approaches: (1) Implement command-line interface (CLI) first as simplest API - IDEs can invoke via process execution, (2) Create COM wrapper around wrcs.dll for Windows-based IDE integration, (3) Implement file-based API where IDE writes request files and WRCS monitors/processes them, (4) Use hook.dll as starting point to expose limited API, then expand, (5) Create separate API server process that communicates with main.exe via DDE internally but exposes REST externally."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "hook.dll"
+          ],
+          "change_description": "Implement deployment automation support: (1) Define configuration file format (JSON, XML, or INI) for all settings (repository paths, user preferences, diff tool configuration, extension settings), (2) Implement configuration file parsing in main.exe with precedence rules (defaults < system config < user config), (3) Add command-line installation parameters for silent install, (4) Separate configuration from registry - use file-based configuration, (5) Create deployment package with MSI or similar installer supporting unattended installation, (6) Document configuration schema and deployment procedures, (7) Implement configuration validation and error reporting.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Current configuration mechanism unknown - may rely on registry or GUI",
+            "DDE registration may require administrative privileges or manual steps",
+            "No documented configuration schema",
+            "User-specific vs. system-wide configuration separation unclear",
+            "Configuration migration strategy needed for upgrades",
+            "Validation of configuration values needed to prevent deployment errors"
+          ],
+          "alternative_approaches": "Pragmatic approaches: (1) Use Windows Group Policy to distribute registry settings if registry-based configuration exists, (2) Create wrapper script that automates GUI-based configuration via UI automation tools, (3) Provide configuration import/export functionality in GUI for manual distribution, (4) Use Windows Installer XML (WiX) to create MSI with configuration parameters, (5) Implement environment variable overrides for key settings as interim solution."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "visdiff.exe",
+            "main.exe"
+          ],
+          "change_description": "Establish stable interface and refactor for UI independence: (1) Document and formalize the interface contract between main.exe and visdiff.exe (DDE message protocol, command-line parameters, data exchange format), (2) Create abstraction layer in visdiff.exe separating UI from diff logic (Model-View separation), (3) Define stable data structures for diff results independent of UI framework, (4) Implement adapter pattern to isolate UI framework dependencies, (5) Create comprehensive integration test suite to verify interface compatibility, (6) Refactor incrementally: abstract interface first, then swap UI framework. Two-week timeline unrealistic without prior interface stabilization work.",
+          "change_extent": "Localized",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Unclear interface contracts make UI framework change risky",
+            "DDE communication may embed UI-specific assumptions",
+            "Shared data structures between main.exe and visdiff.exe may couple to UI framework",
+            "Two-week timeline incompatible with safe refactoring - requires months",
+            "Testing complexity: must verify all diff scenarios work with new UI",
+            "Potential performance differences between UI frameworks",
+            "User experience consistency with main.exe UI may be challenging"
+          ],
+          "alternative_approaches": "Risk mitigation strategies: (1) Create new visdiff2.exe with modern UI framework alongside existing visdiff.exe, allow users to choose, (2) Implement UI framework change in phases over multiple sprints with feature flags, (3) Use UI framework abstraction library (e.g., wxWidgets) that supports multiple backends, (4) Focus on documenting/stabilizing interface first (sprint 1-2), then plan UI change for later, (5) Consider web-based diff viewer launched in browser to avoid native UI framework dependencies entirely."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "wrcs.dll",
+            "main.exe"
+          ],
+          "change_description": "Implement transaction management and recovery: (1) Design transaction log format for tracking in-progress operations, (2) Implement write-ahead logging (WAL) in wrcs.dll for all repository modifications, (3) Add transaction state persistence (pending commits, file locks, metadata changes), (4) Implement recovery logic in main.exe startup: detect incomplete transactions, present recovery UI, (5) Add atomic operation support with rollback capability, (6) Implement repository consistency checking and repair, (7) Add transaction timeout and cleanup mechanisms, (8) Ensure DDE communication failures don't leave inconsistent state.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No existing transaction infrastructure evident in architecture",
+            "Monolithic design complicates transaction boundaries across components",
+            "DDE communication adds complexity for distributed transaction management",
+            "Repository storage format may not support atomic operations",
+            "Concurrent access scenarios need careful handling",
+            "Backward compatibility with existing repositories required",
+            "Testing crash scenarios requires sophisticated test infrastructure"
+          ],
+          "alternative_approaches": "Incremental reliability improvements: (1) Implement simple operation journaling: log intent before action, mark complete after, (2) Use file system atomic operations (rename) for critical updates, (3) Implement repository backup before risky operations with manual restore option, (4) Add repository validation tool users can run after crashes, (5) Use database with ACID properties for repository metadata (SQLite), (6) Implement pessimistic locking to prevent concurrent modifications that complicate recovery."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "wrcs.dll",
+            "main.exe",
+            "hook.dll"
+          ],
+          "change_description": "Create repository abstraction layer and Git bridge: (1) Refactor wrcs.dll to separate repository access from business logic - create repository interface abstraction, (2) Implement repository adapter pattern with WRCS-native and Git implementations, (3) Design data model mapping between WRCS and Git concepts (commits, branches, merges, tags), (4) Implement Git import: read Git repository, map to WRCS data model, populate WRCS repository, (5) Implement Git export: traverse WRCS history, map to Git objects, create Git repository, (6) Handle impedance mismatches (different branching models, metadata, merge strategies), (7) Create conversion tool as separate utility or integrate into main.exe.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No repository abstraction layer - data access tightly coupled to WRCS format",
+            "Monolithic wrcs.dll design prevents clean separation of storage from logic",
+            "Git and WRCS likely have incompatible data models requiring complex mapping",
+            "Metadata preservation challenges (authors, timestamps, commit messages)",
+            "Branch and merge history may not map cleanly between systems",
+            "Large repository conversion performance and memory concerns",
+            "Bidirectional sync (not just one-time import/export) exponentially more complex"
+          ],
+          "alternative_approaches": "Practical interoperability options: (1) Implement one-way export only (WRCS to Git) for migration scenarios, avoiding complex bidirectional sync, (2) Create external conversion tool using command-line interfaces of both systems rather than deep integration, (3) Use git-fast-import format as intermediate representation, (4) Implement shallow conversion (current state only) rather than full history preservation, (5) Provide Git gateway: expose WRCS repository via Git protocol without actual conversion, (6) Partner with/use existing conversion tools rather than building custom solution."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "wrcs.dll"
+          ],
+          "change_description": "Implement observability infrastructure: (1) Design metrics schema (operation types, durations, user IDs, repository IDs, file counts, error rates), (2) Add instrumentation points throughout main.exe and wrcs.dll at key operations (check-in, check-out, diff, merge, etc.), (3) Implement metrics collection with minimal performance overhead (async logging, sampling, buffering), (4) Create metrics aggregation and export mechanism (options: log files, Windows Event Log, ETW, network export to centralized system), (5) Add configuration for metrics verbosity and export destination, (6) Implement performance monitoring to ensure <5% overhead, (7) Create dashboard/reporting tools or document integration with existing monitoring systems.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No existing instrumentation or logging infrastructure",
+            "Monolithic design lacks separation of concerns for clean cross-cutting instrumentation",
+            "Performance constraint (5%) requires careful async implementation",
+            "User privacy concerns - need to anonymize/aggregate sensitive data",
+            "Metrics schema design requires understanding of admin needs",
+            "Network export adds complexity and potential failure modes",
+            "Centralized collection system integration varies by organization"
+          ],
+          "alternative_approaches": "Lightweight monitoring approaches: (1) Implement Windows Event Log integration for key events - leverages existing infrastructure, (2) Use Windows Performance Counters for real-time metrics - standard Windows monitoring, (3) Implement simple log file output with structured format (JSON) for external parsing, (4) Add metrics endpoint that exposes current statistics on-demand rather than continuous export, (5) Instrument at repository server level if client-server architecture exists, (6) Use Windows ETW (Event Tracing for Windows) for high-performance event collection."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "wrcs.dll",
+            "main.exe"
+          ],
+          "change_description": "Establish component independence and rapid deployment capability: (1) Document and formalize wrcs.dll API contract with semantic versioning, (2) Implement comprehensive automated test suite for wrcs.dll (unit, integration, regression), (3) Establish API compatibility testing between wrcs.dll versions and main.exe, (4) Create CI/CD pipeline for rapid build, test, and package generation, (5) Implement DLL version checking in main.exe with compatibility validation, (6) Create deployment mechanism for DLL updates (installer, update service, or manual distribution), (7) Establish rollback procedure for failed updates. 24-hour timeline requires all infrastructure pre-existing.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Unclear interface contracts create version compatibility risks",
+            "No evidence of comprehensive automated testing infrastructure",
+            "24-hour timeline unrealistic without mature CI/CD and deployment automation",
+            "DLL versioning and compatibility checking mechanisms unknown",
+            "Deployment infrastructure for rapid updates not evident",
+            "Rollback capability essential but not described",
+            "Testing coverage must be extensive to ensure security fix doesn't introduce regressions"
+          ],
+          "alternative_approaches": "Pragmatic security response: (1) Accept longer timeline (48-72 hours) for thorough testing and staged rollout, (2) Implement hotfix as main.exe wrapper that validates inputs before calling wrcs.dll, avoiding DLL changes, (3) Deploy security fix with both wrcs.dll and main.exe updates to reduce compatibility risk, (4) Use staged rollout: deploy to test group first, monitor, then broader deployment, (5) Implement kill-switch or feature flag to disable vulnerable functionality until patch deployed, (6) Provide workaround guidance to users while patch is prepared and tested."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "wrcs.dll"
+          ],
+          "change_description": "Implement latency mitigation and distributed operation support: (1) Design client-server protocol with latency awareness (batch operations, delta transfers, compression), (2) Implement client-side caching of repository metadata (file lists, history, branch information), (3) Add asynchronous operation support with background workers and progress feedback, (4) Implement optimistic UI updates (show expected result immediately, reconcile with server asynchronously), (5) Add prefetching and predictive loading based on user behavior, (6) Implement delta synchronization to minimize data transfer, (7) Add offline mode with operation queuing and sync-on-reconnect, (8) Optimize network protocol to reduce round-trips.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Client-server architecture and network communication model not documented",
+            "Monolithic design suggests synchronous operation patterns",
+            "DDE is local-only IPC, unsuitable for network communication",
+            "No caching infrastructure evident",
+            "Asynchronous operations require significant UI and threading changes",
+            "Offline mode adds complexity for conflict resolution and synchronization",
+            "Testing high-latency scenarios requires specialized infrastructure"
+          ],
+          "alternative_approaches": "Practical remote access improvements: (1) Deploy WRCS on remote desktop/VDI so UI is local even if repository is remote, (2) Implement repository replication with local read-only cache for browse/history operations, (3) Use VPN or WAN optimization appliances to reduce effective latency, (4) Implement read-ahead caching for common operations (file history, recent changes), (5) Provide web-based interface for remote access with different UX optimized for latency, (6) Accept degraded performance for remote users and document recommended usage patterns."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "wrcs.dll",
+            "hook.dll"
+          ],
+          "change_description": "Implement merge strategy plugin architecture: (1) Refactor merge logic in wrcs.dll to use strategy pattern - separate merge algorithm from merge orchestration, (2) Define merge strategy plugin interface (file type detection, conflict detection, merge execution, result validation), (3) Implement plugin discovery and loading mechanism (directory scanning, manifest files, dynamic loading), (4) Create plugin lifecycle management (initialization, configuration, error handling, unloading), (5) Implement built-in merge strategies as plugins to validate architecture, (6) Add plugin configuration UI or file-based configuration, (7) Document plugin API and provide SDK with examples, (8) Implement plugin sandboxing/security to prevent malicious plugins.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Merge logic likely embedded in wrcs.dll without extension points",
+            "hook.dll designed for menu integration, not core algorithm extension",
+            "No existing plugin infrastructure for core functionality",
+            "Plugin API design requires deep understanding of merge requirements",
+            "Security risks: plugins have access to repository data and operations",
+            "Plugin versioning and compatibility management needed",
+            "Performance impact of plugin indirection must be minimized",
+            "Testing complexity: must verify core merges work while supporting custom strategies"
+          ],
+          "alternative_approaches": "Simpler extensibility options: (1) Implement external merge tool integration - delegate to external programs for specific file types, (2) Use configuration files to define merge rules for different file types without full plugin architecture, (3) Provide merge hook scripts that can be customized per repository, (4) Build common domain-specific merge strategies directly into wrcs.dll based on user demand, (5) Allow users to specify custom diff3-style merge tools per file extension, (6) Implement merge driver concept similar to Git's merge drivers with simpler interface than full plugins."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "main.exe",
+          "scenario_count": 10,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11"
+          ]
+        },
+        {
+          "component": "wrcs.dll",
+          "scenario_count": 8,
+          "scenarios": [
+            "S-01",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "hook.dll",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-01",
+            "S-04",
+            "S-05",
+            "S-08",
+            "S-12"
+          ]
+        },
+        {
+          "component": "visdiff.exe",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-06"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "wrcs.dll",
+          "scenario_ids": [
+            "S-01",
+            "S-04",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Core repository engine affecting 8 critical scenarios spanning platform portability (S-01), API modernization (S-04), data integrity (S-07), interoperability (S-08), security patching (S-10), and remote operations (S-11). All stakeholders impacted: end-users face data loss risk without transaction recovery (S-07), developers cannot integrate without modern APIs (S-04), maintainers cannot rapidly deploy security fixes (S-10), and administrators lack usage visibility (S-09). The monolithic design with unclear interfaces creates cascading risks - security vulnerabilities require 24-hour patches but lack deployment infrastructure, Git migration is blocked without repository abstraction, and high-latency scenarios are unsupported. Business risk: data corruption, security exposure, competitive disadvantage from lack of IDE integration, and inability to support distributed teams."
+        },
+        {
+          "component": "main.exe",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10",
+            "S-11"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator",
+            "Developer"
+          ],
+          "rationale": "Primary user interface and orchestration component affecting 10 scenarios, representing the broadest operational impact. Critical for enterprise adoption (S-05 deployment automation), user experience (S-06 UI modernization, S-11 remote access), and platform expansion (S-01 Linux support). System administrators cannot deploy at scale without configuration file support and silent installation (S-05). End-users experience poor remote performance without latency mitigation (S-11) and face data loss without crash recovery UI (S-07). The DDE dependency creates architectural debt blocking modern IDE integration (S-04) and cross-platform support (S-01). Business risk: inability to scale deployments across enterprise, poor user experience driving tool abandonment, platform lock-in preventing Linux adoption, and lack of observability for capacity planning (S-09)."
+        },
+        {
+          "component": "hook.dll",
+          "scenario_ids": [
+            "S-01",
+            "S-04",
+            "S-05",
+            "S-08",
+            "S-12"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "End-user",
+            "Maintainer"
+          ],
+          "rationale": "Extension mechanism affecting 5 scenarios focused on integration and extensibility. Critical for developer workflows through IDE integration (S-04) and custom merge strategies (S-12). Platform portability (S-01) requires converting Windows DLL to cross-platform shared library, blocking Linux adoption. Deployment automation (S-05) complicated by DDE registration requirements. While fewer scenarios than main.exe/wrcs.dll, this component gates important extensibility: developers need API access for automation, and specialized merge logic (S-12) is essential for domain-specific file formats. Business risk: moderate - limits developer productivity and prevents customization for specialized workflows, but core version control functionality remains intact. However, platform migration is completely blocked without addressing DLL architecture."
+        },
+        {
+          "component": "visdiff.exe",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-06"
+          ],
+          "priority": "Low",
+          "rank": 4,
+          "impacted_roles": [
+            "End-user",
+            "Developer"
+          ],
+          "rationale": "Specialized diff viewer affecting 3 scenarios, primarily focused on user experience enhancements rather than core functionality. Platform portability (S-01) requires porting but is lower priority than repository engine. Plugin architecture (S-02) enables custom diff algorithms for specialized file types, benefiting developers working with domain-specific formats. UI framework modernization (S-06) improves maintainability but has unrealistic 2-week timeline and high risk due to unclear interfaces. Business risk: low - existing diff functionality works, and alternatives exist (external diff tools can be substituted). The DDE communication with main.exe adds complexity, but this is an isolated component. Failure to address limits extensibility for specialized file formats and creates technical debt, but doesn't block critical business scenarios like security patching, enterprise deployment, or data integrity."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Functional decomposition into specialized components: The architecture separates concerns into distinct executables (main.exe for orchestration, visdiff.exe for visualization, wrcs.dll for repository logic, hook.dll for extensibility), which successfully supports core version control operations. S-03 demonstrates this strength - basic check-in/check-out workflows for 5000+ files are directly supported without architectural changes, indicating the component boundaries align well with fundamental use cases.",
+          "Isolated diff visualization component: visdiff.exe operates as a separate executable, creating a natural boundary that enables independent evolution. This isolation is evidenced in S-02 and S-06, where plugin architecture and UI framework changes are localized to visdiff.exe without requiring widespread system modifications. The DDE communication provides a clean (if dated) protocol boundary.",
+          "Extension mechanism through hook.dll: The dedicated hook.dll component provides a designated extension point for menu integration and customization, demonstrating intentional design for extensibility. While S-12 reveals limitations for deep algorithmic customization, the existence of this component shows architectural forethought for user-driven extensions.",
+          "Stable core functionality: The architecture has proven capable of delivering reliable version control operations over time. S-03's performance concerns are implementation optimizations rather than fundamental architectural flaws, and the system successfully handles large file sets, indicating sound core design decisions in wrcs.dll's repository management."
+        ],
+        "architectural_weaknesses": [
+          "Monolithic, tightly-coupled core with unclear interface contracts: wrcs.dll and main.exe lack documented, stable APIs and exhibit tight coupling that cascades across 10+ scenarios. S-01 (Linux porting), S-04 (IDE integration), S-07 (crash recovery), S-08 (Git interoperability), S-10 (rapid security patching), and S-11 (remote operations) all cite 'unclear interface contracts' and 'monolithic design' as critical blockers. This prevents incremental evolution, forces all-or-nothing migrations, and creates high-risk change scenarios. The absence of abstraction layers means repository storage, business logic, and communication protocols are entangled, making it impossible to evolve one aspect independently.",
+          "Platform-specific technology dependencies blocking portability and modernization: DDE (Dynamic Data Exchange) and Windows DLL architecture create pervasive platform lock-in affecting 8 scenarios (S-01, S-02, S-04, S-05, S-06, S-08, S-11, S-12). DDE has no Linux equivalent, is unsuitable for modern IDE integration, adds latency overhead, and complicates deployment automation. This single architectural decision blocks cross-platform adoption (S-01), prevents cloud/remote scenarios (S-11), and limits integration capabilities (S-04). The Windows-specific UI frameworks compound this, requiring complete rewrites rather than incremental ports.",
+          "Absence of critical cross-cutting infrastructure: The architecture lacks foundational capabilities that modern systems require - no transaction management (S-07), no instrumentation/observability (S-09), no plugin framework (S-02, S-12), no configuration abstraction (S-05), no API layer (S-04), and no deployment automation support (S-05, S-10). These aren't missing features but absent architectural patterns. Every scenario requiring these capabilities faces 'Widespread' changes with 'High' effort because the architecture provides no hooks, interfaces, or extension points. This forces invasive modifications that risk destabilizing core functionality.",
+          "Lack of repository abstraction preventing data layer evolution: wrcs.dll tightly couples repository access to its proprietary storage format, blocking interoperability (S-08 Git integration requires 'Widespread' changes with 'High' risk), preventing storage optimization for remote scenarios (S-11), and complicating crash recovery (S-07). There's no repository interface abstraction, no adapter pattern, and no separation between storage and business logic. This architectural gap means any evolution of data storage, synchronization protocols, or interoperability requires refactoring the entire core component.",
+          "Synchronous, local-only operational model unsuited for distributed/enterprise scenarios: The architecture assumes low-latency, local operations with synchronous execution patterns. S-11 (remote access) requires 'Widespread' changes to add caching, asynchronous operations, and offline support - capabilities that should be architectural foundations. S-05 (enterprise deployment) struggles because configuration is likely registry-based and GUI-driven. S-09 (usage monitoring) has no instrumentation points. The architecture wasn't designed for enterprise scale, distributed teams, or cloud deployment, requiring fundamental rearchitecture rather than incremental enhancement."
+        ],
+        "modifiability_assessment": "The architecture exhibits poor modifiability with rigid coupling, platform-specific dependencies, and absent abstraction layers forcing high-risk, high-effort changes across 11 of 12 scenarios. Only core version control operations (S-03) are directly supported; all evolution scenarios require 'Indirect' changes with 'Widespread' extent, indicating an architecture optimized for its original use case but resistant to adaptation for modern requirements."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Establish and document stable API contracts for wrcs.dll with comprehensive automated testing infrastructure before attempting any other architectural changes. Implement semantic versioning, create integration test suites covering all core operations, and formalize the interface between wrcs.dll and main.exe with explicit data contracts.",
+          "rationale": "This is the foundational prerequisite for all other improvements. 8 scenarios (S-01, S-04, S-07, S-08, S-09, S-10, S-11, S-12) cite 'unclear interface contracts' as a primary risk factor. Without stable interfaces, every change risks cascading failures, security patches cannot be deployed rapidly (S-10), and refactoring efforts become all-or-nothing propositions. This enables incremental evolution by creating safe boundaries for change. The testing infrastructure also de-risks future modifications and enables confident refactoring.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement repository abstraction layer in wrcs.dll separating storage interface from business logic using the adapter pattern. Create a RepositoryProvider interface with methods for all CRUD operations, implement WRCS-native adapter, and refactor existing code to use the abstraction. This should be done incrementally behind the newly-stabilized API contracts.",
+          "rationale": "Addresses the root cause blocking 5 critical scenarios: Git interoperability (S-08), crash recovery (S-07), remote operations (S-11), rapid security patching (S-10), and future storage evolution. Currently, repository format changes require rewriting wrcs.dll entirely. An abstraction layer enables: (1) implementing Git import/export without touching core logic, (2) adding transaction logging for crash recovery, (3) optimizing storage for remote access, (4) testing storage changes independently. This single architectural pattern unlocks multiple high-value scenarios and is a prerequisite for modernization.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Replace DDE with modern, cross-platform IPC mechanism (named pipes, local sockets, or message queues) with backward compatibility shim. Implement new IPC layer alongside DDE, migrate internal components incrementally, and deprecate DDE over 2-3 releases. Document the communication protocol as part of stable API contracts.",
+          "rationale": "DDE is the single architectural decision blocking the most scenarios: Linux portability (S-01), IDE integration (S-04), remote operations (S-11), deployment automation (S-05), and contributing to risks in S-06, S-07, S-08. Replacing it unblocks cross-platform support, enables network-capable protocols for remote scenarios, simplifies deployment, and provides foundation for modern API layer. The backward compatibility approach reduces risk compared to big-bang replacement. This is essential for platform expansion and enterprise adoption.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement transaction management with write-ahead logging (WAL) in wrcs.dll for all repository modifications. Add operation journaling, atomic commit support, and startup recovery logic. This should leverage the repository abstraction layer to minimize coupling to storage format.",
+          "rationale": "S-07 identifies data integrity as a critical gap with 'High' risk - users face data loss from crashes during commits. This is a fundamental reliability requirement that should be architectural bedrock, not an afterthought. Transaction support also enables: (1) safer concurrent operations, (2) rollback for failed security patches (S-10), (3) conflict resolution for offline sync (S-11), (4) atomic multi-file operations. The business risk of data corruption outweighs implementation complexity. This should be prioritized before adding new features that increase data manipulation complexity.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Create command-line interface (CLI) as the initial modern API layer, exposing all core operations with structured output (JSON). This provides immediate value for IDE integration (S-04), deployment automation (S-05), and scripting while serving as prototype for future REST API. Implement as thin wrapper over stabilized wrcs.dll interfaces.",
+          "rationale": "S-04 shows IDE integration is blocked by lack of modern API, but implementing full REST API is 'High' effort. CLI is a quick win that delivers 80% of value at 30% of effort - IDEs can invoke processes, scripts can automate operations, and administrators can integrate with deployment tools. It forces API design discipline and interface documentation. Once CLI proves the API design, REST/COM layers can be added incrementally. This is the pragmatic path to unblocking developer integration and enterprise automation.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement file-based configuration system with schema validation, replacing registry/GUI-only configuration. Support configuration file hierarchy (system defaults, machine config, user config) with documented precedence rules. Add configuration import/export to existing GUI for migration path.",
+          "rationale": "S-05 shows enterprise deployment is blocked by lack of scriptable configuration - 'Widespread' changes required for automation. File-based configuration is relatively low-risk, high-value improvement enabling: (1) version-controlled configuration, (2) automated deployment via Group Policy/configuration management, (3) disaster recovery through config backup, (4) easier testing with config fixtures. This unblocks enterprise adoption and reduces support burden. The GUI import/export provides migration path for existing users, reducing adoption friction.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Add lightweight instrumentation using Windows Event Log and Performance Counters for key operations (check-in, check-out, merge, errors). Implement async logging with <5% performance overhead. Provide structured event schema for external monitoring tool integration.",
+          "rationale": "S-09 identifies lack of observability as blocking usage analytics and capacity planning. Windows Event Log and Performance Counters leverage existing OS infrastructure, avoiding the complexity of custom metrics systems while providing enterprise-standard monitoring integration. This enables administrators to track adoption, identify performance bottlenecks, and plan capacity. The structured schema allows future migration to more sophisticated systems. Low-hanging fruit that significantly improves operational visibility with moderate effort.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement client-side metadata caching and read-ahead prefetching in main.exe to mitigate high-latency scenarios. Cache repository structure, file history, and branch information locally with TTL-based invalidation. Add background prefetch for likely-needed data based on user context.",
+          "rationale": "S-11 shows remote operations require 'Widespread' changes for full offline support, but caching provides immediate latency relief at 'Medium' effort. This improves user experience for distributed teams without requiring complete architectural overhaul. Caching is incremental - start with read-only metadata, expand to file content, eventually add offline mode. This delivers value quickly while buying time for more fundamental distributed architecture work. The repository abstraction layer (if implemented) makes caching easier to add cleanly.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Document and stabilize the main.exe \u2194 visdiff.exe interface contract, then implement visdiff.exe plugin architecture for custom diff algorithms. Use strategy pattern with plugin discovery via manifest files. Provide SDK with examples for common file types (JSON, XML, CSV).",
+          "rationale": "S-02 shows demand for extensible diff capabilities, but this is lower priority than core infrastructure improvements. However, the 'Localized' change extent and isolated component make this a good candidate for demonstrating plugin architecture patterns that could later apply to merge strategies (S-12). Success here builds organizational capability for plugin-based extensibility. The interface stabilization work also de-risks S-06 (UI framework change). This is valuable but not blocking critical business scenarios.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "For Linux portability (S-01), implement phased approach: (1) Document all platform dependencies and create abstraction layer, (2) Build cross-platform CLI using repository abstraction layer, (3) Create web-based UI for cross-platform access, (4) Consider native Linux client as final phase only if web UI insufficient. Avoid big-bang port of monolithic Windows application.",
+          "rationale": "S-01 identifies Linux support as 'High' effort and risk due to monolithic architecture. Rather than direct port, leverage other architectural improvements (repository abstraction, CLI API, modern IPC) to enable incremental cross-platform support. Web UI provides cross-platform access without porting Windows UI frameworks. CLI enables scripting and automation on Linux. This pragmatic approach delivers Linux capability faster and safer than attempting to port the entire Windows application. Only invest in native Linux client if web UI proves inadequate for user needs.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "For Git interoperability (S-08), implement one-way export tool (WRCS \u2192 Git) as standalone utility using CLI interface. Focus on current-state export initially, add history preservation in later phases based on demand. Avoid bidirectional sync complexity unless business case is compelling.",
+          "rationale": "S-08 shows Git integration requires 'Widespread' changes with 'High' risk, but full bidirectional sync may be over-engineering. One-way export enables migration scenarios and Git-based workflows without the complexity of live synchronization. Using CLI interface (if implemented per earlier recommendation) avoids deep coupling to wrcs.dll internals. This delivers migration capability at fraction of effort required for full integration. Assess actual usage patterns before investing in more sophisticated interoperability - users may only need occasional export, not continuous sync.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

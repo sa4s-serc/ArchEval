@@ -1,0 +1,380 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "EOSDIS Core System (ECS)",
+      "date": "2000-05-01",
+      "ref": "https://cse.sc.edu/~matthews/Courses/741/Handouts/EvalSoftArchChap6.pdf",
+      "evaluator_organization": "Software Engineering Institute (SEI)",
+      "phase_1_attendees": [
+        "Evaluation Team (4 members)",
+        "ECS Project Manager (NASA)",
+        "NASA Technical Staff",
+        "Core Architecture and Development Team (Raytheon)"
+      ],
+      "phase_2_attendees": [
+        "Evaluation Team",
+        "ECS Software Architect",
+        "ECS System Architect",
+        "ECS Designer (COTS expert)",
+        "Representatives of the ECS operator community",
+        "Representative from another government agency",
+        "NASA Representatives"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "The EOSDIS Core System (ECS) is a large-scale, distributed data management system for NASA's Earth Observing System (EOS). Its primary purpose is to ingest, process, archive, and distribute massive amounts of earth science data collected from satellites (such as Terra, Aqua, and Landsat) and other sensors. The system is designed to operate 24/7, handling hundreds of gigabytes of raw data daily, processing it into higher-level data products using science algorithms, and making this information searchable and available to the worldwide scientific community. It features a distributed architecture spanning four major data centers in the U.S., integrating custom code with numerous COTS products.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already fielded and supported by volumes of documentation, including architecture documents provided by the client. The evaluation team reviewed these materials beforehand to understand the system's broad details and concept of operations.",
+        "evaluator_inquiry_questions": [
+          "What are the driving architectural constraints, and where are they documented?",
+          "How do components communicate and synchronize? (Mechanisms used, Restrictions on use)",
+          "What are the system partitions? (Composition, Restrictions on use and visibility)",
+          "What constitutes the system infrastructure? (Supplied functionality, Resource management)",
+          "What are the system interfaces? (Identification, Participants, Coordination mechanisms)",
+          "What is the process/thread model of the architecture?",
+          "What is the deployment model of the system?",
+          "What are the system states and modes?",
+          "What variability mechanisms and variation points are included in the architecture?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system is distributed at four data centers across the United States.",
+          "Deployed on about 20 Unix servers from multiple vendors at each site.",
+          "Supported by a communications infrastructure pictured as a ring connecting the subsystems."
+        ],
+        "runtime_constraints": [
+          "Must support concurrent ingest, production, and distribution of high data volumes.",
+          "Must operate 24 hours a day, 7 days a week, 365 days a year.",
+          "Must process data from 24 sensors on ten spacecraft.",
+          "Must compute about 250 standard data products."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "data_volume": "Ingest ~1.5 TB/day; Distribute ~2 TB/day",
+        "system_scale": {
+          "custom_code": "1.2 million lines",
+          "cots_products": "~50 products",
+          "external_interfaces": "34 systems"
+        },
+        "distribution_targets": "2,000 sites (Scenario Sc4)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Distributed Object / Client-Server",
+          "questions": [
+            "How does the system ensure backward compatibility of interfaces?",
+            "What are the impacts of static linkage of client stubs on deployment?",
+            "How does the distribution of data type information affect modifiability?",
+            "What are the performance costs of location independence via name servers?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "13 (O15.1)",
+          "description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request."
+        },
+        {
+          "id": "Brainstorm_Generic_1",
+          "description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists)."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Support for interdisciplinary earth science",
+          "Concurrent ingest, production, and distribution of high data volumes",
+          "One-stop shopping (location transparency of system components and data)",
+          "Support for externally developed science algorithms/applications",
+          "Science data reprocessing (lineage, version management, processing)",
+          "Assurance of data integrity for archive",
+          "Automated operations to minimize operational costs"
+        ],
+        "technical_constraints": [
+          "Must use specific COTS products (~50 used)",
+          "Must interoperate with other systems",
+          "Must reuse legacy code where applicable",
+          "Distributed deployment across four specific data centers"
+        ],
+        "architectural_drivers": [
+          "Maintainability",
+          "Operability",
+          "Reliability",
+          "Scalability",
+          "Performance"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server",
+          "description": "Heavily used for data-centric operations.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Addressed via separation of concerns, though introduces contention risks."
+            }
+          ]
+        },
+        {
+          "approach_name": "Distributed Data Repositories",
+          "description": "Data collections are allocated across multiple storage units/sites.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Improves performance by locating data near users or processing."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Replication protects against data loss."
+            }
+          ]
+        },
+        {
+          "approach_name": "Metadata (Data Pyramid)",
+          "description": "A common metamodel defines all stored data types and relationships to enable browsing/searching.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Usability",
+              "rationale": "Allows users to search through terabytes of data effectively."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Maintainability",
+            "children": [
+              {
+                "refinement": "M1: Changes to one subsystem require no changes to other subsystems.",
+                "scenario_id": "M1.1",
+                "scenario_description": "Deploy 5B version of the science data server with an update to the earth science data types and latitude/longitude box support into 5A baseline in less than 8 hours with no impact on other subsystems.",
+                "priority_tuple": {
+                  "importance": "30",
+                  "difficulty": "30"
+                }
+              },
+              {
+                "refinement": "M4: Reduce time to upgrade operating system/COTS.",
+                "scenario_id": "M4.1",
+                "scenario_description": "Upgrade from IRIX 6.2 to IRIX 6.5 and replace some hardware in 1 day.",
+                "priority_tuple": {
+                  "importance": "30",
+                  "difficulty": "30"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Operability",
+            "children": [
+              {
+                "refinement": "O10: System should be able to reprioritize orders.",
+                "scenario_id": "O10.1",
+                "scenario_description": "Backlog management\u2014after 24 hours of downtime, operations reprioritizes backlogged workload in 30 minutes.",
+                "priority_tuple": {
+                  "importance": "30",
+                  "difficulty": "20"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability/Availability",
+            "children": [
+              {
+                "refinement": "Ra8: Search, browse and order submission downtime.",
+                "scenario_id": "Ra8.1",
+                "scenario_description": "Search, browse and order submission are down for no more than 1 hour per week due to either failure or backup.",
+                "priority_tuple": {
+                  "importance": "30",
+                  "difficulty": "20"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "P1: Fivefold improvement for search response times.",
+                "scenario_id": "P1.1",
+                "scenario_description": "L-7 search with 100 hits under normal operations, result in 30 seconds.",
+                "priority_tuple": {
+                  "importance": "30",
+                  "difficulty": "20"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Create a report for the execution of the results of a specific run of a scientific algorithm.",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "M1.1",
+            "text": "Deploy 5B version of the science data server with an update to the earth science data types and latitude/longitude box support into 5A baseline in less than 8 hours with no impact on other subsystems.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Maintainability",
+          "environment": "During routine maintenance",
+          "stimulus": "Deploy 5B version with data type update",
+          "response_measure": "Less than 8 hours, no impact on other subsystems",
+          "architectural_decisions": [
+            "AD 1: Backward compatibility of interface",
+            "AD 2: Static linkage of client stubs in servers",
+            "AD 3: Single copy of key operational databases",
+            "AD 4: Information about data types distributed throughout system"
+          ],
+          "reasoning": "Static linkage requires redeployment of the entire system when interfaces change. Single database copy complicates upgrades and testing. Distributed data type info causes ripple effects.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Interfaces ensured only for syntactic compatibility, not semantic.",
+                "rationale": "Interface may be syntactically compatible but semantically incompatible, leading to failures."
+              },
+              {
+                "id": "R2",
+                "description": "Static linkage of client stubs requires new system version deployment on interface change.",
+                "rationale": "Unintended changes may be included; increases deployment scope."
+              },
+              {
+                "id": "R4",
+                "description": "Data type information is distributed throughout the system.",
+                "rationale": "A change to a data type may ripple throughout the system."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR1",
+                "description": "Distributed objects stable, simple API",
+                "rationale": "Supports modifiability."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Amount of downtime for upgrade",
+                "correlated_attribute": "Risk of upgrade (rollback difficulty)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Single set of databases",
+                "conflicting_attributes": [
+                  "Maintainability (Positive: easier to maintain single set)",
+                  "Availability (Negative: negatively affected during upgrade)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "RA8.1",
+            "text": "Search, browse, and order submission are down for no more than 1 hour per week due to either failure or backup.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Database backup or fault",
+          "stimulus": "Database goes down",
+          "response_measure": "< 1 hour downtime/week",
+          "architectural_decisions": [
+            "AD 8: Single on-line copy of Database",
+            "AD 9: Backup copy of Database on tape (not disk)"
+          ],
+          "reasoning": "Single online copy means all activity must halt for consistency checks. Tape backup forces checks to occur on the live disk, requiring quiescence.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R8",
+                "description": "Single on-line copy of the database.",
+                "rationale": "All activity is halted for consistency checks and upgrades."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S3",
+                "parameter": "Single on-line copy of Database",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T4",
+                "parameter": "Backup on Tape",
+                "conflicting_attributes": [
+                  "Cost (Positive: cheaper storage)",
+                  "Availability (Negative: slower restore/check)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P1.1",
+            "text": "L-7 search with 100 hits under normal operations, result in 30 seconds.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations",
+          "stimulus": "Landsat L-7 search with 100 hits",
+          "response_measure": "Result in 30 seconds",
+          "architectural_decisions": [
+            "AD 11: EDG as primary client",
+            "AD 12: Reused object description language library",
+            "AD 15: Full materialization of metadata"
+          ],
+          "reasoning": "Sum of execution times for required steps exceeds 30 seconds (e.g., AD11 takes 100s, AD12 takes 65s).",
+          "findings": {
+            "risks": [
+              {
+                "id": "R17",
+                "description": "EDG as primary client execution time",
+                "rationale": "Takes 100 seconds, exceeding the 30-second budget."
+              },
+              {
+                "id": "R19",
+                "description": "Reused object description language library",
+                "rationale": "Library is slow and difficult to multi-thread."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S11",
+                "parameter": "Full materialization of metadata",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T6",
+                "parameter": "Full materialization of metadata",
+                "conflicting_attributes": [
+                  "Performance (Negative)",
+                  "Usability (Positive: metadata richness)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

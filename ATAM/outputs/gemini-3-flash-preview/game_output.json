@@ -1,0 +1,353 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Break the current tightly coupled practices employed when developing games using game engines",
+      "Make the architecture flexible to accommodate different games"
+    ],
+    "technical_constraints": [
+      "Must support commercial off-the-shelf (COTS) game engines (e.g., Torque)",
+      "Must support bespoke simulation engines",
+      "Distributed environment to offload processing from the game engine machine"
+    ],
+    "architectural_drivers": [
+      "Portability",
+      "Modifiability",
+      "Performance"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The text implies that like traditional system development cycles, the requirements document lacked or weakly articulated quality attributes, requiring the evaluation team to elicit them. Architectural decisions also had to be elicited as they were not fully listed in the documentation.",
+      "evaluator_inquiry_questions": [
+        "Does the game engine require the game state to be put in its own game state?",
+        "Does the game engine require objects to be represented in its own Game Model representation?",
+        "Does the game engine require the behaviour to be specified in the game engine's own language or format?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Distributed environment where the game space and game engine run on different machines",
+        "Adapters are placed in the same application as the game space to minimize overhead"
+      ],
+      "runtime_constraints": [
+        "Network overhead due to distributed environment",
+        "Processing power limitations of the machine running the game engine",
+        "Mid-game scripting performance overhead (approx. 10x slower than pre-compiled code)"
+      ]
+    },
+    "quantitative_model_parameters": {
+      "target_display_rate": "20 FPS",
+      "response_time_threshold": "< 1 second",
+      "scripting_performance_penalty": "10x slower than pre-compiled"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Model-View-Controller (MVC) / Game-based Architecture",
+        "questions": [
+          "How does the architecture break the direct link between the game space's game state and the game engine's game state?",
+          "How does the architecture break the direct link between the game space's game model and the game engine's game model?",
+          "How does the architecture ensure game behaviour is not formatted in the game engine's proprietary format?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Run two games from the same domain"
+      },
+      {
+        "id": "RS-02",
+        "description": "Run two games from two different domains"
+      },
+      {
+        "id": "RS-03",
+        "description": "Interoperate between two game engines"
+      },
+      {
+        "id": "RS-04",
+        "description": "Run two behaviour engines (internal and external)"
+      },
+      {
+        "id": "RS-05",
+        "description": "Increase the load by increasing the number of NPCs the user can interact with"
+      },
+      {
+        "id": "RS-06",
+        "description": "Increase the load by simulating multiple number of simultaneous players"
+      },
+      {
+        "id": "RS-07",
+        "description": "Run the game space on the same machine as the game engine"
+      },
+      {
+        "id": "RS-08",
+        "description": "Run the behaviour engine and the game space on the same machine as the game engine"
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Distributed System Pattern",
+        "description": "Deployment of game space and game engine on separate physical or virtual machines to offload processing and reduce the load on the engine-specific machine.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Offloading processing from the game engine machine helps maintain target display rates (20 FPS) by distributing the computational load."
+          }
+        ]
+      },
+      {
+        "approach_name": "Adapter Pattern",
+        "description": "Integration of adapters within the game space application to translate game-specific state and logic into the proprietary formats required by COTS (e.g., Torque) or bespoke engines.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Portability",
+            "rationale": "Allows the game space to remain agnostic of the underlying game engine, facilitating movement between different engine technologies."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Simplifies the process of swapping or updating game engines without requiring a complete rewrite of the game logic."
+          }
+        ]
+      },
+      {
+        "approach_name": "MVC-based Decoupling",
+        "description": "Separation of the game state (Model) from the engine's internal representation and rendering logic (View/Controller), ensuring that the game logic is not tied to a specific engine's data structures.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Prevents changes in the game engine's internal game model from impacting the core game state and logic."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "Ensures the system can run on different domains and engines by maintaining a clean separation of concerns."
+          }
+        ]
+      },
+      {
+        "approach_name": "External Behavioral Scripting",
+        "description": "Defining game behavior in an engine-independent format or through an external behavior engine rather than using the game engine's proprietary scripting language.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Portability",
+            "rationale": "Ensures behavior specification is not formatted in the game engine's own language, making the behavior logic reusable across different engines."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "While scripting introduces a 10x penalty, the architectural decision to decouple allows for targeted optimization of the behavior engine separately from the rendering engine."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Display Rate",
+              "scenario_id": "P1",
+              "scenario_description": "System maintains a target display rate of 20 FPS under standard load.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Portability",
+          "children": [
+            {
+              "refinement": "Engine Independence",
+              "scenario_id": "PO1",
+              "scenario_description": "The game space remains agnostic, allowing the underlying engine to be swapped with minimal changes to core game logic.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Logic Isolation",
+              "scenario_id": "M1",
+              "scenario_description": "Game behavior scripts can be updated or added without requiring a complete rewrite or recompilation of the rendering engine.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under a standard load of active entities, the system maintains a consistent display rate of 20 FPS by distributing the computational load between the game space and the rendering engine across separate physical or virtual machines.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A developer replaces the current COTS rendering engine with a different engine technology; the system remains functional with minimal changes required only to the Adapter components, ensuring the core game logic is preserved.",
+        "primary_quality_attribute": [
+          "Portability"
+        ]
+      },
+      {
+        "scenario_text": "A game designer modifies external behavioral scripts to change entity interactions; the system applies these updates without requiring a rewrite or recompilation of the rendering engine's core codebase.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under a standard load of active entities, the system maintains a consistent display rate of 20 FPS by distributing the computational load.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Standard operations",
+        "stimulus": "Processing high volume of entity updates and rendering",
+        "response_measure": "Maintain 20 FPS (50ms per frame budget)",
+        "architectural_decisions": [
+          "Distributed System Pattern",
+          "MVC-based Decoupling"
+        ],
+        "reasoning": "Parallelizing logic and rendering allows better utilization of resources, but the network link becomes a critical path. If network latency exceeds 10-15ms, the 50ms frame budget is at risk.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Network latency between nodes.",
+              "rationale": "In a distributed setup, synchronous state updates are limited by the round-trip time, potentially dropping FPS below 20."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "CPU Saturation on Render Node.",
+              "rationale": "Offloading game logic to a separate machine ensures the rendering node's CPU is dedicated to engine-specific tasks."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Message size of state updates.",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Distributed deployment.",
+              "conflicting_attributes": [
+                "Performance (Throughput)",
+                "Performance (Latency)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "PO1",
+          "text": "A developer replaces the current COTS rendering engine with a different engine technology; the system remains functional with minimal changes.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Portability",
+        "environment": "Engine migration",
+        "stimulus": "Replacement of rendering engine technology",
+        "response_measure": "Changes limited to Adapter components only",
+        "architectural_decisions": [
+          "Adapter Pattern",
+          "MVC-based Decoupling"
+        ],
+        "reasoning": "The adapter layer provides a stable interface for the game space. By decoupling the Model from the View (engine), only the mapping logic needs update.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Adapter Complexity.",
+              "rationale": "Translating complex state to a significantly different engine API might lead to a 'thick' adapter that introduces bugs."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Core Logic Stability.",
+              "rationale": "The core game space logic is completely isolated from engine-specific headers and libraries."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Granularity of the Adapter API.",
+              "correlated_attribute": "Modifiability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Abstraction Layer.",
+              "conflicting_attributes": [
+                "Portability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A game designer modifies external behavioral scripts to change entity interactions; the system applies these updates without recompiling the rendering engine.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Runtime or Design time",
+        "stimulus": "Update to behavioral script logic",
+        "response_measure": "No recompilation of engine or game space core",
+        "architectural_decisions": [
+          "External Behavioral Scripting"
+        ],
+        "reasoning": "Using an external script engine allows late binding of logic. However, the 10x penalty of interpreted scripts is a significant concern for the performance driver.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Script Execution Overhead.",
+              "rationale": "A 10x performance penalty on behavior logic might prevent the system from reaching the 20 FPS goal during complex entity interactions."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Script interpreter efficiency.",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "External Scripting.",
+              "conflicting_attributes": [
+                "Modifiability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

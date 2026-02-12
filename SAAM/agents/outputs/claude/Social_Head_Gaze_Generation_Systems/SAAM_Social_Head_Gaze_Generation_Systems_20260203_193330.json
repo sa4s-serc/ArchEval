@@ -1,0 +1,1030 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Social Head Gaze Generation Systems",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "To serve as a template for creating or re-engineering systems, provide analyses and understanding of different systems, and provide a common lexicon and taxonomy."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Layered",
+          "Policy-Based",
+          "Knowledge-Driven"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "SHGG-01",
+            "name": "Social Head Gaze Generation Architecture",
+            "description": "A multi-layered architecture that generates socially appropriate head gaze behaviors for humanoid robots during human-robot interaction. The system translates high-level communicative intentions into physical head movements by applying behavioral policies derived from human-human communication patterns. Two primary architectural variants exist: HRC (Human-Robot Collaboration) uses a policy-based approach with behavior arbitration, while RBT (Robot Behavior Toolkit) uses a knowledge-base driven approach with conflict resolution.",
+            "architecture_characteristics": "Modularity (separate policies/behaviors for different social functions), Extensibility (new gaze behaviors can be added as policies), Real-time responsiveness (must generate gaze in conversational timeframes), Context-awareness (behaviors depend on turn-taking status and environmental state), Deterministic behavior selection (rule-based rather than learned)",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Perception & Context Layer",
+                "responsibilities": "Captures environmental state, human presence, turn-taking status, and object locations. In HRC: handled by Collaboration Manager's perception functions. In RBT: handled by Perceptual System feeding the Cognitive System. Provides the foundational context for all gaze decisions.",
+                "dependencies": [],
+                "change_sensitivity": "High - Changes to sensor inputs or perception capabilities affect all downstream components. Adding new perceptual capabilities (e.g., emotion detection) requires updates throughout the system."
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Behavioral Specification Repository",
+                "responsibilities": "Stores the rules and specifications for social gaze behaviors based on human communication research. In HRC: embedded within individual Policy components. In RBT: centralized in Knowledge Base as XML specifications. Defines WHEN and HOW the robot should gaze (e.g., look at speaker during their turn, look at objects when referencing).",
+                "dependencies": [
+                  "C-01"
+                ],
+                "change_sensitivity": "Medium - Modifications to gaze behavior rules are localized here, but changes affect behavioral output. Adding new social contexts or interaction patterns requires specification updates."
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Behavior Generation Layer",
+                "responsibilities": "Generates candidate gaze behaviors based on current context. In HRC: consists of Turn Policy (conversation engagement), Response Policy (interest display), and Reference Policy (object gazing). In RBT: Behavior Selection System queries Knowledge Base to retrieve appropriate behaviors. Multiple behaviors may be generated simultaneously for different social functions.",
+                "dependencies": [
+                  "C-01",
+                  "C-02"
+                ],
+                "change_sensitivity": "Medium - New social functions require new policy/behavior modules, but existing ones remain independent. Changes are modular but require understanding of social interaction patterns."
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Coordination & Arbitration Layer",
+                "responsibilities": "Resolves conflicts when multiple gaze behaviors are active simultaneously and prioritizes which behavior should control the robot's head. In HRC: Maintenance Policy prioritizes among Turn/Response/Reference policies; Collaboration Manager inhibits conflicting gestures. In RBT: Behavior Coordination System uses prioritization rules to resolve overlaps.",
+                "dependencies": [
+                  "C-03"
+                ],
+                "change_sensitivity": "High - Changes to prioritization logic affect overall system behavior. Adding new behaviors requires updating conflict resolution rules. This is a critical integration point where behavioral 'personality' emerges."
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "Dialog & Task Management",
+                "responsibilities": "Manages conversational content and task-specific context (e.g., tangram game in HRC validation). In HRC: Collaboration Manager handles dialog content. In RBT: Cognitive System maintains current action state. Provides high-level goals that inform gaze behavior selection.",
+                "dependencies": [
+                  "C-01"
+                ],
+                "change_sensitivity": "Medium - Task-specific changes are localized here, but new task types may require new gaze policies in C-03."
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "Motor Execution Layer",
+                "responsibilities": "Translates selected gaze behavior into physical head/eye movements on the robot hardware. Handles robot-specific kinematics and constraints (e.g., Melvin, PR2, Wakamaru platforms).",
+                "dependencies": [
+                  "C-04"
+                ],
+                "change_sensitivity": "Low - Robot platform changes affect this layer but not higher-level behavioral logic. Well-isolated from social behavior specifications."
+              }
+            ],
+            "data_flow": "1) Perception Layer (C-01) continuously monitors environment, humans, and interaction state \u2192 2) Context information flows to Dialog/Task Management (C-05) and Behavior Generation Layer (C-03) \u2192 3) Behavior Generation (C-03) queries Behavioral Specifications (C-02) to generate candidate gaze behaviors based on current context \u2192 4) Multiple candidate behaviors (turn-taking gaze, interest gaze, referential gaze) flow to Coordination Layer (C-04) \u2192 5) Coordination Layer (C-04) applies prioritization rules to select winning behavior \u2192 6) Selected behavior command flows to Motor Execution (C-06) \u2192 7) Robot executes head gaze movement \u2192 8) Execution state feeds back to Perception/Cognitive System (C-01) for next cycle. This creates a continuous sense-decide-act loop operating in real-time during interaction.",
+            "architectural_constraints": [
+              "Rule-based behavioral specifications: System relies on pre-defined rules from human communication research, not learned behaviors",
+              "Real-time performance requirements: Must generate gaze responses within conversational timing constraints (typically <500ms)",
+              "Single-modality focus: Architecture addresses head gaze only; integration with other modalities (speech, gestures, body movement) handled externally",
+              "Humanoid robot assumption: Designed for robots with human-like head/neck kinematics; not directly applicable to non-humanoid platforms",
+              "Synchronous behavior selection: One gaze behavior active at a time after arbitration (no parallel gaze targets)",
+              "Static priority schemes: Behavior prioritization uses fixed rules rather than dynamic, context-adaptive weighting",
+              "Validated contexts: Proven primarily in structured collaborative tasks (tangram game), not open-ended social scenarios"
+            ],
+            "what_architecture_supports": {
+              "easily_accommodated": [
+                "Adding new gaze behavior types (new policies/specifications) for additional social functions",
+                "Modifying existing gaze behavior rules based on updated research or user studies",
+                "Porting to different humanoid robot platforms (changes isolated to motor execution layer)",
+                "Adjusting behavior priorities to create different interaction 'personalities'",
+                "Extending to new structured collaborative tasks with clear turn-taking",
+                "Adding new environmental objects or reference targets for gaze"
+              ],
+              "difficult_to_accommodate": [
+                "Multi-party interactions (>2 participants): Current architecture assumes dyadic interaction",
+                "Learning or adapting gaze behaviors from interaction experience: No learning mechanisms present",
+                "Dynamic, context-sensitive priority adjustment: Priorities are static rules, not adaptive",
+                "Simultaneous multi-target gazing: Architecture selects single behavior after arbitration",
+                "Integration with emotional state or personality models: No affective computing components",
+                "Unstructured, open-ended social scenarios: Validated primarily for task-oriented collaboration",
+                "Predictive or anticipatory gaze: System is reactive to current state, not predictive of future states",
+                "Cultural adaptation of gaze norms: Behavioral specifications encode Western communication patterns"
+              ]
+            },
+            "change_impact_scenarios": {
+              "scenario_1": {
+                "change": "Add gaze behavior for expressing confusion or uncertainty",
+                "affected_components": [
+                  "C-02 (add new specification)",
+                  "C-03 (add new policy/behavior generator)",
+                  "C-04 (update prioritization rules)"
+                ],
+                "difficulty": "Low-Medium",
+                "rationale": "Follows existing pattern of adding modular behaviors, but requires defining when confusion should be expressed and how it prioritizes against other behaviors"
+              },
+              "scenario_2": {
+                "change": "Support three-person conversations",
+                "affected_components": [
+                  "C-01 (track multiple humans)",
+                  "C-02 (redefine turn-taking rules)",
+                  "C-03 (modify all policies)",
+                  "C-04 (complex multi-party arbitration)",
+                  "C-05 (multi-party dialog management)"
+                ],
+                "difficulty": "High",
+                "rationale": "Fundamental assumption of dyadic interaction is embedded throughout; requires architectural rethinking of turn-taking, attention distribution, and behavior coordination"
+              },
+              "scenario_3": {
+                "change": "Deploy on a non-humanoid robot (e.g., tablet-based robot)",
+                "affected_components": [
+                  "C-06 (complete reimplementation)",
+                  "C-02 (adapt behaviors to platform constraints)"
+                ],
+                "difficulty": "Medium-High",
+                "rationale": "Motor execution changes are isolated, but behavioral specifications assume human-like head movement capabilities; some social gaze functions may not translate"
+              },
+              "scenario_4": {
+                "change": "Make gaze behaviors adapt based on user feedback or interaction success",
+                "affected_components": [
+                  "All components - requires adding learning infrastructure"
+                ],
+                "difficulty": "Very High",
+                "rationale": "Architecture is fundamentally rule-based; adding learning requires new components for feedback collection, behavior evaluation, and adaptive policy modification - essentially a parallel architecture"
+              }
+            },
+            "notes": "This architecture represents a mature, research-validated approach to social gaze generation with clear strengths in modularity and interpretability. The policy-based design makes behavior transparent and debuggable - stakeholders can understand WHY the robot gazes in particular ways. However, the rule-based nature means the system cannot improve from experience or adapt to individual users. The architecture is best suited for structured, task-oriented human-robot collaboration where social protocols are well-defined. For open-ended social interaction or personalized adaptation, significant architectural evolution would be needed. The two variants (HRC and RBT) represent different implementation philosophies (distributed policies vs. centralized knowledge base) but share the same fundamental layered, policy-driven approach."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A developer integrates a new robot platform (different motor control API) into the system within 5 days by mapping the platform's motor commands to the existing Motor Execution Layer interface without modifying upstream components.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Motor Execution Layer"
+          ],
+          "feasibility_note": "Direct match - layered architecture should support platform abstraction at motor execution boundary. Success depends on whether Motor Execution Layer has well-defined interfaces.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Demonstrates the architecture's ability to serve as a reusable template across different robotic platforms, supporting the stated need for system re-engineering and common lexicon."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "An end-user interacts with a robot during a collaborative assembly task where the robot must shift gaze between the shared workspace, task objects, and the user's face at contextually appropriate moments, with gaze transitions completing within 300ms and appearing natural (>80% user acceptance in post-interaction survey).",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Perception & Context Layer",
+            "Dialog & Task Management",
+            "Behavioral Specification Repository",
+            "Behavior Generation Layer",
+            "Coordination & Arbitration Layer",
+            "Motor Execution Layer"
+          ],
+          "feasibility_note": "Direct match for HRC variant - this is the core use case. Requires full pipeline from context perception through motor execution with real-time coordination.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Validates that the system successfully maps communicative functions (attention, turn-taking, engagement) to appropriate head gaze actions during actual human-robot collaboration."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A system administrator monitors and logs all gaze behavior decisions in real-time, including which behavioral policies were activated, arbitration outcomes, and execution timing, with diagnostic data accessible through a standardized API within 100ms of each gaze action.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Coordination & Arbitration Layer",
+            "Behavior Generation Layer",
+            "Motor Execution Layer"
+          ],
+          "feasibility_note": "Indirect match - architecture likely lacks explicit observability/monitoring layer. Would require instrumentation across multiple components and a new diagnostic interface.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Essential for deployment, debugging, and system health monitoring in production environments. Supports understanding of system behavior across different implementations."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A maintainer updates the behavioral policies for mutual gaze duration (e.g., changing from 1.5s to 2.0s average) in the Behavioral Specification Repository, and the change propagates to all active robot instances within 1 hour without requiring system restart or recompilation.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Behavioral Specification Repository",
+            "Behavior Generation Layer"
+          ],
+          "feasibility_note": "Partial match - repository exists but runtime update capability unclear. May require architectural enhancement for hot-swapping behavioral policies.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Demonstrates modifiability and maintainability of behavioral specifications, critical for iterative refinement based on user studies and cultural adaptation."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A developer compares the HRC (policy-based) and RBT (knowledge-base) architectural variants by implementing the same conversational scenario (3-minute information-seeking dialog) in both systems and measuring: lines of code required, behavior specification complexity, and runtime performance (CPU/memory), completing the comparison within 2 weeks.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Behavioral Specification Repository",
+            "Behavior Generation Layer",
+            "Coordination & Arbitration Layer"
+          ],
+          "feasibility_note": "Direct match - architecture explicitly supports two variants. Requires clear documentation of variant differences and comparable interfaces.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Directly addresses the need to 'provide analyses and understanding of different systems' and establish a common taxonomy for comparing architectural approaches."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "An end-user engages in a multi-party conversation (3 people + robot) where the robot must track speaker turns, distribute gaze appropriately among participants (following 60-40 speaker-listener distribution norms), and handle interruptions, with users rating the robot as 'socially aware' (\u22654/5 on Likert scale).",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Perception & Context Layer",
+            "Dialog & Task Management",
+            "Coordination & Arbitration Layer",
+            "Behavior Generation Layer"
+          ],
+          "feasibility_note": "Indirect match - multi-party scenarios add complexity to context perception and arbitration. Current architecture may be designed for dyadic interaction; scaling requires enhanced perception and more sophisticated arbitration strategies.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Extends the system's communicative function mapping to more complex social scenarios, testing the architecture's scalability and generalizability."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "A maintainer diagnoses why the robot exhibited inappropriate gaze behavior (staring at floor during greeting) by tracing the decision path from perception inputs through behavioral policy selection to motor commands, identifying the root cause within 30 minutes using system logs and debugging tools.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Perception & Context Layer",
+            "Behavioral Specification Repository",
+            "Behavior Generation Layer",
+            "Coordination & Arbitration Layer",
+            "Motor Execution Layer"
+          ],
+          "feasibility_note": "Indirect match - requires comprehensive tracing/debugging infrastructure across all layers. Current architecture description doesn't specify debugging or introspection capabilities.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Critical for maintaining system reliability and quality. Supports the goal of understanding system behavior and facilitating system re-engineering when issues arise."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A system administrator deploys the gaze generation system across 10 heterogeneous robot platforms (different manufacturers, form factors, and motor capabilities) using a standardized configuration process, with each deployment completing in under 4 hours and achieving consistent gaze behavior quality (\u00b110% variance in timing accuracy).",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Motor Execution Layer",
+            "Behavioral Specification Repository",
+            "Coordination & Arbitration Layer"
+          ],
+          "feasibility_note": "Partial match - architecture's layered design supports platform abstraction, but deployment tooling and configuration management not explicitly addressed. Requires standardized deployment procedures and platform adaptation layer.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Validates the architecture's role as a reusable template across diverse systems, essential for broad adoption and standardization in the robotics community."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A developer extends the system to incorporate cultural gaze norms (e.g., reduced direct eye contact for East Asian contexts vs. Western contexts) by adding culture-specific behavioral policies to the repository, with the system selecting appropriate policies based on user profile, implementable within 1 week without modifying core architecture components.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Behavioral Specification Repository",
+            "Perception & Context Layer",
+            "Behavior Generation Layer"
+          ],
+          "feasibility_note": "Partial match - repository structure supports multiple policies, but cultural context awareness may require enhanced perception capabilities and policy selection mechanisms. Tests architecture's extensibility for variation points.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Explores the architecture's flexibility for accommodating diverse social norms, expanding the system's applicability and demonstrating the value of the common lexicon for cross-cultural adaptation."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "An end-user works alongside a robot in a noisy factory environment where the robot compensates for reduced audio clarity by increasing reliance on gaze-based communication (more frequent mutual gaze checks, exaggerated head movements for acknowledgment), maintaining task efficiency within 95% of quiet environment performance.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Perception & Context Layer",
+            "Dialog & Task Management",
+            "Coordination & Arbitration Layer",
+            "Behavior Generation Layer"
+          ],
+          "feasibility_note": "Indirect match - requires adaptive behavior selection based on environmental context and multimodal signal quality. Architecture would need enhanced perception of environmental conditions and adaptive arbitration strategies.",
+          "priority": "Low",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Tests the system's robustness and adaptability to challenging real-world conditions, validating whether the communicative function mapping can dynamically adjust to context."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "A maintainer performs a system upgrade that replaces the Coordination & Arbitration Layer implementation (switching from HRC to RBT variant) while preserving all existing behavioral specifications and maintaining backward compatibility with existing Dialog & Task Management integrations, completing the migration with zero downtime.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Coordination & Arbitration Layer",
+            "Behavioral Specification Repository",
+            "Behavior Generation Layer",
+            "Dialog & Task Management"
+          ],
+          "feasibility_note": "Indirect match - tests architectural modularity and interface stability. Requires well-defined component boundaries and abstraction layers. Current description suggests variants differ significantly, which may complicate seamless swapping.",
+          "priority": "Low",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Validates the architecture's modifiability and the independence of component implementations, supporting long-term evolution and the ability to re-engineer systems using the template."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "A system administrator configures resource allocation limits (CPU: 15%, memory: 512MB) for the gaze generation system on a resource-constrained embedded platform, with the system automatically degrading to simplified behavioral policies while maintaining minimum acceptable social presence (\u22653/5 user rating).",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Coordination & Arbitration Layer",
+            "Behavior Generation Layer",
+            "Behavioral Specification Repository"
+          ],
+          "feasibility_note": "Indirect match - requires resource-aware behavior selection and graceful degradation mechanisms not explicitly described in current architecture. Would need performance monitoring and adaptive policy selection.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Addresses deployment flexibility across diverse hardware platforms, from high-end research robots to consumer devices, expanding the architecture's applicability as a general template."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly supports platform abstraction through the Motor Execution Layer (C-06), which is designed to handle robot-specific kinematics and constraints. The architecture documentation states this layer has 'Low change sensitivity' for robot platform changes and that changes are 'well-isolated from social behavior specifications.' The 5-day timeline is reasonable for implementing a motor control API adapter without touching upstream components.",
+          "supporting_components": [
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Direct",
+          "rationale": "This is the core validated use case for the HRC variant. The architecture was specifically validated using a tangram collaborative task, which matches this assembly scenario. All required components exist: C-01 tracks environment and humans, C-05 manages task context, C-03 generates gaze behaviors (turn-taking, referential, interest), C-04 coordinates between competing behaviors, and C-06 executes movements. The 300ms timing requirement aligns with the stated real-time performance constraint (<500ms). The architecture's 'what_architecture_supports' explicitly lists 'Extending to new structured collaborative tasks with clear turn-taking' as easily accommodated.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "The architecture lacks explicit observability, monitoring, or diagnostic infrastructure. While the rule-based design makes behavior theoretically transparent, there's no described mechanism for real-time logging, event streaming, or standardized diagnostic APIs. The 100ms latency requirement for diagnostic data access suggests a need for instrumentation across C-03, C-04, and C-06, plus a new monitoring/observability layer that doesn't currently exist in the architecture.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "While the Behavioral Specification Repository (C-02) exists and supports modifying gaze behavior rules, the architecture doesn't describe runtime update capabilities or hot-swapping mechanisms. The RBT variant uses XML specifications which could theoretically be reloaded, but there's no indication of dynamic policy updates without system restart. The 1-hour propagation requirement and zero-downtime constraint suggest a need for configuration management, versioning, and runtime policy reload capabilities not currently specified in the architecture.",
+          "supporting_components": [
+            "C-02"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly describes two variants (HRC policy-based and RBT knowledge-base driven) that implement the same functional goals using different approaches. The architecture documentation already provides comparative analysis of these variants, noting they 'represent different implementation philosophies (distributed policies vs. centralized knowledge base) but share the same fundamental layered, policy-driven approach.' The 2-week timeline is reasonable for implementing a test scenario in both variants given that the architectural patterns are already documented.",
+          "supporting_components": [
+            "C-02",
+            "C-03",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "The architecture explicitly lists 'Multi-party interactions (>2 participants)' as difficult to accommodate. The documentation states 'Current architecture assumes dyadic interaction' and that supporting three-person conversations would be 'High difficulty' requiring changes to C-01 (track multiple humans), C-02 (redefine turn-taking rules), C-03 (modify all policies), C-04 (complex multi-party arbitration), and C-05 (multi-party dialog management). The fundamental assumption of dyadic interaction is embedded throughout the architecture.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "While the rule-based architecture is theoretically debuggable and transparent, there's no described tracing, logging, or debugging infrastructure that would enable systematic diagnosis across the full decision pipeline. The 30-minute diagnostic timeline requires comprehensive instrumentation from perception inputs (C-01) through behavioral selection (C-03, C-04) to motor execution (C-06), plus debugging tools and visualization capabilities not currently specified in the architecture.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "While the Motor Execution Layer (C-06) provides platform abstraction, the scenario requires standardized deployment tooling, configuration management, platform capability profiling, and automated deployment procedures that aren't described in the architecture. The 4-hour deployment timeline and \u00b110% timing variance requirement suggest a need for deployment automation, platform adaptation frameworks, and quality assurance mechanisms beyond the current architectural scope. The architecture supports platform diversity conceptually but lacks the operational infrastructure for systematic multi-platform deployment.",
+          "supporting_components": [
+            "C-06"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "The architecture explicitly lists 'Cultural adaptation of gaze norms' as difficult to accommodate, noting that 'Behavioral specifications encode Western communication patterns.' While the Behavioral Specification Repository (C-02) could theoretically store multiple culture-specific policies, the architecture lacks mechanisms for: (1) detecting or receiving user cultural context (requires C-01 enhancement), (2) selecting appropriate cultural policy variants (requires C-03 enhancement), and (3) managing multiple cultural behavior sets. The 1-week timeline may be achievable for adding policies but not for the full cultural context-awareness infrastructure.",
+          "supporting_components": [
+            "C-02"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "This scenario requires adaptive behavior selection based on environmental conditions (noise level) and multimodal signal quality assessment, which the architecture doesn't support. The architecture is described as 'reactive to current state, not predictive' and uses 'Static priority schemes' rather than dynamic, context-adaptive weighting. Supporting this would require: (1) environmental condition monitoring in C-01, (2) adaptive arbitration logic in C-04 that adjusts behavior priorities based on context, and (3) potentially new compensatory gaze behaviors in C-03. The architecture explicitly lists 'Dynamic, context-sensitive priority adjustment' as difficult to accommodate.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "While both HRC and RBT variants exist, the architecture documentation suggests they differ significantly in implementation approach (distributed policies vs. centralized knowledge base). Seamless runtime swapping with zero downtime requires: (1) well-defined, stable interfaces between C-04 and adjacent components, (2) state migration mechanisms, (3) backward compatibility guarantees, and (4) hot-swap infrastructure. The architecture doesn't describe these capabilities, and the variants' fundamental differences (policy-based vs. knowledge-base driven) suggest they may not be directly interchangeable without architectural work to establish common interfaces.",
+          "supporting_components": [],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "The architecture doesn't describe resource monitoring, resource-aware behavior selection, or graceful degradation mechanisms. Supporting this scenario requires: (1) performance monitoring infrastructure, (2) tiered behavioral policies with varying computational complexity in C-02, (3) resource-aware arbitration logic in C-04 that can select simplified policies under constraints, and (4) quality-of-service management. The architecture's real-time performance constraint (<500ms) suggests timing awareness but not explicit resource management or adaptive degradation capabilities.",
+          "supporting_components": [],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "SHGG-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-06"
+          ],
+          "change_description": "Implementation of a platform-specific motor control adapter within the Motor Execution Layer to map abstract gaze commands to the new robot's motor API. No changes to upstream components required.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support exists"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "SHGG-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-06"
+          ],
+          "change_description": "Task-specific configuration of Dialog & Task Management (C-05) for assembly task context. Behavioral specifications may need minor tuning for assembly-specific object references, but core architecture supports this use case directly.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Core validated use case"
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-04",
+            "C-06",
+            "NEW: Observability Layer"
+          ],
+          "change_description": "Add comprehensive instrumentation across Behavior Generation Layer (C-03) to log policy activations, Coordination & Arbitration Layer (C-04) to log arbitration decisions and winning behaviors, and Motor Execution Layer (C-06) to log execution timing. Create new Observability Layer component with standardized diagnostic API, event streaming, and real-time logging infrastructure. Implement structured logging format with timestamps, component IDs, and decision rationale.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "No existing observability infrastructure described in architecture",
+            "100ms diagnostic latency requirement may impact real-time performance if logging is synchronous",
+            "Standardized API format not defined - requires design decisions",
+            "Potential performance overhead from comprehensive logging in real-time system"
+          ],
+          "alternative_approaches": "Implement post-hoc analysis using offline log replay rather than real-time monitoring; use sampling-based logging to reduce overhead; implement asynchronous logging with buffering to meet latency requirements while minimizing performance impact."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "NEW: Configuration Management"
+          ],
+          "change_description": "Enhance Behavioral Specification Repository (C-02) with versioning and runtime reload capabilities. Implement configuration management system that can: (1) validate new behavioral specifications, (2) propagate updates to active instances, (3) trigger policy reload in Behavior Generation Layer (C-03) without system restart. For RBT variant, implement XML hot-reload; for HRC variant, implement dynamic policy object replacement. Add configuration versioning and rollback capabilities.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No runtime update mechanism described in current architecture",
+            "Potential race conditions during policy updates if robot is mid-interaction",
+            "Need to ensure behavioral consistency during transition period",
+            "1-hour propagation to multiple instances requires distributed configuration management",
+            "Validation of new policies before deployment not addressed"
+          ],
+          "alternative_approaches": "Implement blue-green deployment with instance rotation rather than hot-swapping; schedule updates during interaction idle periods; use feature flags to gradually roll out behavioral changes; implement canary deployments to test changes on subset of instances first."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "SHGG-01",
+          "classification": "Direct",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "C-04"
+          ],
+          "change_description": "Implement the same conversational scenario in both HRC (policy-based) and RBT (knowledge-base) variants using existing architectural patterns. Document implementation differences, measure code complexity metrics, and profile runtime performance.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Architecture explicitly supports variant comparison"
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05"
+          ],
+          "change_description": "Major architectural enhancement to support multi-party interaction: (1) Perception & Context Layer (C-01): Add multi-person tracking, speaker identification, and turn-taking detection for 3+ participants. (2) Behavioral Specification Repository (C-02): Redefine turn-taking rules for multi-party conversations, add gaze distribution norms (60-40 speaker-listener across multiple listeners), specify interruption handling. (3) Behavior Generation Layer (C-03): Modify all policies to handle multiple interaction partners, implement attention distribution strategies. (4) Coordination & Arbitration Layer (C-04): Implement complex multi-target arbitration, handle simultaneous gaze demands from multiple participants. (5) Dialog & Task Management (C-05): Track multi-party conversation state, manage turn allocation among 3+ participants.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Fundamental dyadic interaction assumption embedded throughout architecture",
+            "Turn-taking models based on two-person conversation patterns",
+            "Arbitration logic assumes single interaction partner at a time",
+            "Gaze distribution norms for multi-party interaction significantly more complex",
+            "Perception requirements increase substantially (track 3+ people simultaneously)",
+            "May require architectural rethinking rather than incremental enhancement"
+          ],
+          "alternative_approaches": "Implement simplified multi-party support by treating group as single entity and using heuristics (e.g., gaze at current speaker only); use round-robin attention distribution rather than sophisticated social norms; limit to specific multi-party scenarios (e.g., presentations) rather than general conversation; consider this a candidate for next-generation architecture rather than retrofit."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-06",
+            "NEW: Debugging Infrastructure"
+          ],
+          "change_description": "Implement comprehensive debugging and tracing infrastructure: (1) Add structured logging at each component with decision rationale. (2) Create decision trace capability that links perception inputs \u2192 behavioral policy activation \u2192 arbitration outcome \u2192 motor commands. (3) Implement visualization tools for decision trees and behavior selection. (4) Add replay capability to reconstruct decision path from logs. (5) Create debugging API for querying system state and decision history. (6) Implement assertion checking for behavioral invariants. Components affected: C-01 (log perception inputs), C-02 (log policy queries), C-03 (log candidate behaviors), C-04 (log arbitration decisions), C-06 (log motor commands).",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "No debugging infrastructure described in current architecture",
+            "30-minute diagnostic timeline requires good tooling and clear decision traces",
+            "Need to balance logging detail with performance impact",
+            "Visualization tools require additional development effort",
+            "Root cause analysis requires understanding of complex interactions between components"
+          ],
+          "alternative_approaches": "Implement rule-based expert system for common failure modes; create decision flowcharts for manual diagnosis; use unit testing and simulation to reproduce issues offline; implement telemetry dashboards showing component health and decision patterns; add behavioral assertions that fail-fast on invalid states."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-06",
+            "C-02",
+            "NEW: Deployment Infrastructure"
+          ],
+          "change_description": "Create deployment and configuration management infrastructure: (1) Develop platform capability profiling system to characterize robot motor capabilities (DOF, speed, range). (2) Create platform adapter library with pre-built Motor Execution Layer (C-06) implementations for common platforms. (3) Implement automated deployment tooling with platform detection and configuration. (4) Create behavioral specification adaptation system that adjusts timing parameters in C-02 based on platform capabilities. (5) Develop quality assurance testing suite for validating timing accuracy across platforms. (6) Implement centralized configuration management for multi-platform deployments.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No deployment automation or tooling described in architecture",
+            "4-hour deployment timeline requires significant automation",
+            "\u00b110% timing variance across heterogeneous platforms challenging without calibration",
+            "Platform capability differences may require behavioral adaptation beyond motor layer",
+            "Configuration management for 10+ platforms requires infrastructure",
+            "Quality assurance and validation procedures not specified"
+          ],
+          "alternative_approaches": "Create reference implementations for major platform families rather than full automation; use containerization/virtualization for consistent deployment environments; implement platform-specific behavioral profiles rather than universal adaptation; focus on manual deployment with good documentation rather than full automation; establish platform certification program with pre-validated configurations."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03"
+          ],
+          "change_description": "Implement cultural adaptation framework: (1) Enhance Perception & Context Layer (C-01) to detect or receive user cultural profile (explicit configuration or inference from user data). (2) Extend Behavioral Specification Repository (C-02) to store multiple culture-specific policy sets (Western, East Asian, etc.) with different gaze norms (eye contact duration, mutual gaze frequency, gaze aversion patterns). (3) Modify Behavior Generation Layer (C-03) to select appropriate cultural policy variant based on user profile. (4) Create cultural behavior specification library with research-based norms for different cultures. (5) Implement policy selection mechanism that switches between cultural variants.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Architecture explicitly encodes Western communication patterns",
+            "Cultural context detection/configuration mechanism not present",
+            "Need research-validated behavioral specifications for multiple cultures",
+            "Policy selection mechanism needs enhancement for cultural variants",
+            "1-week timeline may be insufficient for full cultural adaptation framework",
+            "Risk of cultural stereotyping if policies too simplistic",
+            "User cultural profile may be sensitive data requiring privacy considerations"
+          ],
+          "alternative_approaches": "Implement cultural adaptation as configuration profiles rather than runtime detection; allow explicit user selection of cultural preference; start with high-level cultural dimensions (individualist vs. collectivist) rather than specific cultures; use adjustable parameters (gaze intensity slider) rather than discrete cultural profiles; focus on specific cultural dyads (e.g., Western-East Asian) rather than comprehensive coverage."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-03",
+            "C-04"
+          ],
+          "change_description": "Implement adaptive behavior selection based on environmental conditions: (1) Enhance Perception & Context Layer (C-01) to monitor environmental conditions (audio noise level, visual occlusion, distance to human) and assess multimodal signal quality. (2) Create compensatory gaze behaviors in Behavior Generation Layer (C-03) for degraded conditions (increased mutual gaze frequency, exaggerated head movements, longer dwell times). (3) Implement adaptive arbitration in Coordination & Arbitration Layer (C-04) that dynamically adjusts behavior priorities based on environmental context and signal quality. (4) Add environmental context to behavioral specifications in C-02. (5) Implement quality-of-service monitoring to track task efficiency.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Architecture uses static priority schemes, not dynamic adaptation",
+            "Environmental condition monitoring not part of current perception capabilities",
+            "Compensatory behaviors require research validation for effectiveness",
+            "Adaptive arbitration represents fundamental change from rule-based to context-sensitive approach",
+            "95% task efficiency maintenance challenging to guarantee",
+            "Multimodal signal quality assessment requires integration with speech/audio systems",
+            "May conflict with architectural constraint of deterministic behavior selection"
+          ],
+          "alternative_approaches": "Implement predefined environmental profiles (quiet/moderate/noisy) with associated behavior sets rather than continuous adaptation; use explicit mode switching triggered by environmental thresholds; focus on specific compensatory behaviors (e.g., acknowledgment nods) rather than comprehensive adaptation; implement this as separate 'degraded mode' rather than continuous adaptation; consider environmental adaptation as out-of-scope for gaze-only architecture."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05"
+          ],
+          "change_description": "Establish architectural interoperability between HRC and RBT variants: (1) Define common interface specifications for Coordination & Arbitration Layer (C-04) that both variants must implement. (2) Create behavioral specification translation layer to convert between HRC policy format and RBT XML knowledge base format in C-02. (3) Implement state migration mechanism to transfer runtime state between variants. (4) Develop hot-swap infrastructure with graceful transition handling. (5) Ensure Dialog & Task Management (C-05) interfaces are variant-agnostic. (6) Create compatibility testing suite to verify behavioral equivalence. (7) Implement zero-downtime deployment with traffic routing.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "HRC and RBT variants have fundamentally different implementation approaches",
+            "No common interface specification described between variants",
+            "State migration between policy-based and knowledge-base systems non-trivial",
+            "Zero-downtime requirement very challenging for stateful interactive system",
+            "Behavioral equivalence between variants may not be guaranteed",
+            "Runtime swapping may introduce behavioral discontinuities perceptible to users",
+            "Backward compatibility guarantee difficult without extensive testing"
+          ],
+          "alternative_approaches": "Implement variant migration during system downtime rather than hot-swap; use parallel deployment with gradual traffic migration; establish common behavioral specification format that both variants consume; focus on forward compatibility (new variant reads old specs) rather than bidirectional; consider variants as deployment-time choice rather than runtime switchable; implement variant selection at system initialization only."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "SHGG-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "C-04",
+            "NEW: Resource Management"
+          ],
+          "change_description": "Implement resource-aware behavior management: (1) Create Resource Management component that monitors CPU and memory usage. (2) Define tiered behavioral policies in Behavioral Specification Repository (C-02) with varying computational complexity (full/standard/simplified/minimal). (3) Enhance Coordination & Arbitration Layer (C-04) with resource-aware arbitration that selects appropriate policy tier based on available resources. (4) Implement graceful degradation strategy in Behavior Generation Layer (C-03) that reduces behavior complexity under resource constraints. (5) Add quality-of-service monitoring to track social presence metrics. (6) Create resource allocation policies and thresholds for tier transitions.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No resource monitoring or management infrastructure in current architecture",
+            "Tiered behavioral policies require research to define appropriate simplifications",
+            "Resource-aware arbitration represents significant enhancement to C-04",
+            "Maintaining \u22653/5 social presence rating under severe constraints challenging",
+            "Need to validate that simplified behaviors maintain acceptable social quality",
+            "Performance monitoring overhead may itself consume resources",
+            "Embedded platform constraints may limit architectural options"
+          ],
+          "alternative_approaches": "Pre-configure system for resource-constrained platforms with fixed simplified behaviors rather than dynamic adaptation; implement static resource budgets per component rather than dynamic allocation; use offline profiling to select appropriate behavioral tier at deployment time; focus on optimizing existing behaviors rather than creating degraded variants; consider resource constraints as platform selection criterion rather than runtime adaptation concern."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-06",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-07",
+            "S-08"
+          ]
+        },
+        {
+          "component": "C-01",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-02",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 9,
+          "scenarios": [
+            "S-02",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 10,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-04",
+          "scenario_count": 8,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-05",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-02",
+            "S-06",
+            "S-11"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Behavior Generation Layer is the most critical hotspot affecting 10 scenarios spanning core functionality (S-02, S-05), observability (S-03, S-07), runtime updates (S-04), multi-party interaction (S-06), cultural adaptation (S-09), environmental adaptation (S-10), variant interoperability (S-11), and resource management (S-12). This component directly determines user-perceived social behavior quality. High-risk scenarios S-06, S-10, S-11 all require fundamental changes here. Failure to address creates: degraded user experience, inability to adapt to diverse contexts, maintenance nightmares, and blocked evolution paths. All stakeholder roles critically depend on this component's extensibility and maintainability."
+        },
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-02",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Behavioral Specification Repository affects 9 scenarios and serves as the knowledge foundation for the entire system. Critical for runtime updates (S-04 - Medium risk), deployment automation (S-08 - Medium risk), cultural adaptation (S-09 - Medium risk), and variant interoperability (S-11 - High risk). Without proper versioning, hot-reload, and multi-cultural support, operational agility is severely limited. Developers cannot iterate quickly, maintainers struggle with updates across deployments, and administrators face extended downtime. The lack of runtime update mechanism (S-04) and cultural adaptation framework (S-09) directly blocks business expansion and operational efficiency."
+        },
+        {
+          "component": "C-04",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 3,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Coordination & Arbitration Layer impacts 8 scenarios including three high-risk ones (S-06, S-10, S-11). This component determines real-time behavior selection quality, directly affecting user experience. Multi-party interaction (S-06) requires complex multi-target arbitration - fundamental architectural change. Environmental adaptation (S-10) needs dynamic priority adjustment vs. current static schemes, risking 95% task efficiency target. Variant interoperability (S-11) requires common interfaces not currently defined. Static arbitration logic blocks adaptation to diverse contexts, creating brittle user experiences and limiting system evolution. Debugging challenges (S-03, S-07) compound maintenance costs."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-02",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "End-user",
+            "Developer"
+          ],
+          "rationale": "Perception & Context Layer affects 5 scenarios, including two high-risk ones (S-06, S-10). Multi-party interaction (S-06) requires multi-person tracking and speaker identification - substantial perception enhancement. Environmental adaptation (S-10) needs signal quality monitoring not currently present. Cultural adaptation (S-09) requires cultural profile detection. While critical for advanced scenarios, core dyadic interaction (S-02) works without changes. Primary impact is on system evolution and advanced use cases rather than immediate operational risk. Developers face integration challenges; end-users experience limitations in complex social contexts."
+        },
+        {
+          "component": "C-06",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-07",
+            "S-08"
+          ],
+          "priority": "Medium",
+          "rank": 5,
+          "impacted_roles": [
+            "System Administrator",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Motor Execution Layer affects 5 scenarios but most are lower risk. Platform integration (S-01) is low-effort/low-risk with existing adapter pattern. Deployment automation (S-08 - Medium risk) requires substantial tooling for 4-hour deployment and \u00b110% timing variance across platforms. Observability (S-03, S-07) needs execution logging. Primary business risk is operational: without deployment automation, scaling to 10+ platforms becomes cost-prohibitive and error-prone. System administrators face manual deployment burden; developers struggle with platform-specific issues. However, core functionality remains intact, making this medium priority despite affecting operations."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-02",
+            "S-06",
+            "S-11"
+          ],
+          "priority": "Low",
+          "rank": 6,
+          "impacted_roles": [
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "Dialog & Task Management affects only 3 scenarios. Core use case (S-02) requires minimal task-specific configuration - low effort. Multi-party interaction (S-06 - High risk) needs multi-party conversation state tracking, but this is secondary to perception and behavior generation challenges. Variant interoperability (S-11) requires variant-agnostic interfaces. While S-06 is high-risk overall, C-05 changes are less architecturally fundamental than those in C-01, C-03, C-04. Limited scenario coverage and mostly derivative requirements (dependent on other components' capabilities) make this lowest priority. Addressing higher-ranked components will clarify requirements here."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strong layered separation with clear abstraction boundaries: The architecture demonstrates excellent support for platform portability (S-01) and core use cases (S-02, S-05) through well-defined layer interfaces. The Motor Execution Layer (C-06) successfully abstracts platform-specific details, enabling low-effort robot platform integration. This separation allows upstream components to remain unchanged when adding new platforms.",
+          "Explicit support for architectural variants (HRC vs RBT): The architecture intentionally accommodates two implementation approaches (policy-based and knowledge-base), enabling direct comparative evaluation (S-05) with low effort. This design decision demonstrates foresight in supporting research exploration and different deployment contexts without architectural rework.",
+          "Modular behavior specification approach: The Behavioral Specification Repository (C-02) successfully decouples behavioral knowledge from execution logic, enabling task-specific configuration (S-02) with minimal effort. This separation allows behavioral tuning without modifying core system components, supporting rapid adaptation to new interaction contexts.",
+          "Clear component responsibilities with limited cross-cutting concerns: Core scenarios (S-01, S-02, S-05) demonstrate that the architecture's component boundaries align well with primary use cases. Each layer has well-defined responsibilities (perception, behavior generation, coordination, execution), minimizing ripple effects for direct scenarios."
+        ],
+        "architectural_weaknesses": [
+          "Fundamental dyadic interaction assumption embedded throughout: Multi-party interaction (S-06 - High risk) exposes that the two-person conversation model is deeply embedded across C-01 (perception), C-02 (turn-taking rules), C-03 (policies), C-04 (arbitration), and C-05 (dialog management). This requires widespread changes with high effort and high risk, suggesting the architecture lacks abstraction over interaction cardinality. The evaluator notes this 'may require architectural rethinking rather than incremental enhancement.'",
+          "Static, rule-based behavior selection prevents runtime adaptation: Environmental adaptation (S-10 - High risk) reveals that static priority schemes in C-04 cannot accommodate dynamic context-sensitive arbitration. The architecture's deterministic behavior selection conflicts with adaptive requirements, affecting 95% task efficiency targets. Similarly, resource-aware behavior management (S-12 - Medium risk) struggles because the architecture lacks runtime adaptation mechanisms, requiring widespread changes to implement graceful degradation.",
+          "Absence of cross-cutting infrastructure for observability, configuration management, and deployment: Three medium-effort scenarios (S-03, S-04, S-08) expose missing architectural infrastructure. No observability layer exists for diagnostics (S-03), no runtime update mechanism for hot-reloading behaviors (S-04), and no deployment automation for multi-platform scaling (S-08). These gaps create widespread changes across multiple components and introduce new architectural elements, indicating the architecture focused narrowly on core gaze behavior rather than operational concerns.",
+          "Lack of extensibility mechanisms for cultural and contextual variation: Cultural adaptation (S-09 - Medium risk) reveals that Western communication patterns are explicitly encoded without abstraction for cultural variation. The architecture lacks mechanisms for cultural profile detection (C-01), policy variant selection (C-03), or culture-specific behavioral specifications (C-02). This rigidity limits global deployment and requires medium-effort widespread changes to retrofit cultural awareness.",
+          "Variant interoperability not architecturally supported: Despite supporting two variants, the architecture provides no common interface specifications, state migration mechanisms, or runtime swapping infrastructure (S-11 - High risk). This high-effort, high-risk scenario exposes that variants are deployment-time choices rather than interoperable implementations, blocking operational flexibility and backward compatibility guarantees.",
+          "Missing quality-of-service and resource management abstractions: The architecture assumes sufficient computational resources and provides no mechanisms for resource monitoring, tiered behavioral policies, or graceful degradation (S-12 - Medium risk). Embedded platform constraints and resource-constrained deployments require high-effort architectural additions, suggesting the architecture targets well-provisioned research platforms rather than production deployments."
+        ],
+        "modifiability_assessment": "The architecture demonstrates strong modifiability for its core design center (dyadic interaction, platform portability, task-specific configuration) but exhibits significant rigidity when extending to multi-party interaction, dynamic adaptation, cultural variation, and operational infrastructure. The concentration of 10 scenarios affecting C-03 and 9 affecting C-02 indicates these components are architectural hotspots requiring fundamental enhancement rather than incremental modification. High-risk scenarios (S-06, S-10, S-11) consistently require 'widespread' changes, suggesting the architecture's current abstractions are insufficient for anticipated evolution paths. The architecture is best characterized as modular within its design assumptions but brittle across assumption boundaries."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Introduce a Context Abstraction Layer between Perception (C-01) and Behavior Generation (C-03) that encapsulates interaction context (participant count, cultural profile, environmental conditions, resource availability) as first-class architectural entities. This layer should provide a stable interface for querying context and hide context detection complexity from behavior generation.",
+          "rationale": "This addresses the root cause of widespread changes in S-06 (multi-party), S-09 (cultural), and S-10 (environmental) by creating an explicit abstraction over interaction context rather than hardcoding dyadic Western assumptions. It reduces coupling between perception capabilities and behavioral logic, enabling independent evolution. This single architectural addition improves modifiability for 5+ scenarios by localizing context-related changes to one layer rather than propagating across C-01, C-02, C-03, C-04.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement dynamic behavior selection framework in C-04 (Coordination & Arbitration) that supports pluggable arbitration strategies (rule-based, priority-based, utility-based, resource-aware) selected at runtime based on context. Replace static priority schemes with strategy pattern allowing context-sensitive arbitration policies.",
+          "rationale": "This directly addresses high-risk scenarios S-10 (environmental adaptation) and S-12 (resource management) by making arbitration logic extensible rather than hardcoded. It transforms C-04 from a rigid component requiring widespread changes into a flexible framework supporting diverse arbitration needs. This enables graceful degradation, adaptive behavior selection, and future arbitration strategies without architectural rework. The strategy pattern localizes arbitration logic changes and reduces risk of introducing behavioral inconsistencies.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Establish comprehensive Observability and Diagnostics Infrastructure as a cross-cutting architectural layer with standardized instrumentation APIs, asynchronous event streaming, structured logging, and decision tracing capabilities. Implement this as aspect-oriented infrastructure that components integrate via lightweight instrumentation points rather than invasive code changes.",
+          "rationale": "This addresses S-03 and S-07 (both medium-effort) while providing foundation for debugging all high-risk scenarios (S-06, S-10, S-11). Without observability, diagnosing complex multi-party interactions, adaptive behaviors, and variant interoperability becomes intractable. Asynchronous logging mitigates performance concerns raised in evaluations. This infrastructure enables rapid diagnosis (30-minute timeline in S-07), supports development velocity, and reduces maintenance costs across all scenarios. The cross-cutting nature means one architectural investment improves modifiability system-wide.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Define formal component interface contracts and variant compatibility specifications for C-02, C-03, C-04, and C-05. Create abstract interfaces that both HRC and RBT variants must implement, enabling variant interoperability (S-11) and establishing architectural guardrails for future extensions.",
+          "rationale": "This addresses the high-risk variant interoperability scenario (S-11) while improving overall architectural clarity. Formal contracts enable independent component evolution, facilitate testing, and prevent implicit coupling. This is a prerequisite for hot-swapping variants, supporting backward compatibility, and enabling third-party extensions. The effort is high but provides architectural foundation for long-term evolvability and reduces risk of breaking changes during component modifications.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement Configuration Management and Runtime Update Infrastructure supporting versioned behavioral specifications, validation pipelines, hot-reload mechanisms, and rollback capabilities. Design this as a separate architectural subsystem that C-02 (Behavioral Specification Repository) integrates with rather than embedding update logic in C-02 itself.",
+          "rationale": "This directly addresses S-04 (medium-risk runtime updates) and supports S-08 (deployment automation). Separating configuration management from behavioral specifications improves modularity and enables reuse across components. Hot-reload capability dramatically improves operational agility (1-hour propagation vs. system restart), reduces downtime, and accelerates behavioral iteration. This infrastructure also supports A/B testing, canary deployments, and gradual rollouts mentioned in alternative approaches, providing operational flexibility for production deployments.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Extend Behavioral Specification Repository (C-02) to support parameterized behavioral templates with context bindings rather than monolithic specifications. Enable behavioral specifications to declare parameters (cultural norms, resource tiers, participant counts) that are bound at runtime based on context, rather than requiring separate specifications for each variation.",
+          "rationale": "This addresses the root cause of C-02 being a hotspot for 9 scenarios by making behavioral specifications extensible through parameterization rather than proliferation. Cultural adaptation (S-09), resource management (S-12), and multi-party interaction (S-06) all require behavioral variations that could be expressed as parameter bindings rather than entirely separate specifications. This reduces specification maintenance burden, enables composition of behavioral variations, and improves testability by isolating parameter effects. Medium effort provides high leverage across multiple scenarios.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Create Platform Abstraction and Deployment Toolkit including capability profiling, adapter library, automated deployment scripts, and validation test suites. Package this as reusable infrastructure that reduces per-platform integration effort from current manual process to largely automated workflow.",
+          "rationale": "This addresses S-08 (deployment automation - medium risk) and improves S-01 (platform integration). While S-01 is currently low-effort, scaling to 10+ platforms (S-08 requirement) makes manual deployment cost-prohibitive. Automated deployment achieves 4-hour timeline and \u00b110% timing variance targets, enabling business scaling. The toolkit approach creates reusable assets that reduce marginal cost of each new platform, transforming deployment from recurring high-touch effort to largely automated process. This is a quick win for operational efficiency with clear ROI.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Establish architectural decision records (ADRs) documenting design assumptions (dyadic interaction, Western norms, deterministic arbitration, sufficient resources) and their rationale. Create explicit architectural evolution roadmap identifying which assumptions are relaxable vs. fundamental, guiding future extension decisions.",
+          "rationale": "This low-effort documentation activity addresses the root cause of many high-risk scenarios: implicit assumptions embedded throughout the architecture. Making assumptions explicit helps developers understand architectural boundaries, prevents assumption violations during extensions, and guides refactoring priorities. ADRs provide context for evaluating change requests and assessing whether scenarios require incremental enhancement vs. architectural rethinking (as noted in S-06 evaluation). This improves long-term maintainability and reduces risk of architectural erosion.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Implement resource budgeting and quality-of-service monitoring framework as optional architectural layer that components can integrate with when resource constraints are relevant. Provide default implementations that assume unconstrained resources, with opt-in resource-aware variants for embedded deployments.",
+          "rationale": "This addresses S-12 (resource management - medium risk) while maintaining simplicity for well-provisioned deployments. Making resource management optional prevents over-engineering for scenarios that don't need it while providing clear extension point for resource-constrained platforms. The framework approach enables gradual adoption (start with monitoring, add budgeting later) and supports alternative approaches mentioned in S-12 evaluation (static budgets, offline profiling). This balances current research focus with future production deployment needs.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

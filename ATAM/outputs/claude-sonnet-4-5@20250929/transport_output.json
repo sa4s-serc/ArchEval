@@ -1,0 +1,653 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "An industrial transportation system for Automatic Guided Vehicles (AGVs) used in warehouse logistics. It employs a decentralized Multi-Agent System (MAS) architecture where AGVs and transport tasks act as autonomous agents, coordinating via a virtual environment middleware to handle routing, collision avoidance, and task assignment without a central server.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The architectural documentation was not well structured; the process view was missing, and the deployment view was lacking. Quality attributes were only specified at a high level, and architectural decisions involving tradeoffs were made on an ad-hoc basis.",
+        "evaluator_inquiry_questions": [
+          "How are the process views and deployment views defined in the architecture?",
+          "How does the implementation adhere to the strict layering defined in the architectural views?",
+          "What are the concrete quality attribute scenarios driving the flexibility and openness requirements?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "12 AGV machines equipped with low-level Vehicle Control software",
+          "Stationary hosts running Transport Bases",
+          "Warehouse layout measuring 75 by 55 meters with distinct zones"
+        ],
+        "runtime_constraints": [
+          "11Mbps Wireless Ethernet (IEEE 802.11) shared with Warehouse Management System",
+          "AGVs rely on battery power and must periodically charge",
+          "Physical path constraints (magnets/cables) limit AGV diversion capabilities"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "network_bandwidth": "11 Mbps",
+        "transport_load_average": "112 transports per hour",
+        "transport_load_max": "140 transports per hour",
+        "agv_count": "12",
+        "bandwidth_threshold": "60%",
+        "reconsideration_period": "Variable (tested between 20 to 200 time steps)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Decentralized Multi-Agent System (MAS)",
+          "questions": [
+            "Does the communication overhead of the dynamic CNET protocol exceed the wireless bandwidth limits?",
+            "How does the system maintain transport assignment efficiency when communication is limited?",
+            "Is the layering of the internal AGV control system strictly enforced in the implementation?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "AGVs must route efficiently through the layout of the warehouse when executing their transports."
+        },
+        {
+          "id": "RS-02",
+          "description": "AGVs must not collide; they cannot cross the same intersection at the same moment."
+        },
+        {
+          "id": "RS-03",
+          "description": "The system must ensure that AGVs do not find themselves in a deadlock situation."
+        },
+        {
+          "id": "RS-04",
+          "description": "If an operator removes or adds an AGV in a controlled way, the rest of the system continues working."
+        },
+        {
+          "id": "RS-05",
+          "description": "If a transport has not been picked, the system dynamically changes that transport's assignment to the most suitable AGV."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Develop a new decentralized architecture to replace the traditional centralized server model",
+          "Achieve flexibility and openness to cope with highly dynamic warehouse environments",
+          "Evaluate the feasibility and tradeoffs of Multi-Agent Systems in an industrial setting"
+        ],
+        "technical_constraints": [
+          "Must operate within the bandwidth limits of a shared 11Mbps wireless network",
+          "Must integrate with existing low-level Vehicle Control software",
+          "Must utilize legacy libraries for logging, persistence, and security"
+        ],
+        "architectural_drivers": [
+          "Flexibility",
+          "Openness",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [],
+      "utility_tree": {},
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "During normal warehouse operations with up to 140 transports per hour, AGVs receive transport task assignments and must route efficiently through the warehouse layout. The system must ensure that AGVs complete transports using paths within 10% of the optimal shortest route, maintaining the target throughput of 112-140 transports per hour.",
+          "primary_quality_attribute": [
+            "Performance"
+          ],
+          "priority_tuple": {
+            "importance": "High",
+            "difficulty": "Medium"
+          },
+          "source": "RS-01"
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "During normal operations with up to 12 AGVs active and 140 transports per hour, multiple AGVs approach the same intersection simultaneously. The decentralized collision avoidance mechanism must coordinate AGV movements over the limited bandwidth network (11 Mbps) to ensure zero collisions occur, with all AGVs safely navigating intersections without central coordination.",
+          "primary_quality_attribute": [
+            "Safety",
+            "Performance"
+          ],
+          "priority_tuple": {
+            "importance": "High",
+            "difficulty": "High"
+          },
+          "source": "RS-02"
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "During peak operations, AGVs executing multiple concurrent transports encounter a potential deadlock situation where circular dependencies in path reservations could halt operations. The system must detect the deadlock condition and resolve it within 30 seconds through decentralized negotiation, maintaining operational availability greater than 99% without requiring central arbitration.",
+          "primary_quality_attribute": [
+            "Safety",
+            "Reliability"
+          ],
+          "priority_tuple": {
+            "importance": "High",
+            "difficulty": "High"
+          },
+          "source": "RS-03"
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "During normal operations, a warehouse operator performs a controlled addition or removal of an AGV from the fleet (e.g., for maintenance or to scale capacity). The decentralized MAS architecture must detect the topology change, redistribute active transports if necessary, and continue operations with the remaining AGVs within 10 seconds, with zero transport failures and no manual reconfiguration required.",
+          "primary_quality_attribute": [
+            "Flexibility",
+            "Openness",
+            "Reliability"
+          ],
+          "priority_tuple": {
+            "importance": "High",
+            "difficulty": "Medium"
+          },
+          "source": "RS-04"
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "During operations, a transport task has been assigned to an AGV but has not yet been picked up. A more suitable AGV (closer proximity, better route efficiency) becomes available. The system must dynamically reassign the transport to the more suitable AGV within the reconsideration period (20-200 time steps) using the CNET protocol, while maintaining network bandwidth usage below the 60% threshold (6.6 Mbps of 11 Mbps total) to prevent communication failures.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Flexibility"
+          ],
+          "priority_tuple": {
+            "importance": "Medium",
+            "difficulty": "High"
+          },
+          "source": "RS-05"
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "A third-party AGV with different hardware specifications and control software needs to be integrated into the existing warehouse system. The decentralized MAS architecture must accommodate the new AGV through the virtual environment middleware interface, requiring less than 2 weeks of engineering effort and minimal custom middleware development, while maintaining compatibility with existing low-level Vehicle Control software and legacy libraries.",
+          "primary_quality_attribute": [
+            "Openness",
+            "Maintainability"
+          ],
+          "priority_tuple": {
+            "importance": "Medium",
+            "difficulty": "Medium"
+          },
+          "source": "Derived from business goal: Openness architectural driver"
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "The warehouse layout requires reconfiguration to accommodate new storage zones or modified operational flows. The system must support hot-reconfiguration for minor zone adjustments with zero downtime, and major layout changes with maximum 4 hours of planned downtime, without requiring redesign of the AGV coordination protocols or central control logic.",
+          "primary_quality_attribute": [
+            "Flexibility",
+            "Maintainability"
+          ],
+          "priority_tuple": {
+            "importance": "Medium",
+            "difficulty": "Medium"
+          },
+          "source": "Derived from business goal: Flexibility to cope with highly dynamic warehouse environments"
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "S-01",
+            "text": "During normal warehouse operations with up to 140 transports per hour, AGVs receive transport task assignments and must route efficiently through the warehouse layout. The system must ensure that AGVs complete transports using paths within 10% of the optimal shortest route, maintaining the target throughput of 112-140 transports per hour.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal warehouse operations with up to 12 AGVs and 140 transports per hour",
+          "stimulus": "AGV receives transport task assignment requiring efficient routing",
+          "response_measure": "Path efficiency within 10% of optimal shortest route; throughput of 112-140 transports/hour maintained",
+          "architectural_decisions": [
+            "Decentralized MAS architecture with autonomous AGV agents performing local route planning",
+            "CNET protocol for task allocation and negotiation without central dispatcher",
+            "Virtual environment middleware providing unified warehouse topology abstraction",
+            "Local path optimization algorithms executed on each AGV"
+          ],
+          "reasoning": "The decentralized architecture allows each AGV to compute routes independently using the virtual environment's topology model. The CNET protocol ensures efficient task allocation through bidding mechanisms. Path efficiency depends on the quality of local routing algorithms and the accuracy of the virtual environment model. Throughput is achieved through parallel task execution across multiple autonomous agents without central bottleneck.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Local routing decisions may produce suboptimal global throughput due to lack of centralized optimization",
+                "rationale": "Each AGV optimizes its own path without global visibility, potentially causing congestion hotspots that reduce overall system throughput below 112 transports/hour"
+              },
+              {
+                "id": "R-02",
+                "description": "Virtual environment model inaccuracies could degrade path quality beyond 10% optimality threshold",
+                "rationale": "If the middleware abstraction does not accurately reflect real-time warehouse state (blocked paths, temporary obstacles), AGVs may compute inefficient routes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Decentralized architecture eliminates central dispatcher as single point of failure for routing",
+                "rationale": "Each AGV independently computes routes, so failure of one agent does not prevent others from continuing operations"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Number of active AGVs (up to 12)",
+                "correlated_attribute": "Performance (throughput)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Accuracy of virtual environment topology model",
+                "correlated_attribute": "Performance (path optimality)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Frequency of route recalculation",
+                "conflicting_attributes": [
+                  "Performance (adaptability to dynamic conditions - positive)",
+                  "Performance (computational overhead on AGV processors - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-02",
+            "text": "During normal operations with up to 12 AGVs active and 140 transports per hour, multiple AGVs approach the same intersection simultaneously. The decentralized collision avoidance mechanism must coordinate AGV movements over the limited bandwidth network (11 Mbps) to ensure zero collisions occur, with all AGVs safely navigating intersections without central coordination.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Safety",
+          "environment": "Normal operations with 12 AGVs, 140 transports/hour, 11 Mbps network bandwidth",
+          "stimulus": "Multiple AGVs approach the same intersection simultaneously",
+          "response_measure": "Zero collisions; safe navigation without central coordination",
+          "architectural_decisions": [
+            "Decentralized collision avoidance using agent-to-agent negotiation",
+            "Network-based communication over 11 Mbps wireless LAN",
+            "Local decision-making based on proximity sensors and agent messages",
+            "Priority-based or auction-based intersection arbitration protocols"
+          ],
+          "reasoning": "Collision avoidance relies on real-time message exchange between AGVs approaching intersections. The 11 Mbps bandwidth must support collision avoidance messages, task allocation (CNET), and periodic status updates. With 12 AGVs and high transport frequency, message volume could approach bandwidth limits. Decentralized negotiation requires multiple message rounds, increasing latency and bandwidth consumption. Safety depends on timely message delivery and correct protocol execution.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Network bandwidth saturation during peak collision scenarios could delay critical safety messages",
+                "rationale": "With 12 AGVs simultaneously negotiating at multiple intersections, combined with CNET task allocation traffic, the 11 Mbps network may become congested, causing message delays that could lead to collisions"
+              },
+              {
+                "id": "R-04",
+                "description": "Message loss or delays in wireless network could cause coordination failures",
+                "rationale": "Wireless LAN is susceptible to interference and packet loss; if collision avoidance messages are lost, AGVs may proceed into intersections simultaneously"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Decentralized collision avoidance eliminates single point of failure in safety-critical coordination",
+                "rationale": "No central arbiter means no single component whose failure would disable all collision avoidance; AGVs can still negotiate peer-to-peer"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Network bandwidth utilization (11 Mbps total capacity)",
+                "correlated_attribute": "Safety (collision avoidance message latency)"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Number of simultaneous intersection conflicts",
+                "correlated_attribute": "Safety (negotiation message volume)"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Message size for collision avoidance protocol",
+                "correlated_attribute": "Performance (network bandwidth consumption)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Collision avoidance negotiation rounds",
+                "conflicting_attributes": [
+                  "Safety (robustness of coordination - positive)",
+                  "Performance (message overhead and latency - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-03",
+            "text": "During peak operations, AGVs executing multiple concurrent transports encounter a potential deadlock situation where circular dependencies in path reservations could halt operations. The system must detect the deadlock condition and resolve it within 30 seconds through decentralized negotiation, maintaining operational availability greater than 99% without requiring central arbitration.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Peak operations with multiple concurrent transports and circular path dependencies",
+          "stimulus": "Circular dependencies in path reservations create potential deadlock",
+          "response_measure": "Deadlock detected and resolved within 30 seconds; availability > 99%; no central arbitration required",
+          "architectural_decisions": [
+            "Decentralized deadlock detection using distributed algorithms (e.g., wait-for graph analysis)",
+            "Decentralized deadlock resolution through agent negotiation and backoff strategies",
+            "No central arbiter or global coordinator for deadlock management",
+            "Timeout mechanisms and priority-based resource release protocols"
+          ],
+          "reasoning": "Deadlock detection in a decentralized system requires each AGV to maintain partial knowledge of resource dependencies and communicate with peers to build a global view. Detection within 30 seconds requires efficient message propagation and analysis. Resolution requires at least one AGV to release resources (backoff), which must be negotiated without central authority. The 99% availability requirement means deadlocks must be rare and quickly resolved.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Decentralized deadlock detection may exceed 30-second resolution time due to message propagation delays",
+                "rationale": "Building a consistent view of circular dependencies across multiple AGVs requires multiple message rounds; with 11 Mbps bandwidth constraints and potential network congestion, detection and negotiation could take longer than 30 seconds"
+              },
+              {
+                "id": "R-06",
+                "description": "Deadlock resolution negotiation could fail if multiple AGVs simultaneously attempt conflicting backoff strategies",
+                "rationale": "Without central coordination, AGVs may not converge on a consistent resolution strategy, potentially prolonging deadlock or creating new conflicts"
+              },
+              {
+                "id": "R-07",
+                "description": "Frequent deadlocks during peak operations could degrade availability below 99%",
+                "rationale": "If the decentralized path reservation protocol is prone to circular dependencies, cumulative deadlock resolution time could exceed the 1% downtime budget (87.6 hours/year)"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Decentralized architecture prevents deadlock in central arbiter from halting entire system",
+                "rationale": "No central component means no single point of failure that could cause system-wide deadlock"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Deadlock detection algorithm complexity and message rounds required",
+                "correlated_attribute": "Reliability (time to detect and resolve deadlock)"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Network latency and bandwidth availability during peak operations",
+                "correlated_attribute": "Reliability (deadlock resolution time)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Path reservation granularity (zone size)",
+                "correlated_attribute": "Reliability (deadlock frequency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Path reservation granularity",
+                "conflicting_attributes": [
+                  "Performance (finer granularity allows more parallel movement - positive)",
+                  "Reliability (finer granularity increases deadlock probability - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-04",
+            "text": "During normal operations, a warehouse operator performs a controlled addition or removal of an AGV from the fleet (e.g., for maintenance or to scale capacity). The decentralized MAS architecture must detect the topology change, redistribute active transports if necessary, and continue operations with the remaining AGVs within 10 seconds, with zero transport failures and no manual reconfiguration required.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Flexibility",
+          "environment": "Normal operations with dynamic AGV fleet size changes",
+          "stimulus": "Controlled addition or removal of an AGV from the fleet",
+          "response_measure": "Topology change detected; transports redistributed; operations continue within 10 seconds; zero transport failures; no manual reconfiguration",
+          "architectural_decisions": [
+            "Decentralized MAS with autonomous agent discovery and registration",
+            "CNET protocol supports dynamic task reallocation through bidding",
+            "Heartbeat or periodic status messages for agent liveness detection",
+            "Virtual environment middleware abstracts fleet topology from individual agents"
+          ],
+          "reasoning": "When an AGV is removed, its active transports must be detected as orphaned and reallocated via CNET bidding. Other AGVs detect the removal through missed heartbeat messages. When an AGV is added, it announces availability and participates in bidding. The 10-second requirement demands fast failure detection (heartbeat interval < 10s) and rapid CNET reallocation. Zero transport failures require reliable handoff of in-progress tasks.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Heartbeat interval and CNET reallocation time may exceed 10-second recovery window",
+                "rationale": "If heartbeat timeout is set conservatively (e.g., 15 seconds to avoid false positives), detection alone could exceed the 10-second requirement, leaving no time for task reallocation"
+              },
+              {
+                "id": "R-09",
+                "description": "Transport handoff during AGV removal could fail if the removed AGV has already picked up cargo",
+                "rationale": "If an AGV is removed mid-transport (after pickup, before delivery), the cargo may be stranded, causing transport failure"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Decentralized architecture inherently supports dynamic fleet scaling without central reconfiguration",
+                "rationale": "CNET protocol and agent-based design allow AGVs to join/leave without modifying central configuration files or restarting the system"
+              },
+              {
+                "id": "NR-05",
+                "description": "Virtual environment middleware isolates fleet topology changes from low-level vehicle control",
+                "rationale": "Middleware abstraction ensures that AGV addition/removal does not require changes to legacy Vehicle Control software"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Heartbeat message interval and timeout threshold",
+                "correlated_attribute": "Flexibility (time to detect AGV removal)"
+              },
+              {
+                "id": "S-10",
+                "parameter": "CNET bidding round duration",
+                "correlated_attribute": "Flexibility (time to reallocate orphaned transports)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Heartbeat message frequency",
+                "conflicting_attributes": [
+                  "Flexibility (faster failure detection - positive)",
+                  "Performance (increased network overhead - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-05",
+            "text": "During operations, a transport task has been assigned to an AGV but has not yet been picked up. A more suitable AGV (closer proximity, better route efficiency) becomes available. The system must dynamically reassign the transport to the more suitable AGV within the reconsideration period (20-200 time steps) using the CNET protocol, while maintaining network bandwidth usage below the 60% threshold (6.6 Mbps of 11 Mbps total) to prevent communication failures.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with dynamic task reassignment opportunities",
+          "stimulus": "More suitable AGV becomes available for an assigned but not-yet-picked-up transport",
+          "response_measure": "Transport reassigned within reconsideration period (20-200 time steps); network bandwidth usage < 60% (6.6 Mbps)",
+          "architectural_decisions": [
+            "CNET protocol with reconsideration mechanism for task reallocation",
+            "Configurable reconsideration period (20-200 time steps)",
+            "Bidding and negotiation messages over 11 Mbps wireless network",
+            "Bandwidth management to stay below 60% utilization threshold"
+          ],
+          "reasoning": "The CNET reconsideration mechanism allows previously assigned tasks to be re-bid if a better candidate emerges. This requires additional message rounds (new bids, acceptance/rejection). The reconsideration period controls the window for reassignment, balancing optimization opportunity against message overhead. The 60% bandwidth threshold (6.6 Mbps) must accommodate CNET messages, collision avoidance, and status updates. Longer reconsideration periods increase message volume, risking bandwidth saturation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "Frequent task reconsideration could push network bandwidth usage above 60% threshold, causing communication failures",
+                "rationale": "Each reconsideration triggers new bidding rounds; with 140 transports/hour and multiple AGVs, cumulative CNET message volume could exceed 6.6 Mbps, especially if reconsideration period is set to maximum (200 time steps)"
+              },
+              {
+                "id": "R-11",
+                "description": "Excessive task reassignments could reduce overall system efficiency despite local optimizations",
+                "rationale": "Frequent reassignments may cause AGVs to change plans repeatedly, increasing idle time and reducing actual throughput"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "CNET reconsideration mechanism provides flexibility without requiring centralized replanning",
+                "rationale": "Decentralized bidding allows dynamic optimization without a central scheduler, maintaining architectural consistency"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Reconsideration period duration (20-200 time steps)",
+                "correlated_attribute": "Performance (network bandwidth consumption)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "CNET message size and bidding round frequency",
+                "correlated_attribute": "Performance (network bandwidth utilization)"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Number of concurrent transports eligible for reconsideration",
+                "correlated_attribute": "Performance (message volume)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Reconsideration period length",
+                "conflicting_attributes": [
+                  "Performance (task allocation optimality - positive)",
+                  "Performance (network bandwidth overhead - negative)"
+                ]
+              },
+              {
+                "id": "T-06",
+                "parameter": "Frequency of reconsideration evaluations",
+                "conflicting_attributes": [
+                  "Flexibility (responsiveness to better candidates - positive)",
+                  "Performance (computational and network overhead - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-06",
+            "text": "A third-party AGV with different hardware specifications and control software needs to be integrated into the existing warehouse system. The decentralized MAS architecture must accommodate the new AGV through the virtual environment middleware interface, requiring less than 2 weeks of engineering effort and minimal custom middleware development, while maintaining compatibility with existing low-level Vehicle Control software and legacy libraries.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Openness",
+          "environment": "Integration of heterogeneous third-party AGV into existing fleet",
+          "stimulus": "Third-party AGV with different hardware and control software requires integration",
+          "response_measure": "Integration completed in < 2 weeks; minimal custom middleware development; compatibility with existing Vehicle Control and legacy libraries maintained",
+          "architectural_decisions": [
+            "Virtual environment middleware providing hardware abstraction layer",
+            "Standardized middleware interface for AGV integration",
+            "Separation of high-level coordination (MAS) from low-level Vehicle Control",
+            "Legacy library support through middleware adapters"
+          ],
+          "reasoning": "The virtual environment middleware abstracts hardware differences, allowing the MAS coordination layer to interact with heterogeneous AGVs through a uniform interface. Integration effort depends on the complexity of developing a middleware adapter for the new AGV's control software. The 2-week timeline requires well-documented middleware APIs and minimal custom development. Compatibility with legacy libraries ensures that existing AGVs continue to function without modification.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Third-party AGV control software may not align with middleware interface assumptions, requiring extensive custom adapter development",
+                "rationale": "If the new AGV uses proprietary protocols or non-standard control paradigms, developing a compatible middleware adapter could exceed 2 weeks and require significant custom code"
+              },
+              {
+                "id": "R-13",
+                "description": "Legacy library dependencies may constrain middleware design, limiting integration flexibility",
+                "rationale": "Maintaining compatibility with legacy libraries may prevent adoption of modern integration standards, increasing adapter complexity"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Middleware abstraction isolates MAS coordination from hardware-specific details",
+                "rationale": "High-level coordination logic (CNET, collision avoidance) does not need modification when new AGVs are added, as middleware handles hardware differences"
+              },
+              {
+                "id": "NR-08",
+                "description": "Decentralized MAS architecture does not require central configuration updates for new AGV types",
+                "rationale": "New AGVs participate in CNET and coordination protocols automatically once middleware integration is complete"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Middleware interface standardization and documentation quality",
+                "correlated_attribute": "Openness (integration effort and time)"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Complexity of third-party AGV control software",
+                "correlated_attribute": "Openness (custom adapter development effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Middleware abstraction level",
+                "conflicting_attributes": [
+                  "Openness (ease of integrating diverse AGVs - positive)",
+                  "Performance (abstraction overhead and latency - negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-07",
+            "text": "The warehouse layout requires reconfiguration to accommodate new storage zones or modified operational flows. The system must support hot-reconfiguration for minor zone adjustments with zero downtime, and major layout changes with maximum 4 hours of planned downtime, without requiring redesign of the AGV coordination protocols or central control logic.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Flexibility",
+          "environment": "Warehouse layout reconfiguration (minor or major changes)",
+          "stimulus": "Warehouse layout modification for new storage zones or operational flows",
+          "response_measure": "Minor changes: zero downtime (hot-reconfiguration); Major changes: max 4 hours downtime; no redesign of coordination protocols or central control logic",
+          "architectural_decisions": [
+            "Virtual environment middleware with dynamic topology model updates",
+            "Decentralized MAS coordination independent of specific warehouse layout",
+            "Configuration management system for topology updates",
+            "Hot-reload capability for minor topology changes"
+          ],
+          "reasoning": "The virtual environment middleware maintains the warehouse topology model. Minor changes (e.g., adding a storage zone) can be updated in the model and propagated to AGVs without stopping operations. Major changes (e.g., restructuring entire warehouse) may require system restart to ensure consistency. The decentralized MAS design ensures that coordination protocols (CNET, collision avoidance) do not depend on specific layout details, only on the abstract topology provided by middleware.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Hot-reconfiguration of topology model may cause inconsistent views across AGVs during transition period",
+                "rationale": "If topology updates are propagated asynchronously, different AGVs may operate with different warehouse models simultaneously, potentially causing routing conflicts or collisions"
+              },
+              {
+                "id": "R-15",
+                "description": "Major layout changes may require more than 4 hours if AGVs have in-progress transports that cannot be completed in old layout",
+                "rationale": "If major reconfiguration invalidates current routes, AGVs may need to abort and reroute transports, potentially exceeding 4-hour downtime window"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Decentralized coordination protocols are layout-agnostic and do not require redesign for topology changes",
+                "rationale": "CNET and collision avoidance operate on abstract topology from middleware, so protocol logic remains unchanged regardless of warehouse layout"
+              },
+              {
+                "id": "NR-10",
+                "description": "Middleware abstraction isolates layout changes from low-level Vehicle Control software",
+                "rationale": "Vehicle Control software interacts with middleware, not directly with warehouse layout, so layout changes do not require Vehicle Control modifications"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-16",
+                "parameter": "Topology update propagation mechanism and consistency guarantees",
+                "correlated_attribute": "Flexibility (hot-reconfiguration safety and correctness)"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Scope of layout change (minor vs. major)",
+                "correlated_attribute": "Flexibility (downtime required)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Topology update propagation speed",
+                "conflicting_attributes": [
+                  "Flexibility (faster hot-reconfiguration - positive)",
+                  "Safety (risk of inconsistent topology views causing conflicts - negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

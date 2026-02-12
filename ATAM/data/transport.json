@@ -1,0 +1,351 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Decentralized AGV Transportation System",
+      "date": "2005",
+      "ref": "https://link.springer.com/chapter/10.1007/11921998_16",
+      "evaluator_organization": "Distrinet, KULeuven",
+      "phase_1_attendees": [
+        "Lead Evaluator",
+        "Key Stakeholders (4)"
+      ],
+      "phase_2_attendees": [
+        "Evaluators (3)",
+        "Stakeholders (9)"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "An industrial transportation system for Automatic Guided Vehicles (AGVs) used in warehouse logistics. It employs a decentralized Multi-Agent System (MAS) architecture where AGVs and transport tasks act as autonomous agents, coordinating via a virtual environment middleware to handle routing, collision avoidance, and task assignment without a central server.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The architectural documentation was not well structured; the process view was missing, and the deployment view was lacking. Quality attributes were only specified at a high level, and architectural decisions involving tradeoffs were made on an ad-hoc basis.",
+        "evaluator_inquiry_questions": [
+          "How are the process views and deployment views defined in the architecture?",
+          "How does the implementation adhere to the strict layering defined in the architectural views?",
+          "What are the concrete quality attribute scenarios driving the flexibility and openness requirements?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "12 AGV machines equipped with low-level Vehicle Control software",
+          "Stationary hosts running Transport Bases",
+          "Warehouse layout measuring 75 by 55 meters with distinct zones"
+        ],
+        "runtime_constraints": [
+          "11Mbps Wireless Ethernet (IEEE 802.11) shared with Warehouse Management System",
+          "AGVs rely on battery power and must periodically charge",
+          "Physical path constraints (magnets/cables) limit AGV diversion capabilities"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "network_bandwidth": "11 Mbps",
+        "transport_load_average": "112 transports per hour",
+        "transport_load_max": "140 transports per hour",
+        "agv_count": "12",
+        "bandwidth_threshold": "60%",
+        "reconsideration_period": "Variable (tested between 20 to 200 time steps)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Decentralized Multi-Agent System (MAS)",
+          "questions": [
+            "Does the communication overhead of the dynamic CNET protocol exceed the wireless bandwidth limits?",
+            "How does the system maintain transport assignment efficiency when communication is limited?",
+            "Is the layering of the internal AGV control system strictly enforced in the implementation?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "AGVs must route efficiently through the layout of the warehouse when executing their transports."
+        },
+        {
+          "id": "RS-02",
+          "description": "AGVs must not collide; they cannot cross the same intersection at the same moment."
+        },
+        {
+          "id": "RS-03",
+          "description": "The system must ensure that AGVs do not find themselves in a deadlock situation."
+        },
+        {
+          "id": "RS-04",
+          "description": "If an operator removes or adds an AGV in a controlled way, the rest of the system continues working."
+        },
+        {
+          "id": "RS-05",
+          "description": "If a transport has not been picked, the system dynamically changes that transport's assignment to the most suitable AGV."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Develop a new decentralized architecture to replace the traditional centralized server model",
+          "Achieve flexibility and openness to cope with highly dynamic warehouse environments",
+          "Evaluate the feasibility and tradeoffs of Multi-Agent Systems in an industrial setting"
+        ],
+        "technical_constraints": [
+          "Must operate within the bandwidth limits of a shared 11Mbps wireless network",
+          "Must integrate with existing low-level Vehicle Control software",
+          "Must utilize legacy libraries for logging, persistence, and security"
+        ],
+        "architectural_drivers": [
+          "Flexibility",
+          "Openness",
+          "Performance"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Decentralized Multi-Agent System (MAS)",
+          "description": "Control is distributed among autonomous agents (AGVs and Transports) that coordinate via a virtual environment rather than a central server.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Flexibility",
+              "rationale": "Agents can autonomously adapt to local changes and dynamic conditions without waiting for central commands."
+            },
+            {
+              "quality_attribute": "Openness",
+              "rationale": "Agents can enter or leave the system without disrupting the overall operation."
+            }
+          ]
+        },
+        {
+          "approach_name": "Dynamic Contract Net Protocol (CNET)",
+          "description": "A market-based protocol where Transport agents and AGV agents negotiate tasks. The assignment is dynamic and can be reconsidered until the task is started.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Flexibility",
+              "rationale": "Allows the system to re-optimize assignments continuously as new opportunities or disturbances arise."
+            }
+          ]
+        },
+        {
+          "approach_name": "Virtual Environment / Middleware",
+          "description": "A layered middleware that provides abstractions for agent coordination and manages locality/distribution.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Openness",
+              "rationale": "Decouples agents from low-level communication and physical details, facilitating easier addition/removal of components."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Capacity with 85% availability",
+                "scenario_id": "P1",
+                "scenario_description": "12 AGVs with an availability of 85% should handle 112 transports per hour",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Capacity with 100% availability",
+                "scenario_id": "P2",
+                "scenario_description": "12 AGVs with an availability of 100% should handle 140 transports per hour",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Bandwidth Occupation",
+                "scenario_id": "P3",
+                "scenario_description": "The amount of communication should never exceed 60% of the bandwidth of the communication channel",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Openness",
+            "children": [
+              {
+                "refinement": "Controlled add and removal of AGVs",
+                "scenario_id": "O1",
+                "scenario_description": "If an operator removes or adds AGV in a controlled way, the rest of the system continues working.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Flexibility",
+            "children": [
+              {
+                "refinement": "Flexible behavior (Transport Assignment)",
+                "scenario_id": "F1",
+                "scenario_description": "If the transport has not been picked, the system dynamically changes that transport's assignment to the most suitable AGV.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Flexible behavior (Routing)",
+                "scenario_id": "F2",
+                "scenario_description": "If an operator disables a node or an AGV blocks a path, AGVs choose an alternative route (if it exists)",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "12 AGVs with an availability of 85% should handle 112 transports per hour",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The amount of communication should never exceed 60% of the bandwidth of the communication channel",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "If an operator removes or adds AGV in a controlled way, the rest of the system continues working.",
+          "primary_quality_attribute": [
+            "Openness"
+          ]
+        },
+        {
+          "scenario_text": "If the transport has not been picked, the system dynamically changes that transport's assignment to the most suitable AGV.",
+          "primary_quality_attribute": [
+            "Flexibility"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "F1",
+            "text": "As long as a transport has not been picked, the system dynamically changes that transports assignment to the most suitable AGV",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Flexibility",
+          "environment": "Dynamic Operation",
+          "stimulus": "New task arrival or change in AGV status",
+          "response_measure": "Task re-assigned to optimal agent",
+          "architectural_decisions": [
+            "AD1: Negotiating Agents (Many-to-many protocol)",
+            "AD7: Dynamic Transport Assignment (Continuous reconsideration)",
+            "AD2: Locality (Local information only)"
+          ],
+          "reasoning": "Continuous negotiation allows for high flexibility but incurs significant communication overhead. The frequency of reconsideration is a key lever.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Continuous reconsideration of transport assignments implies a significant cost of communication.",
+                "rationale": "High message frequency may saturate the limited wireless bandwidth."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR1",
+                "description": "Negotiating agents approach for transport assignment.",
+                "rationale": "Effective for achieving the required flexibility."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Range of local information",
+                "correlated_attribute": "Communication Load vs Decision Quality"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Reconsideration Frequency",
+                "conflicting_attributes": [
+                  "Flexibility (Optimization)",
+                  "Performance (Bandwidth)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P3",
+            "text": "The amount of communication, with maximal 12 AGVs and a maximal load of 140 transports per hour, does not exceed 60% of the bandwidth of the 11Mbps communication channel.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak Load",
+          "stimulus": "140 transports/hour",
+          "response_measure": "Bandwidth usage < 6.6 Mbps",
+          "architectural_decisions": [
+            "AD6: Agents located on AGVs (Decentralized control)",
+            "AD5: Use .NET Remoting",
+            "AD8: Unicast communication in Middleware"
+          ],
+          "reasoning": "Decentralization forces all coordination over the network. Unicast inefficiency and .NET remoting overhead contribute to bandwidth pressure.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R2",
+                "description": "Decentralized approach induces a risk regarding required bandwidth.",
+                "rationale": "Heavier reliance on network compared to centralized solutions."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR4",
+                "description": "Use of .NET remoting.",
+                "rationale": "Standard, reliable library support."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S2",
+                "parameter": "Use of .NET Remoting",
+                "correlated_attribute": "Performance (Overhead)"
+              },
+              {
+                "id": "S3",
+                "parameter": "Unicast vs Multicast",
+                "correlated_attribute": "Performance (Bandwidth Efficiency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T2",
+                "parameter": "Decentralization of Control",
+                "conflicting_attributes": [
+                  "Flexibility/Openness",
+                  "Performance (Communication Cost)"
+                ]
+              },
+              {
+                "id": "T3",
+                "parameter": "Dynamic CNET Protocol",
+                "conflicting_attributes": [
+                  "Flexibility",
+                  "Performance (Communication Cost)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

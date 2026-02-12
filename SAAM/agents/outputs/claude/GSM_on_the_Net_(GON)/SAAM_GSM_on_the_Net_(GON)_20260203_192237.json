@@ -1,0 +1,818 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "GSM on the Net (GON)",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "To provide a global solution for the communication in the enterprise environment; increase the offering of services for enterprise communications."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Layered",
+          "Gateway-Based"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "H.323 Protocol-Based Architecture",
+            "description": "A traditional telecommunications architecture built on the ITU-T H.323 standard for multimedia communications. This architecture uses a hierarchical approach with specialized agents handling terminal access, user management, and call routing. The system acts as a bridge between H.323 terminals and the enterprise service network, with centralized control through the Gatekeeper component.",
+            "architecture_characteristics": "Mature and standards-compliant with strong call control capabilities. Provides centralized resource management and bandwidth control. Moderate scalability limited by centralized Gatekeeper. Tightly coupled to H.323 protocol, making protocol changes difficult. Good reliability through established ITU-T standards.",
+            "key_components": [
+              {
+                "component_id": "TA",
+                "component_name": "Terminal Agent",
+                "responsibilities": "Acts as the entry point for H.323 terminals into the GON system. Multiplexes multiple message requests and responses from terminals, serving as a protocol adapter between terminals and the internal system.",
+                "dependencies": [
+                  "UA",
+                  "SK"
+                ],
+                "change_sensitivity": "High - Any changes to H.323 protocol support or terminal types require modifications here. Critical path component affecting all terminal communications."
+              },
+              {
+                "component_id": "UA",
+                "component_name": "User Agent",
+                "responsibilities": "Core business logic component implementing user-facing functionalities: authenticates users, registers them in the system, handles call setup/teardown, and triggers value-added services. Acts as the user's representative in the system.",
+                "dependencies": [
+                  "SK",
+                  "GK"
+                ],
+                "change_sensitivity": "High - Changes to authentication methods, service offerings, or call handling logic directly impact this component. Central to most feature enhancements."
+              },
+              {
+                "component_id": "SK",
+                "component_name": "SiteKeeper",
+                "responsibilities": "Serves as the interface between the Service Network (SN) and access providers. Routes calls to appropriate destinations and manages network resources (bandwidth, connections). Acts as a site-level coordinator.",
+                "dependencies": [
+                  "GK",
+                  "UA"
+                ],
+                "change_sensitivity": "Medium - Changes to routing policies or resource management strategies affect this component. Adding new service network integrations requires modifications."
+              },
+              {
+                "component_id": "GK",
+                "component_name": "Gatekeeper",
+                "responsibilities": "Centralized call control authority performing three critical functions: (1) Address Translation - converts aliases to network addresses, (2) Admission Control - authorizes network access, (3) Bandwidth Control - manages network capacity allocation.",
+                "dependencies": [],
+                "change_sensitivity": "High - Single point of control for all calls. Changes to admission policies, address schemes, or bandwidth management directly impact this component. Potential bottleneck for scalability."
+              }
+            ],
+            "data_flow": "Call flow follows this pattern: (1) H.323 terminal connects to Terminal Agent, (2) TA multiplexes requests to User Agent, (3) UA authenticates user and registers with system, (4) For calls: UA coordinates with SiteKeeper for routing decisions, (5) SiteKeeper consults Gatekeeper for admission control and address translation, (6) Gatekeeper authorizes call and allocates bandwidth, (7) SiteKeeper routes call through appropriate resources, (8) Response flows back through UA and TA to terminal. All call control decisions funnel through the centralized Gatekeeper.",
+            "architectural_constraints": [
+              "Tightly coupled to H.323 protocol - supporting other protocols (SIP, WebRTC) requires significant architectural changes",
+              "Centralized Gatekeeper creates potential scalability bottleneck and single point of failure",
+              "Hierarchical structure limits flexibility in routing and service composition",
+              "Protocol translation happens at terminal boundary only, limiting interoperability with non-H.323 systems",
+              "Resource management is centralized, making distributed deployment complex"
+            ],
+            "notes": "This architecture CAN easily accommodate: (1) New H.323-compliant terminals, (2) Additional value-added services triggered through UA, (3) New routing policies in SiteKeeper, (4) Enhanced authentication mechanisms in UA. This architecture CANNOT easily accommodate: (1) Non-H.323 protocols without major redesign, (2) Distributed/federated deployment models due to centralized Gatekeeper, (3) Microservices-style independent scaling of components, (4) Real-time protocol switching or multi-protocol sessions, (5) Cloud-native deployment patterns. CHANGE IMPACT EXAMPLES: Adding SIP support would require new components (see A-02); Adding video conferencing features would primarily affect UA and GK (bandwidth control); Scaling to 10x users would stress the centralized GK; Adding mobile app support would require new TA variants or protocol translation layer."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "An end-user in the Tokyo office initiates a video call with a colleague in the New York office over the company Intranet. The system establishes the H.323 connection within 3 seconds, maintains call quality with <150ms latency, and supports simultaneous screen sharing without dropping the connection.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Terminal Agent",
+            "User Agent",
+            "Gatekeeper",
+            "SiteKeeper"
+          ],
+          "feasibility_note": "Direct match - H.323 standard supports multimedia communications. Gatekeeper handles call routing between sites, SiteKeeper manages site-level coordination, User Agent authenticates users, and Terminal Agent manages endpoint connections.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Core functionality that demonstrates the global communication capability. End-users need reliable, low-latency multimedia communication across geographic boundaries to perform daily work."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A system administrator needs to add 500 new users across 3 new regional offices (Singapore, Berlin, Mumbai) within 2 weeks. The system must allow bulk user provisioning, automatic SiteKeeper configuration for new sites, and Gatekeeper routing table updates without service interruption to existing 10,000 users.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "User Agent",
+            "SiteKeeper",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Indirect match - Current hierarchical architecture supports multi-site deployment, but bulk provisioning and dynamic configuration capabilities are not explicitly defined. May require administrative interface enhancements and automated configuration tools.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Enterprise growth requires scalable user management. Administrators need efficient tools to expand the system without disrupting existing services, directly supporting the 'global solution' requirement."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "The development team needs to integrate a new instant messaging service into GON within 6 months. The messaging service must interoperate with existing H.323 voice/video infrastructure, share the same user directory managed by User Agent, and allow users to escalate text chats to voice/video calls seamlessly.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "User Agent",
+            "Terminal Agent",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Requires architectural extension - H.323 standard primarily focuses on real-time multimedia, not asynchronous messaging. Would need new messaging component that integrates with User Agent for authentication and Terminal Agent for session escalation. Gatekeeper may need protocol translation capabilities.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Directly addresses 'increase the offering of services' requirement. Developers need extensible architecture to add new communication modalities while maintaining integration with existing services."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A maintainer needs to diagnose why users in the London office experience intermittent call drops (5-10 per day). The system must provide component-level logging from Terminal Agent, SiteKeeper, and Gatekeeper, with correlation IDs linking events across components, and diagnostic tools to replay call setup sequences within 30 minutes of incident report.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Terminal Agent",
+            "SiteKeeper",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Indirect match - While the architecture components exist, observability and diagnostic capabilities are not explicitly defined. Traditional telecom architectures may have limited distributed tracing. Requires logging infrastructure and diagnostic tooling.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "System reliability depends on rapid problem diagnosis. Maintainers need visibility into component interactions to ensure service quality and minimize downtime in a global enterprise environment."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "An end-user working remotely needs to join a conference call with 15 participants from mobile device, desktop, and conference room endpoints simultaneously. The system must support heterogeneous H.323 terminals, provide automatic bandwidth adaptation for the mobile connection (3G/4G/WiFi transitions), and maintain conference state if one participant temporarily disconnects.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Terminal Agent",
+            "User Agent",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Partial match - H.323 supports multi-point conferences and diverse terminals through Terminal Agent. Bandwidth adaptation and resilient state management may require MCU (Multipoint Control Unit) functionality not explicitly listed in components. Gatekeeper handles routing but conference orchestration needs clarification.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Modern work environments require flexible, resilient conferencing across device types and network conditions. Critical for 'global solution' promise in enterprise with mobile workforce."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "The development team needs to replace the Gatekeeper component with a next-generation SIP-based routing engine while maintaining backward compatibility with existing H.323 terminals for 18 months during migration. The new component must handle 10,000 concurrent sessions with <50ms routing decision time.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Gatekeeper",
+            "Terminal Agent",
+            "User Agent"
+          ],
+          "feasibility_note": "Significant architectural change - Requires protocol translation layer between SIP and H.323. The hierarchical architecture's tight coupling to H.323 standard may make this challenging. Would need abstraction layer at Gatekeeper interface and potentially dual-protocol support in Terminal Agent.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Technology evolution planning. Developers need architecture that can evolve with industry standards (H.323 to SIP transition) without complete system replacement, protecting enterprise investment."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "A system administrator must implement role-based access control where executives can initiate international calls, managers can make regional calls, and staff can only make internal calls. The policy enforcement must occur at call setup time through Gatekeeper, with policy updates propagating to all SiteKeepers within 5 minutes, and generate audit logs for compliance review.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Gatekeeper",
+            "SiteKeeper",
+            "User Agent"
+          ],
+          "feasibility_note": "Indirect match - User Agent likely handles authentication, but fine-grained authorization and policy management not explicitly defined. Gatekeeper would need policy engine integration. Requires policy distribution mechanism across SiteKeepers and audit logging infrastructure.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Enterprise governance and cost control. Administrators need granular control over service access to manage telecommunications costs and ensure compliance with corporate policies."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A maintainer needs to perform a rolling upgrade of SiteKeeper software across 20 regional sites without service disruption. Each SiteKeeper upgrade must complete within 15 minutes, automatically failover active calls to redundant SiteKeeper instances, and rollback if post-upgrade health checks fail.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "SiteKeeper",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Architecture unclear on redundancy - Traditional H.323 hierarchical architecture may not inherently support active-active SiteKeeper redundancy. Requires high-availability design, state synchronization between SiteKeeper instances, and Gatekeeper awareness of SiteKeeper health/availability.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Zero-downtime maintenance is critical for global enterprise communications. Maintainers need architecture that supports continuous operation during updates to meet enterprise SLA requirements."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "An end-user needs to transfer an active voice call from their desk phone to mobile device when leaving the office, maintaining conversation continuity without re-dialing. The transfer must complete within 5 seconds with <1 second audio gap, preserving call context and any associated data sharing sessions.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Terminal Agent",
+            "User Agent",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Requires mobility features - H.323 standard has limited native mobility support. Would require session transfer protocol, User Agent to track user's multiple registered devices, Terminal Agent to manage device handoff, and Gatekeeper to reroute media streams. Significant enhancement to current architecture.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Modern workforce mobility expectations. End-users need seamless device transitions to maintain productivity, supporting 'global solution' vision for distributed enterprise workers."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "A developer needs to create a custom application that monitors real-time call quality metrics (jitter, packet loss, MOS scores) across all active sessions and triggers alerts when quality degrades below thresholds. The application must access metrics via published APIs from Terminal Agent and Gatekeeper with <1 second data freshness.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Terminal Agent",
+            "Gatekeeper"
+          ],
+          "feasibility_note": "Requires API layer - Traditional H.323 architecture may not expose programmatic interfaces for real-time metrics. Would need instrumentation in Terminal Agent (endpoint metrics) and Gatekeeper (network-level metrics), plus API gateway for external access. Architectural extension for observability.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Enables ecosystem development and custom enterprise integrations. Developers need open interfaces to build value-added services on top of core communication platform, supporting service expansion goals."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "H.323 protocol is explicitly designed for multimedia communications including video. The architecture's core components (TA for terminal connection, UA for user authentication/call setup, SK for inter-site routing, GK for admission control and bandwidth management) directly support this scenario. The hierarchical structure with centralized Gatekeeper enables coordinated call establishment across geographic sites. Screen sharing is part of H.323 T.120 data conferencing standard.",
+          "supporting_components": [
+            "TA",
+            "UA",
+            "SK",
+            "GK"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the architecture supports multi-site deployment through SiteKeeper components, bulk provisioning, automated configuration, and zero-downtime updates are operational capabilities not explicitly defined in the architecture. The User Agent handles registration but lacks defined bulk provisioning interfaces. SiteKeeper and Gatekeeper configuration mechanisms are not specified. The centralized Gatekeeper may become a bottleneck during routing table updates for 500 new users.",
+          "supporting_components": [
+            "UA",
+            "SK",
+            "GK"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "H.323 standard focuses on real-time multimedia (voice/video), not asynchronous messaging. The architecture lacks components for message storage, delivery, and presence management. While User Agent can provide shared authentication and Terminal Agent could handle session escalation, a new messaging component would be required. The tight coupling to H.323 protocol makes adding non-real-time communication modalities challenging without architectural extension.",
+          "supporting_components": [
+            "UA",
+            "TA"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "The architecture defines component responsibilities but not observability infrastructure. Distributed tracing with correlation IDs, centralized logging, and diagnostic replay tools are not inherent to traditional H.323 architectures. While components exist to instrument (TA, SK, GK), the architecture lacks defined logging interfaces, log aggregation mechanisms, and diagnostic tooling. The hierarchical structure helps with tracing call flow, but cross-component correlation requires additional infrastructure.",
+          "supporting_components": [
+            "TA",
+            "SK",
+            "GK"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "H.323 supports multi-point conferences and heterogeneous terminals, but the architecture doesn't explicitly include MCU (Multipoint Control Unit) functionality for conference orchestration. Terminal Agent can handle diverse endpoints, but dynamic bandwidth adaptation for mobile network transitions and resilient conference state management require capabilities not defined in current components. Gatekeeper handles bandwidth control but not adaptive QoS for mobile scenarios. Conference state persistence during participant disconnection needs additional infrastructure.",
+          "supporting_components": [
+            "TA",
+            "UA",
+            "GK"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "This represents fundamental architectural change. The architecture is 'tightly coupled to H.323 protocol' per constraints. Replacing Gatekeeper with SIP-based engine while maintaining H.323 backward compatibility requires protocol translation layer, dual-protocol support in Terminal Agent, and abstraction at component interfaces. The centralized Gatekeeper's three functions (address translation, admission control, bandwidth control) would need SIP equivalents while maintaining H.323 semantics for legacy terminals. This violates the 'CANNOT easily accommodate non-H.323 protocols' constraint.",
+          "supporting_components": [
+            "GK",
+            "TA",
+            "UA"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "User Agent handles authentication but fine-grained authorization policies (role-based call restrictions) are not explicitly defined. Gatekeeper performs admission control but lacks described policy engine for business rules. The architecture needs policy definition language, policy storage, policy distribution mechanism to SiteKeepers, policy enforcement points in Gatekeeper admission control, and audit logging infrastructure. The centralized Gatekeeper is well-positioned for policy enforcement, but policy management and distribution capabilities must be added.",
+          "supporting_components": [
+            "GK",
+            "SK",
+            "UA"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "The architecture doesn't define high-availability or redundancy patterns for SiteKeeper. Rolling upgrades require active-active or active-passive SiteKeeper redundancy, state synchronization between instances, health monitoring, and Gatekeeper awareness of SiteKeeper availability for routing decisions. Traditional hierarchical H.323 architectures typically use single SiteKeeper per site. Call state migration during failover and automatic rollback mechanisms are not architectural features. The 'centralized resource management makes distributed deployment complex' constraint indicates this is challenging.",
+          "supporting_components": [
+            "SK",
+            "GK"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "H.323 has limited native mobility support. Mid-call device transfer requires session transfer protocol, User Agent tracking multiple registered devices per user, Terminal Agent managing device handoff with media stream redirection, and Gatekeeper rerouting active media flows. The architecture assumes relatively static terminal-to-user mappings. Maintaining call context and data sharing sessions during transfer requires session state externalization and transfer protocols not defined in current architecture. This is a significant enhancement beyond basic H.323 capabilities.",
+          "supporting_components": [
+            "TA",
+            "UA",
+            "GK"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "Traditional H.323 components don't expose programmatic APIs for external applications. The architecture would need instrumentation in Terminal Agent (endpoint-level metrics like jitter, packet loss) and Gatekeeper (network-level aggregated metrics), API gateway layer for external access, real-time metrics collection and streaming infrastructure, and published API contracts. The architecture focuses on call control, not observability APIs. This requires adding an integration layer not present in traditional telecom architectures.",
+          "supporting_components": [
+            "TA",
+            "GK"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. This is the core use case the H.323 architecture was designed to support. May need operational tuning (bandwidth allocation policies in GK, routing optimization in SK) to meet 3-second setup and <150ms latency requirements, but these are configuration rather than architectural changes.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "N/A - Direct support exists"
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "UA",
+            "SK",
+            "GK"
+          ],
+          "change_description": "Add administrative interface layer: (1) Bulk provisioning API in User Agent for batch user creation/registration, (2) Configuration management interface in SiteKeeper for automated site setup, (3) Dynamic routing table update mechanism in Gatekeeper with hot-reload capability to avoid service interruption, (4) Administrative console/API gateway for orchestrating multi-component configuration. Requires database schema for user/site configuration and migration tools.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Centralized Gatekeeper routing table updates for 500 users may cause temporary performance degradation during update",
+            "No defined transaction mechanism for coordinated updates across UA, SK, and GK - risk of inconsistent state",
+            "Scaling to 10,500 total users approaches Gatekeeper scalability limits mentioned in constraints",
+            "Lack of configuration versioning and rollback capability"
+          ],
+          "alternative_approaches": "Implement staged rollout: (1) Pre-provision users in User Agent database offline, (2) Configure new SiteKeepers in isolated mode, (3) Update Gatekeeper routing tables during low-traffic maintenance window, (4) Activate users in batches of 50-100 to minimize impact. Use existing H.323 registration mechanisms rather than bulk APIs, accepting longer provisioning timeline (4-6 weeks vs 2 weeks)."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "UA",
+            "TA",
+            "GK",
+            "New: Messaging Service"
+          ],
+          "change_description": "Add new Messaging Service component with dependencies on UA and TA: (1) Messaging Service handles message storage, delivery, presence, and chat session management, (2) Integrate with User Agent for shared authentication/user directory and session escalation triggers, (3) Extend Terminal Agent to support messaging protocol alongside H.323 (dual-protocol support), (4) Add protocol translation capability in Gatekeeper or new gateway component to bridge messaging sessions to H.323 voice/video calls, (5) Define inter-component messaging protocol for escalation events.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "H.323 protocol mismatch - messaging is asynchronous, H.323 is synchronous real-time",
+            "Terminal Agent becomes multi-protocol, increasing complexity and violating single-responsibility",
+            "Session escalation requires maintaining correlation between messaging sessions and H.323 calls",
+            "User presence management not defined in current architecture",
+            "Message persistence and delivery guarantees require new data storage layer",
+            "6-month timeline is aggressive for architectural extension of this magnitude"
+          ],
+          "alternative_approaches": "Deploy separate messaging system with loose integration: (1) Standalone messaging platform (XMPP, proprietary) with its own user authentication, (2) Periodic user directory synchronization from User Agent to messaging system, (3) Click-to-call integration where messaging client triggers H.323 call via Terminal Agent API, (4) Accept that messaging and voice/video are separate experiences rather than seamless escalation. This preserves architectural integrity but sacrifices tight integration."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "TA",
+            "SK",
+            "GK",
+            "New: Logging Infrastructure"
+          ],
+          "change_description": "Implement observability layer: (1) Add structured logging with correlation IDs to TA, SK, and GK components, (2) Deploy centralized log aggregation system (ELK stack, Splunk, etc.), (3) Implement distributed tracing framework to track call flows across components, (4) Create diagnostic tooling for call sequence replay and analysis, (5) Define logging standards and correlation ID propagation protocol across components, (6) Add monitoring dashboards for real-time visibility.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Logging overhead may impact performance of real-time call processing in TA and GK",
+            "Correlation ID propagation requires protocol extensions or header modifications",
+            "Log volume for 10,000 users could be substantial - storage and retention policies needed",
+            "Diagnostic replay requires capturing sufficient state without privacy violations",
+            "30-minute diagnosis timeline requires automated analysis tools, not just raw logs"
+          ],
+          "alternative_approaches": "Implement tiered logging approach: (1) Minimal logging in production (errors, warnings, key events), (2) Enable verbose debug logging on-demand for specific users/sites experiencing issues, (3) Use H.323 native call detail records (CDRs) from Gatekeeper as primary diagnostic source, (4) Implement component health checks and synthetic transaction monitoring to detect issues proactively, (5) Accept longer diagnosis time (2-4 hours) using existing tools rather than building comprehensive observability platform."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "TA",
+            "UA",
+            "GK",
+            "New: MCU"
+          ],
+          "change_description": "Add conferencing capabilities: (1) Deploy Multipoint Control Unit (MCU) component for conference orchestration, media mixing, and participant management, (2) Extend Terminal Agent to support diverse terminal types (mobile, desktop, room systems) with capability negotiation, (3) Implement adaptive bandwidth management in Gatekeeper with QoS policies for mobile connections, (4) Add conference state persistence in User Agent or MCU for resilient reconnection, (5) Implement network transition detection and media stream renegotiation for mobile handoffs (3G/4G/WiFi), (6) Define conference control protocol between UA, MCU, and GK.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "MCU is significant new component not in current architecture - integration complexity",
+            "Mobile network transitions require real-time adaptation beyond static bandwidth control",
+            "Conference state management during participant disconnection requires distributed state synchronization",
+            "15-participant conference with heterogeneous endpoints creates complex media mixing requirements",
+            "H.323 MCU standards exist but integration with current component model unclear",
+            "Mobile device support may require additional security considerations (VPN, encryption)"
+          ],
+          "alternative_approaches": "Simplified conferencing without full resilience: (1) Use external H.323 MCU appliance integrated via Gatekeeper, (2) Limit mobile support to WiFi-only (no 3G/4G transitions), (3) Accept that disconnected participants must manually rejoin (no automatic reconnection), (4) Use Terminal Agent's existing multi-terminal support without special mobile handling, (5) Implement basic bandwidth throttling in Gatekeeper without adaptive QoS. This reduces development effort but compromises user experience for mobile participants."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "GK",
+            "TA",
+            "UA",
+            "SK",
+            "New: Protocol Gateway"
+          ],
+          "change_description": "Implement protocol abstraction layer: (1) Create Protocol Gateway component providing unified interface for both H.323 and SIP, (2) Refactor Gatekeeper into protocol-agnostic call control engine with pluggable protocol adapters, (3) Extend Terminal Agent to support both H.323 and SIP terminals with protocol detection, (4) Add protocol translation capability for H.323-to-SIP and SIP-to-H.323 calls, (5) Implement dual-stack operation mode in all components during 18-month migration, (6) Create migration tooling for gradual terminal conversion, (7) Abstract address translation, admission control, and bandwidth control functions to work with both protocols.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Fundamental architectural constraint: 'tightly coupled to H.323 protocol - supporting other protocols requires significant architectural changes'",
+            "Protocol semantic differences between H.323 and SIP (call models, addressing, capabilities) create translation complexity",
+            "Performance requirement (10,000 concurrent sessions, <50ms routing) may be difficult with protocol translation overhead",
+            "18-month dual-protocol operation doubles testing and operational complexity",
+            "Gatekeeper's three core functions (address translation, admission control, bandwidth control) have different implementations in SIP",
+            "Risk of introducing bugs in existing H.323 functionality during refactoring",
+            "This essentially requires building architecture A-02 (SIP-based) while maintaining A-01"
+          ],
+          "alternative_approaches": "Parallel deployment strategy: (1) Deploy new SIP-based architecture (A-02) alongside existing H.323 architecture, (2) Use external SIP-H.323 gateway appliance for inter-architecture calls, (3) Migrate users site-by-site to new architecture rather than component-by-component replacement, (4) Maintain separate Gatekeeper instances for H.323 and SIP with federation, (5) Accept temporary operational overhead of running two architectures. This avoids corrupting existing architecture but requires more infrastructure investment."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "GK",
+            "SK",
+            "UA",
+            "New: Policy Engine"
+          ],
+          "change_description": "Implement policy management framework: (1) Add Policy Engine component with rule definition language for role-based access control, (2) Extend User Agent to retrieve user roles during authentication and pass to Gatekeeper, (3) Enhance Gatekeeper admission control to evaluate policies before authorizing calls (check destination against user role), (4) Implement policy distribution mechanism from Policy Engine to all SiteKeepers with 5-minute propagation SLA, (5) Add audit logging infrastructure capturing policy decisions with user/role/destination/outcome, (6) Create administrative interface for policy management, (7) Define policy storage (database) and versioning.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Policy evaluation in Gatekeeper admission control adds latency to call setup",
+            "5-minute policy propagation requires distributed cache invalidation or pub-sub mechanism",
+            "Policy conflicts and precedence rules need careful design (executive vs manager roles)",
+            "Audit log volume could be substantial for 10,000 users - storage and retention planning needed",
+            "Emergency call handling may need policy bypass mechanism",
+            "Role management integration with enterprise directory (LDAP/AD) not defined",
+            "Policy enforcement at Gatekeeper is centralized - good for consistency but potential bottleneck"
+          ],
+          "alternative_approaches": "Simplified policy enforcement: (1) Implement coarse-grained policies at SiteKeeper level (site-to-site routing restrictions) rather than per-user, (2) Use User Agent to enforce policies during call setup before involving Gatekeeper, (3) Leverage existing H.323 admission control with simple allow/deny lists rather than complex policy engine, (4) Accept longer policy propagation time (30-60 minutes) using scheduled configuration updates, (5) Use external audit logging via syslog rather than integrated audit infrastructure. This reduces architectural complexity but provides less granular control."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "SK",
+            "GK",
+            "New: Load Balancer"
+          ],
+          "change_description": "Implement high-availability SiteKeeper architecture: (1) Deploy redundant SiteKeeper pairs (active-active or active-passive) at each site, (2) Add Load Balancer component to distribute calls across SiteKeeper instances, (3) Implement state synchronization mechanism between SiteKeeper pairs for active call state, (4) Extend Gatekeeper to track SiteKeeper health and availability for routing decisions, (5) Create health check and monitoring infrastructure for automated failover detection, (6) Implement rolling upgrade orchestration tooling with automated health validation, (7) Add rollback capability with version management and state restoration, (8) Define call migration protocol for moving active calls between SiteKeeper instances.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Architectural constraint: 'centralized resource management makes distributed deployment complex'",
+            "SiteKeeper state synchronization for active calls is complex - media streams, routing state, resource allocations",
+            "Call migration during failover may cause brief audio interruption even with HA design",
+            "15-minute upgrade window is aggressive for software deployment, health checks, and validation",
+            "Gatekeeper must be aware of SiteKeeper redundancy - may require Gatekeeper changes beyond SK",
+            "Doubling SiteKeeper instances (20 sites \u00d7 2) increases infrastructure costs significantly",
+            "Rollback mechanism requires state versioning and backward compatibility",
+            "Testing failover scenarios across 20 sites is operationally complex"
+          ],
+          "alternative_approaches": "Scheduled maintenance approach: (1) Perform SiteKeeper upgrades during planned maintenance windows (off-hours), (2) Implement graceful shutdown where SiteKeeper stops accepting new calls but completes active calls before upgrade, (3) Use Gatekeeper to route new calls to other sites during upgrade (geographic failover), (4) Accept brief service interruption per site (15-30 minutes) rather than zero-downtime, (5) Implement blue-green deployment at site level (upgrade backup site, switch traffic, upgrade primary), (6) Reduce rollback complexity by thorough pre-production testing. This avoids complex HA architecture but requires maintenance windows."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "TA",
+            "UA",
+            "GK",
+            "New: Mobility Manager"
+          ],
+          "change_description": "Implement mobility framework: (1) Add Mobility Manager component to orchestrate device transfers and maintain session continuity, (2) Extend User Agent to support multiple simultaneous device registrations per user with device priority/preference, (3) Enhance Terminal Agent to support session transfer protocol (H.450.x series for H.323 supplementary services), (4) Implement call state externalization in Gatekeeper or Mobility Manager for transfer coordination, (5) Add media stream redirection capability in Gatekeeper to reroute active RTP streams to new device, (6) Implement transfer signaling protocol between devices via User Agent, (7) Add context preservation for associated data sharing sessions during transfer.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "H.323 has limited native mobility support - requires H.450.x supplementary services not in base architecture",
+            "5-second transfer time with <1 second audio gap is challenging - requires pre-established media path to new device",
+            "Multiple device registration per user changes User Agent's user-to-terminal mapping assumptions",
+            "Media stream redirection in Gatekeeper during active call is complex - requires RTP-level control",
+            "Data sharing session transfer requires application-level state migration beyond call control",
+            "Mobile device may be on different network (cellular vs corporate) - NAT traversal and security implications",
+            "Transfer coordination between desk phone and mobile requires device-to-device signaling path",
+            "User experience for initiating transfer (button press, app action) requires client-side integration"
+          ],
+          "alternative_approaches": "Simplified call forwarding: (1) Implement call forwarding in User Agent where user pre-configures mobile as forward destination, (2) Use 'transfer' feature where user manually transfers call to mobile number (requires re-dial), (3) Accept audio gap and loss of data sharing session during transfer, (4) Implement 'park and retrieve' where user parks call at desk phone and retrieves from mobile (two-step process), (5) Use conferencing approach where mobile joins as third party, then desk phone drops. This uses existing H.323 features but provides degraded user experience vs seamless transfer."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "TA",
+            "GK",
+            "New: API Gateway",
+            "New: Metrics Collector"
+          ],
+          "change_description": "Implement API and metrics infrastructure: (1) Add instrumentation to Terminal Agent for endpoint-level metrics collection (jitter, packet loss, MOS scores from RTP streams), (2) Add instrumentation to Gatekeeper for network-level aggregated metrics and call quality statistics, (3) Deploy Metrics Collector component to aggregate and stream real-time metrics, (4) Implement API Gateway providing RESTful or streaming APIs for external application access, (5) Define API contracts and data models for quality metrics, (6) Implement authentication and authorization for API access, (7) Add real-time metrics streaming infrastructure (WebSocket, Server-Sent Events, or message queue) for <1 second freshness, (8) Create API documentation and SDK for developers.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Traditional H.323 components don't expose programmatic APIs - requires architectural extension",
+            "Real-time metrics collection overhead in Terminal Agent may impact call processing performance",
+            "MOS score calculation requires deep packet inspection and analysis - computationally intensive",
+            "<1 second data freshness requires streaming architecture, not polling",
+            "API security model needs definition - which applications can access which metrics",
+            "Metrics for 10,000 concurrent sessions creates high data volume - scalability of Metrics Collector",
+            "API versioning and backward compatibility strategy needed for ecosystem stability"
+          ],
+          "alternative_approaches": "Batch metrics export: (1) Use existing H.323 call detail records (CDRs) from Gatekeeper as metrics source, (2) Export metrics periodically (every 5-15 minutes) rather than real-time streaming, (3) Provide file-based or database access to metrics rather than APIs, (4) Use SNMP for component monitoring (standard telecom approach) rather than custom APIs, (5) Implement metrics dashboard using existing monitoring tools (Grafana, Nagios) rather than custom application. This provides metrics access with minimal architectural change but sacrifices real-time freshness and developer flexibility."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "UA",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-09"
+          ]
+        },
+        {
+          "component": "SK",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08"
+          ]
+        },
+        {
+          "component": "GK",
+          "scenario_count": 9,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10"
+          ]
+        },
+        {
+          "component": "TA",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-09",
+            "S-10"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "GK",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Gatekeeper is the most critical hotspot (9 scenarios) and represents the architectural core for call routing, admission control, and bandwidth management. High-risk scenarios include S-06 (SIP migration - architectural constraint violation), S-08 (HA requirements with centralized resource management complexity), and S-07 (policy enforcement adding latency to call setup). Failure to address GK changes impacts: End-users through call quality degradation and setup delays; Developers through protocol migration complexity; Maintainers through operational complexity of dual-protocol support; Administrators through policy management and upgrade orchestration challenges. The centralized nature makes this a single point of failure affecting all 10,000 users and 10,000 concurrent sessions performance requirement."
+        },
+        {
+          "component": "TA",
+          "scenario_ids": [
+            "S-03",
+            "S-04",
+            "S-05",
+            "S-06",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Terminal Agent impacts 6 scenarios with high-complexity changes including multi-protocol support (S-03, S-06), mobility (S-09), and diverse endpoint handling (S-05). Critical risks: S-03 creates protocol mismatch (H.323 synchronous vs messaging asynchronous) violating single-responsibility; S-09 requires H.450.x supplementary services not in base architecture with aggressive 5-second transfer/<1 second audio gap requirements; S-06 dual-protocol operation doubles testing complexity. End-users experience direct impact through call quality, messaging integration, and mobility features. Developers face 6-month to 18-month timelines for high-effort changes. Maintainers must support increasingly complex multi-protocol, multi-device component. TA is the user-facing component where architectural deficiencies directly translate to poor user experience."
+        },
+        {
+          "component": "UA",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-05",
+            "S-06",
+            "S-07",
+            "S-09"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "System Administrator",
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "User Agent affects 6 scenarios primarily around user management, authentication, and multi-device support. Key concerns: S-02 bulk provisioning for 500 users approaching 10,500 total user scalability limits with no transaction mechanism for coordinated updates (risk of inconsistent state); S-07 role-based policy requiring enterprise directory integration (LDAP/AD) not currently defined; S-09 multiple simultaneous device registrations changing user-to-terminal mapping assumptions. System Administrators face operational challenges with bulk provisioning, policy management, and user directory synchronization. Developers must implement administrative APIs and multi-device logic. End-users impacted indirectly through authentication delays and mobility limitations. While widespread impact, UA changes are medium-effort with medium risk, making this lower priority than GK/TA which have high-risk architectural constraints."
+        },
+        {
+          "component": "SK",
+          "scenario_ids": [
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "SiteKeeper impacts 5 scenarios focused on operational concerns: configuration management (S-02), diagnostics (S-04), protocol migration (S-06), policy distribution (S-07), and high availability (S-08). Primary risk is S-08 requiring redundant SK pairs at 20 sites with state synchronization for active calls - architectural constraint states 'centralized resource management makes distributed deployment complex.' This creates high-effort, high-risk changes with 15-minute upgrade window requirements and complex call migration protocols. S-07's 5-minute policy propagation requires distributed cache invalidation. System Administrators bear primary burden of managing 40+ SK instances (20 sites \u00d7 2) with rolling upgrades and failover orchestration. Maintainers face diagnostic complexity (S-04) and protocol translation overhead (S-06). Ranked lower than GK/TA/UA because SK is site-level component - failures impact subset of users rather than entire system, and scenarios are operationally focused rather than architecturally fundamental."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: Excellent support for core H.323 real-time communication use case. S-01 demonstrates the architecture directly supports point-to-point video calls with no changes required, only operational tuning for 3-second setup and <150ms latency. This validates the original design intent and shows the architecture excels at its primary purpose.",
+          "Strength 2: Centralized control through Gatekeeper enables consistent policy enforcement and resource management. S-07 (policy enforcement) benefits from centralized admission control at GK for consistent policy decisions across all 10,000 users. This architectural decision provides strong governance capabilities and simplified policy distribution compared to distributed enforcement models.",
+          "Strength 3: Clear component separation of concerns supports targeted enhancements. S-10 (API/metrics) demonstrates ability to add observability infrastructure with low risk by instrumenting specific components (TA for endpoint metrics, GK for network metrics) without requiring wholesale architectural changes. The component boundaries allow incremental capability addition.",
+          "Strength 4: Site-based hierarchy through SiteKeeper provides natural scaling and geographic distribution. S-02 (bulk provisioning) leverages the SK layer for site-level configuration management, and S-08 (HA) can implement redundancy at site level. This hierarchical design supports the 20-site, 10,000-user scale requirement effectively."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: Tight coupling to H.323 protocol creates fundamental rigidity. S-06 (SIP migration) exposes the critical constraint that 'supporting other protocols requires significant architectural changes.' This affects 6 scenarios requiring protocol extensions (S-03 messaging, S-05 mobile conferencing, S-06 SIP, S-09 mobility) with high effort and high risk. The protocol is embedded throughout all components (UA, TA, SK, GK) rather than abstracted, making protocol evolution extremely costly.",
+          "Weakness 2: Centralized Gatekeeper becomes bottleneck and single point of failure. GK is the hotspot for 9 of 10 scenarios with compounding complexity: S-02 routing table updates for 500 users risk performance degradation; S-07 policy evaluation adds call setup latency; S-08 HA requirements conflict with 'centralized resource management makes distributed deployment complex' constraint; S-09 media stream redirection requires RTP-level control. The 10,000 concurrent sessions performance requirement is threatened by accumulating GK responsibilities.",
+          "Weakness 3: Lack of extensibility mechanisms forces widespread changes for new capabilities. S-03 (messaging) requires new component plus changes to UA, TA, and GK with protocol mismatch issues. S-05 (conferencing) needs new MCU plus changes to TA, UA, GK with no clear integration model. S-09 (mobility) requires new Mobility Manager plus H.450.x supplementary services not in base architecture. The architecture lacks plugin points, service buses, or abstraction layers that would enable adding capabilities without modifying core components.",
+          "Weakness 4: Insufficient operational and administrative interfaces. S-02 (bulk provisioning) identifies 'no defined transaction mechanism for coordinated updates across UA, SK, and GK - risk of inconsistent state' and lack of configuration versioning/rollback. S-04 (diagnostics) requires adding entire observability layer because components don't expose programmatic APIs. S-08 (rolling upgrades) needs new orchestration tooling and state synchronization mechanisms. The architecture was designed for communication flows but not for operational lifecycle management.",
+          "Weakness 5: State management and session continuity not architected for modern mobility requirements. S-09 (device transfer) exposes that 'H.323 has limited native mobility support' and requires call state externalization, multiple device registration, and media stream redirection - all high-effort, high-risk changes. S-05 (mobile conferencing) requires 'network transition detection and media stream renegotiation' for 3G/4G/WiFi handoffs. S-08 (HA) needs 'state synchronization mechanism between SiteKeeper pairs for active call state' including media streams and routing state. The architecture assumes static endpoints and lacks distributed state management patterns.",
+          "Weakness 6: Approaching scalability limits with no clear scaling strategy. S-02 notes 'Scaling to 10,500 total users approaches Gatekeeper scalability limits mentioned in constraints.' S-10 identifies 'Metrics for 10,000 concurrent sessions creates high data volume - scalability of Metrics Collector.' The centralized GK design and lack of horizontal scaling mechanisms create a scalability ceiling that multiple scenarios are approaching simultaneously."
+        ],
+        "modifiability_assessment": "The architecture exhibits LOW modifiability with significant rigidity. 9 of 10 scenarios require Indirect support with Widespread changes, Medium-to-High effort, and Medium-to-High risk. The tight H.323 protocol coupling, centralized Gatekeeper bottleneck, and lack of extensibility mechanisms mean that business-critical scenarios (messaging, conferencing, SIP migration, mobility) require architectural-level changes rather than localized enhancements. The architecture is optimized for its original H.323 point-to-point use case but struggles to evolve toward modern unified communications requirements."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement protocol abstraction layer to decouple business logic from H.323 specifics. Create internal protocol-agnostic interfaces for call control, addressing, and media management with H.323 as one implementation. This enables S-06 (SIP migration), S-03 (messaging), and S-09 (mobility) without rewriting core components.",
+          "rationale": "Protocol coupling is the root cause affecting 6 scenarios with high risk. Abstraction would transform S-06 from 'essentially requires building architecture A-02 while maintaining A-01' to incremental protocol adapter development. This addresses the fundamental architectural constraint and enables future protocol evolution (WebRTC, proprietary protocols) without repeated wholesale changes. Impacts highest-priority GK and TA hotspots.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Federate Gatekeeper into regional clusters with distributed admission control and local routing optimization. Deploy GK instances per region (e.g., 4 regions \u00d7 5 sites) with inter-GK federation protocol for cross-region calls and centralized policy distribution.",
+          "rationale": "Addresses GK bottleneck affecting 9 scenarios and scalability limits in S-02. Reduces call setup latency for S-07 policy enforcement by localizing decisions. Enables S-08 HA through GK redundancy within regions. Provides horizontal scaling path beyond 10,500 user limit. Federation preserves centralized policy control while distributing runtime load. This is critical for performance requirements (10,000 concurrent sessions, <50ms routing, 3-second setup).",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "For S-06 SIP migration, adopt parallel deployment strategy rather than in-place transformation. Deploy new SIP-based architecture alongside H.323 with external gateway for inter-architecture calls. Migrate users site-by-site over 18 months.",
+          "rationale": "S-06 evaluation identifies that protocol refactoring 'essentially requires building architecture A-02 while maintaining A-01' with risk of 'introducing bugs in existing H.323 functionality.' Parallel deployment preserves architectural integrity, reduces risk to existing 10,000 users, and provides fallback capability. Accepts infrastructure cost to avoid corrupting proven H.323 architecture. This is pragmatic given the 'tightly coupled to H.323 protocol' constraint cannot be economically resolved in 18 months.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement service bus or event-driven architecture for component coordination. Replace direct component-to-component calls with asynchronous messaging for configuration updates (S-02), policy distribution (S-07), and metrics collection (S-10). Use pub-sub for state synchronization (S-08) and event correlation (S-04).",
+          "rationale": "Addresses S-02 'no defined transaction mechanism for coordinated updates' and S-04 correlation ID propagation challenges. Decouples components to reduce ripple effects of changes - currently 6 scenarios affect UA, 6 affect TA, 9 affect GK. Service bus enables adding new capabilities (S-03 messaging, S-05 MCU) without modifying existing components. Provides foundation for distributed state management needed in S-08 and S-09. Improves modifiability by introducing loose coupling and extensibility points.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Develop comprehensive administrative and operational API layer across all components (UA, TA, SK, GK). Define RESTful APIs for configuration management, bulk operations, health checks, and diagnostics with versioning and authentication.",
+          "rationale": "Directly addresses S-02 bulk provisioning, S-04 diagnostics, S-08 rolling upgrades, and S-10 metrics access. Currently 'traditional H.323 components don't expose programmatic APIs' forcing widespread changes for operational scenarios. APIs enable automation, reduce manual configuration errors, and support DevOps practices. This is a cross-cutting improvement affecting System Administrator and Maintainer roles across 8 scenarios. Relatively isolated from core call processing logic, reducing risk.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Extract session state management into dedicated Session State Service with distributed storage. Externalize active call state, user registrations, and routing information from GK, SK, and UA into shared state layer with consistency guarantees.",
+          "rationale": "Enables S-08 HA with state synchronization, S-09 mobility with call state externalization, and S-05 conference resilience. Addresses weakness that 'architecture assumes static endpoints and lacks distributed state management patterns.' Supports multiple device registration (S-09) and conference participant reconnection (S-05). Provides foundation for horizontal GK scaling by removing state as impediment. This is architectural pattern commonly used in modern distributed systems to achieve resilience and scalability.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "For S-03 messaging, deploy separate messaging platform with loose integration rather than architectural extension. Use standalone XMPP/proprietary system with directory synchronization and click-to-call integration to H.323.",
+          "rationale": "S-03 evaluation shows 'H.323 protocol mismatch - messaging is asynchronous, H.323 is synchronous real-time' with 6-month timeline being 'aggressive for architectural extension of this magnitude.' Separate deployment preserves architectural integrity, reduces risk, and can be delivered faster. Accepts 'messaging and voice/video are separate experiences rather than seamless escalation' as reasonable trade-off. This is pragmatic quick win that delivers business value without high-risk architectural changes to TA becoming multi-protocol.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Implement tiered logging and scheduled maintenance approaches for S-04 diagnostics and S-08 upgrades rather than full observability platform and zero-downtime HA. Use H.323 CDRs, on-demand debug logging, and planned maintenance windows.",
+          "rationale": "S-04 alternative approach provides 'metrics access with minimal architectural change' accepting 2-4 hour diagnosis vs 30 minutes. S-08 alternative avoids 'complex HA architecture' by using maintenance windows and geographic failover. These are quick wins that address operational pain points without high-effort, high-risk architectural changes. Buys time to implement higher-priority recommendations (protocol abstraction, GK federation) before tackling comprehensive observability and HA. Appropriate for current 10,000 user scale.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

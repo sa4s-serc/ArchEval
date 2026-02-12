@@ -1,0 +1,984 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "MINPHIS is a service-oriented health information system designed specifically for the Nigerian and African healthcare context. Originally based on MUMPS language, FileMan-database, and Kernel-package, the system has undergone modernization to a Client-Server architecture utilizing an RPC Broker. It serves as a low-cost, sustainable application for managing patient records, accounting, and medical records across federal, state, and local government healthcare tiers.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Pre-exercise review of architecture documentation was conducted, though architectural approaches required further identification and elicitation during the session.",
+        "evaluator_inquiry_questions": [
+          "How does the system function and behave during execution?",
+          "Questions related to run-time behavior (sent via text/email to remote users)"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Client-Server architecture",
+          "Database Layer utilizing FileMan and M Software",
+          "RPC Broker Server Layer for middleware communication"
+        ],
+        "runtime_constraints": [
+          "Transaction response time",
+          "System throughput",
+          "Web-based system performance with web services"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "storage_latency_limit": "200ms",
+        "report_generation_time": "10ms",
+        "transaction_completion_peak_load": "1 second",
+        "transaction_completion_double_peak_load": "4 seconds",
+        "throughput_peak_load": "150 normalised transactions per second"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Layered",
+          "questions": [
+            "How does the architecture respond to peak load scenarios?",
+            "How does the database structure affect performance and migration needs?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "No unauthorized access to the system (User)"
+        },
+        {
+          "id": "RS-02",
+          "description": "User errors in using system should be handled (User)"
+        },
+        {
+          "id": "RS-03",
+          "description": "All operations are processed in fastest possible speed (User)"
+        },
+        {
+          "id": "RS-04",
+          "description": "Proper data encapsulation and secure data structures (Architect)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Flexible implementation using other programming languages (Architect)"
+        },
+        {
+          "id": "RS-06",
+          "description": "Overall consistent behavior expected from the architecture (Architect)"
+        },
+        {
+          "id": "RS-07",
+          "description": "Framework should be complete, clear and perform exactly as required (Application Developer)"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Use for Keeping patient records",
+          "Use for Answering ad hoc queries from medical Researchers",
+          "Use to Provide performance information (e.g., mortality rates, patient counts)",
+          "Use for Resource Management Decisions",
+          "Produce on-demand & Periodic reports based on specific needs of Institution or Hospital"
+        ],
+        "technical_constraints": [
+          "An improved web-based system with web services",
+          "Transaction response time",
+          "System throughput"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Security",
+          "Reliability",
+          "Availability",
+          "Functionality",
+          "Modifiability",
+          "Portability",
+          "Conceptual Integrity"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server Architecture",
+          "description": "The system is structured with a clear separation between client applications and server-side processing, with the RPC Broker facilitating communication between tiers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Enables distributed processing and reduces client-side computational load by centralizing business logic on the server"
+            },
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Centralized server management allows for better monitoring and maintenance of critical services"
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Server-side transaction management ensures data consistency and integrity"
+            }
+          ]
+        },
+        {
+          "approach_name": "Layered Architecture",
+          "description": "The system is organized into distinct layers: Database Layer (FileMan and M Software), RPC Broker Server Layer (middleware), and Client Layer, with clear separation of concerns.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Layer separation allows changes to one layer without affecting others, facilitating the modernization from MUMPS to web-based services"
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Abstraction between layers enables migration to different platforms while maintaining core functionality"
+            },
+            {
+              "quality_attribute": "Conceptual Integrity",
+              "rationale": "Clear layer boundaries enforce consistent design principles across the system"
+            }
+          ]
+        },
+        {
+          "approach_name": "RPC Broker Pattern",
+          "description": "Remote Procedure Call (RPC) Broker serves as middleware to handle communication between client applications and the database layer, abstracting the complexity of remote invocations.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Optimizes network communication and reduces overhead through efficient marshalling and unmarshalling of requests"
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Centralizes authentication and authorization logic, providing a single point of control for access management"
+            },
+            {
+              "quality_attribute": "Conceptual Integrity",
+              "rationale": "Provides a uniform interface for client-server communication, ensuring consistent interaction patterns"
+            }
+          ]
+        },
+        {
+          "approach_name": "Service-Oriented Architecture (Web Services)",
+          "description": "The modernization strategy incorporates web services to expose system functionality, enabling integration with external systems and supporting web-based client access.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Functionality",
+              "rationale": "Web services expand system capabilities by enabling integration with other healthcare systems and third-party applications"
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Service interfaces allow for incremental updates and feature additions without disrupting existing functionality"
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Web services can implement standard security protocols (SSL/TLS, authentication tokens) for secure data exchange"
+            },
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Standard web service protocols enable platform-independent access to system functionality"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Transaction response time under peak load",
+                "scenario_id": "P1",
+                "scenario_description": "Under peak load conditions (150 normalized transactions/second), the system completes transactions within 1 second for 95% of requests",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Transaction response time under double peak load",
+                "scenario_id": "P2",
+                "scenario_description": "Under double peak load conditions (300 normalized transactions/second), the system completes transactions within 4 seconds for 95% of requests",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Storage access latency",
+                "scenario_id": "P3",
+                "scenario_description": "Database storage operations complete within 200ms latency limit during normal operations",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Report generation efficiency",
+                "scenario_id": "P4",
+                "scenario_description": "Ad hoc query reports are generated within 10ms for standard patient record queries",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Unauthorized access prevention",
+                "scenario_id": "S1",
+                "scenario_description": "The RPC Broker and web services layer prevent all unauthorized access attempts to patient records through centralized authentication and authorization",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Secure data transmission",
+                "scenario_id": "S2",
+                "scenario_description": "All client-server communications are encrypted using SSL/TLS protocols to protect patient data in transit",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Audit trail completeness",
+                "scenario_id": "S3",
+                "scenario_description": "All access to patient records is logged with user identity, timestamp, and action performed for compliance auditing",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "System uptime",
+                "scenario_id": "A1",
+                "scenario_description": "The system maintains 99.5% availability during business hours (8am-6pm) for patient record access",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Graceful degradation under server failure",
+                "scenario_id": "A2",
+                "scenario_description": "When the RPC Broker server experiences failure, the system provides read-only access to cached patient records within 30 seconds",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Transaction integrity",
+                "scenario_id": "R1",
+                "scenario_description": "Server-side transaction management ensures 100% data consistency for patient record updates with automatic rollback on failure",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Data recovery capability",
+                "scenario_id": "R2",
+                "scenario_description": "In case of system failure, patient data can be recovered with maximum 15 minutes of data loss (RPO = 15 minutes)",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Layer independence for updates",
+                "scenario_id": "M1",
+                "scenario_description": "Changes to the database layer (FileMan/M Software) can be implemented without requiring client application updates, completed within 2 weeks",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Web service integration",
+                "scenario_id": "M2",
+                "scenario_description": "New web service endpoints can be added to expose additional functionality without disrupting existing RPC Broker clients, completed within 1 week",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Migration from MUMPS to modern platform",
+                "scenario_id": "M3",
+                "scenario_description": "The layered architecture supports incremental migration from MUMPS to web-based services while maintaining operational continuity",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Platform-independent client access",
+                "scenario_id": "PO1",
+                "scenario_description": "Web services enable client applications on Windows, Linux, and mobile platforms to access patient records using standard protocols",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Database layer abstraction",
+                "scenario_id": "PO2",
+                "scenario_description": "The RPC Broker abstraction allows migration to alternative database systems without requiring client-side changes",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Functionality",
+            "children": [
+              {
+                "refinement": "External system integration",
+                "scenario_id": "F1",
+                "scenario_description": "Web services enable integration with third-party healthcare systems (lab systems, pharmacy systems) for data exchange",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ad hoc query capability",
+                "scenario_id": "F2",
+                "scenario_description": "Healthcare professionals can execute complex ad hoc queries on patient records with results returned within 10ms for standard queries",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Conceptual Integrity",
+            "children": [
+              {
+                "refinement": "Uniform communication interface",
+                "scenario_id": "CI1",
+                "scenario_description": "The RPC Broker provides a consistent interface pattern for all client-server interactions, reducing developer learning curve to 2 weeks",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Clear layer boundaries",
+                "scenario_id": "CI2",
+                "scenario_description": "The layered architecture enforces separation of concerns with no direct database access from clients, maintaining design consistency across all modules",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Under peak load conditions (150 normalized transactions/second), the system completes transactions within 1 second for 95% of requests",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Under double peak load conditions (300 normalized transactions/second), the system completes transactions within 4 seconds for 95% of requests",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Database storage operations complete within 200ms latency limit during normal operations",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Ad hoc query reports are generated within 10ms for standard patient record queries",
+          "primary_quality_attribute": [
+            "Performance",
+            "Functionality"
+          ]
+        },
+        {
+          "scenario_text": "The RPC Broker and web services layer prevent all unauthorized access attempts to patient records through centralized authentication and authorization",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "All client-server communications are encrypted using SSL/TLS protocols to protect patient data in transit",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "All access to patient records is logged with user identity, timestamp, and action performed for compliance auditing",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "The system maintains 99.5% availability during business hours (8am-6pm) for patient record access",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "When the RPC Broker server experiences failure, the system provides read-only access to cached patient records within 30 seconds",
+          "primary_quality_attribute": [
+            "Availability",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Server-side transaction management ensures 100% data consistency for patient record updates with automatic rollback on failure",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "In case of system failure, patient data can be recovered with maximum 15 minutes of data loss (RPO = 15 minutes)",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Changes to the database layer (FileMan/M Software) can be implemented without requiring client application updates, completed within 2 weeks",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "New web service endpoints can be added to expose additional functionality without disrupting existing RPC Broker clients, completed within 1 week",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The layered architecture supports incremental migration from MUMPS to web-based services while maintaining operational continuity",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Portability"
+          ]
+        },
+        {
+          "scenario_text": "Web services enable client applications on Windows, Linux, and mobile platforms to access patient records using standard protocols",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        },
+        {
+          "scenario_text": "The RPC Broker abstraction allows migration to alternative database systems without requiring client-side changes",
+          "primary_quality_attribute": [
+            "Portability",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Web services enable integration with third-party healthcare systems (lab systems, pharmacy systems) for data exchange",
+          "primary_quality_attribute": [
+            "Functionality"
+          ]
+        },
+        {
+          "scenario_text": "Healthcare professionals can execute complex ad hoc queries on patient records with results returned within 10ms for standard queries",
+          "primary_quality_attribute": [
+            "Functionality",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The RPC Broker provides a consistent interface pattern for all client-server interactions, reducing developer learning curve to 2 weeks",
+          "primary_quality_attribute": [
+            "Conceptual Integrity"
+          ]
+        },
+        {
+          "scenario_text": "The layered architecture enforces separation of concerns with no direct database access from clients, maintaining design consistency across all modules",
+          "primary_quality_attribute": [
+            "Conceptual Integrity"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Under peak load conditions (150 normalized transactions/second), the system completes transactions within 1 second for 95% of requests",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak load (150 transactions/second)",
+          "stimulus": "150 normalized transactions per second from multiple clients",
+          "response_measure": "Transaction completion within 1 second for 95% of requests",
+          "architectural_decisions": [
+            "Client-Server architecture with centralized business logic on server",
+            "RPC Broker middleware for efficient request marshalling",
+            "Server-side transaction management"
+          ],
+          "reasoning": "The RPC Broker optimizes network communication overhead, and centralized server processing reduces client-side load. However, the single-server bottleneck and network latency between client-broker-database layers may impact response times under peak load.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "RPC Broker server may become a bottleneck under peak load, causing response times to exceed 1 second",
+                "rationale": "Single RPC Broker instance handling 150 transactions/second without documented load balancing or horizontal scaling mechanisms"
+              },
+              {
+                "id": "R-02",
+                "description": "Network latency between client-broker-database layers may accumulate and exceed 1 second threshold",
+                "rationale": "Multi-tier architecture introduces multiple network hops; cumulative latency not quantified in current documentation"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Server-side transaction management will not introduce significant overhead for simple transactions",
+                "rationale": "FileMan database is optimized for healthcare transactions; transaction overhead typically <50ms for standard operations"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "RPC Broker thread pool size",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Network bandwidth between client and RPC Broker",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Database connection pool size",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Server-side transaction isolation level",
+                "conflicting_attributes": [
+                  "Reliability (positive: higher isolation ensures consistency)",
+                  "Performance (negative: higher isolation increases lock contention and latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Under double peak load conditions (300 normalized transactions/second), the system completes transactions within 4 seconds for 95% of requests",
+            "type": "Growth"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Double peak load (300 transactions/second)",
+          "stimulus": "300 normalized transactions per second from multiple clients",
+          "response_measure": "Transaction completion within 4 seconds for 95% of requests",
+          "architectural_decisions": [
+            "Client-Server architecture with centralized processing",
+            "RPC Broker as single middleware layer",
+            "No documented horizontal scaling or load balancing"
+          ],
+          "reasoning": "Doubling the load to 300 transactions/second without architectural provisions for horizontal scaling or load distribution creates significant risk. The 4-second tolerance provides buffer, but single-server architecture lacks elasticity.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "RPC Broker server will likely fail to meet 4-second response time under 300 transactions/second without horizontal scaling",
+                "rationale": "No documented load balancing or clustering; single server must handle 2x peak load with only 4x time allowance"
+              },
+              {
+                "id": "R-04",
+                "description": "Database layer (FileMan/M Software) may experience lock contention and degraded performance under doubled load",
+                "rationale": "MUMPS-based systems have limited concurrency mechanisms; 300 concurrent transactions may exceed database capacity"
+              },
+              {
+                "id": "R-05",
+                "description": "Memory exhaustion on RPC Broker server under sustained double peak load",
+                "rationale": "No documented memory management or request queuing strategy for overload conditions"
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "RPC Broker server CPU capacity",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Database disk I/O throughput",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Request queuing depth at RPC Broker",
+                "conflicting_attributes": [
+                  "Availability (positive: queuing prevents request rejection)",
+                  "Performance (negative: deep queues increase latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "The RPC Broker and web services layer prevent all unauthorized access attempts to patient records through centralized authentication and authorization",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with authentication attempts",
+          "stimulus": "Unauthorized access attempt to patient records",
+          "response_measure": "100% prevention of unauthorized access",
+          "architectural_decisions": [
+            "Centralized authentication and authorization in RPC Broker",
+            "Web services layer with standard security protocols",
+            "No direct database access from clients"
+          ],
+          "reasoning": "The RPC Broker pattern centralizes security enforcement, creating a single point of control. Layered architecture prevents direct database access. However, the dual access paths (RPC Broker and Web Services) require consistent security policy enforcement.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Inconsistent security policies between RPC Broker and Web Services layers may create authorization bypass vulnerabilities",
+                "rationale": "Two separate access paths require synchronized security configurations; policy drift could allow unauthorized access through one path"
+              },
+              {
+                "id": "R-07",
+                "description": "Session management vulnerabilities if RPC Broker does not implement secure token expiration and renewal",
+                "rationale": "Long-lived sessions or improper token handling could allow session hijacking attacks"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Layered architecture effectively prevents direct database access bypass",
+                "rationale": "Clear layer boundaries enforce that all access must pass through RPC Broker or Web Services, eliminating direct database connection vulnerabilities"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Authentication token expiration time",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Authorization policy synchronization mechanism between RPC Broker and Web Services",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Authentication check frequency",
+                "conflicting_attributes": [
+                  "Security (positive: frequent checks reduce unauthorized access window)",
+                  "Performance (negative: frequent authentication checks add latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "The system maintains 99.5% availability during business hours (8am-6pm) for patient record access",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Business hours (8am-6pm)",
+          "stimulus": "Normal operational conditions with potential component failures",
+          "response_measure": "99.5% availability (maximum 3 minutes downtime per 10-hour day)",
+          "architectural_decisions": [
+            "Client-Server architecture with centralized RPC Broker",
+            "Server-side transaction management",
+            "No documented redundancy or failover mechanisms"
+          ],
+          "reasoning": "99.5% availability allows only 3 minutes of downtime per business day. The centralized RPC Broker represents a single point of failure. Without documented redundancy, failover, or clustering, this target is at high risk.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "RPC Broker server failure causes complete system unavailability with no documented failover mechanism",
+                "rationale": "Single RPC Broker instance is a single point of failure; any server failure exceeds 3-minute downtime allowance for 99.5% availability"
+              },
+              {
+                "id": "R-09",
+                "description": "Database layer (FileMan/M Software) failure causes extended outage without documented high-availability configuration",
+                "rationale": "No documented database clustering or replication; database failure recovery time likely exceeds 3-minute threshold"
+              },
+              {
+                "id": "R-10",
+                "description": "Network infrastructure failure between client and RPC Broker causes unavailability",
+                "rationale": "No documented network redundancy or alternative communication paths"
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "RPC Broker server mean time between failures (MTBF)",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Failover detection and activation time",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Database replication synchronization mode",
+                "conflicting_attributes": [
+                  "Availability (positive: asynchronous replication enables faster failover)",
+                  "Reliability (negative: asynchronous replication risks data loss during failover)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "Server-side transaction management ensures 100% data consistency for patient record updates with automatic rollback on failure",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with transaction processing",
+          "stimulus": "Patient record update transaction with potential failure conditions",
+          "response_measure": "100% data consistency with automatic rollback on failure",
+          "architectural_decisions": [
+            "Server-side transaction management in RPC Broker and database layer",
+            "Centralized business logic enforcement",
+            "FileMan database with ACID transaction support"
+          ],
+          "reasoning": "Server-side transaction management centralizes consistency enforcement. The RPC Broker and FileMan database provide transaction boundaries. However, distributed transaction coordination between RPC Broker and database requires careful implementation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Partial transaction commit if RPC Broker fails after database commit but before client acknowledgment",
+                "rationale": "Two-phase commit coordination between RPC Broker and database may fail in edge cases, leaving inconsistent state"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "FileMan database ACID properties ensure atomic transaction execution within database layer",
+                "rationale": "FileMan provides robust transaction management with automatic rollback on database-level failures"
+              },
+              {
+                "id": "NR-04",
+                "description": "Centralized server-side logic prevents client-side transaction inconsistencies",
+                "rationale": "All business logic and transaction coordination occurs on server, eliminating client-side consistency risks"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Transaction timeout duration",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Transaction log size and retention",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Transaction isolation level",
+                "conflicting_attributes": [
+                  "Reliability (positive: SERIALIZABLE isolation ensures consistency)",
+                  "Performance (negative: higher isolation reduces concurrency and increases latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M3",
+            "text": "The layered architecture supports incremental migration from MUMPS to web-based services while maintaining operational continuity",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System modernization and migration",
+          "stimulus": "Requirement to migrate from MUMPS to web-based services incrementally",
+          "response_measure": "Operational continuity maintained during migration",
+          "architectural_decisions": [
+            "Layered architecture with clear separation between database, middleware, and client layers",
+            "RPC Broker abstraction layer",
+            "Web services as alternative access path"
+          ],
+          "reasoning": "The layered architecture and RPC Broker abstraction enable incremental migration by isolating changes to specific layers. Web services provide a modern access path while maintaining legacy RPC Broker support. However, dual-path maintenance increases complexity.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Maintaining functional parity between legacy RPC Broker and new web services during migration increases complexity and error risk",
+                "rationale": "Dual access paths require synchronized feature development and testing; inconsistencies could disrupt operations"
+              },
+              {
+                "id": "R-13",
+                "description": "Database layer migration from MUMPS may require schema changes that break RPC Broker compatibility",
+                "rationale": "FileMan/M Software schema is tightly coupled to MUMPS; migration to modern database may require RPC Broker refactoring"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Layered architecture successfully isolates client layer from database layer changes",
+                "rationale": "Clear layer boundaries allow database migration without requiring client application updates"
+              },
+              {
+                "id": "NR-06",
+                "description": "Web services provide platform-independent access, enabling gradual client migration",
+                "rationale": "Standard web service protocols allow new clients to access system while legacy clients continue using RPC Broker"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "API compatibility layer completeness between RPC Broker and web services",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Database abstraction layer design",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Migration pace (incremental vs. big-bang)",
+                "conflicting_attributes": [
+                  "Modifiability (positive: incremental migration reduces risk and maintains continuity)",
+                  "Conceptual Integrity (negative: dual-path maintenance during migration creates architectural inconsistency)"
+                ]
+              },
+              {
+                "id": "T-07",
+                "parameter": "Abstraction layer thickness",
+                "conflicting_attributes": [
+                  "Modifiability (positive: thick abstraction layer isolates changes better)",
+                  "Performance (negative: additional abstraction layers add latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A2",
+            "text": "When the RPC Broker server experiences failure, the system provides read-only access to cached patient records within 30 seconds",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "RPC Broker server failure",
+          "stimulus": "RPC Broker server failure event",
+          "response_measure": "Read-only access to cached patient records within 30 seconds",
+          "architectural_decisions": [
+            "Client-side caching of patient records",
+            "Graceful degradation to read-only mode",
+            "Failure detection and mode switching mechanism"
+          ],
+          "reasoning": "Client-side caching enables continued read access during server failure. However, cache consistency, staleness, and the 30-second detection/switching time are critical parameters not fully specified in the architecture.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Client cache may contain stale patient data if cache invalidation mechanism fails",
+                "rationale": "No documented cache coherence protocol; clients may display outdated medical information during degraded mode"
+              },
+              {
+                "id": "R-15",
+                "description": "30-second failover detection time may be insufficient if failure detection relies on timeout-based mechanisms",
+                "rationale": "Network timeout-based detection typically requires 60+ seconds; achieving 30-second detection requires active health monitoring"
+              },
+              {
+                "id": "R-16",
+                "description": "Inconsistent client behavior if some clients detect failure faster than others",
+                "rationale": "No documented centralized failure notification; clients may operate in mixed modes causing user confusion"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Read-only access to cached data is architecturally feasible with client-side caching",
+                "rationale": "Client applications can maintain local cache and switch to read-only mode without server interaction"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Failure detection timeout threshold",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Client cache size and retention policy",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Cache staleness tolerance",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Client cache update frequency",
+                "conflicting_attributes": [
+                  "Availability (positive: frequent updates reduce cache staleness during degraded mode)",
+                  "Performance (negative: frequent cache updates increase network traffic and server load)"
+                ]
+              },
+              {
+                "id": "T-09",
+                "parameter": "Failure detection sensitivity",
+                "conflicting_attributes": [
+                  "Availability (positive: aggressive detection enables faster failover)",
+                  "Reliability (negative: aggressive detection may cause false positives and unnecessary mode switches)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

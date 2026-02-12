@@ -1,0 +1,1043 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The CAAS is a common avionics system designed for a family of U.S. Army Special Operations helicopters (A/MH-6, MH-47, and MH-60). It aims to provide a single, open, scalable architecture to modernize avionics, replacing proprietary legacy systems. The system manages cockpit workload, enhances situational awareness ('aviate, navigate, and communicate'), and is built on a foundation of commercial standards to facilitate portability and third-party upgrades.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The CAAS was already well into development at the time of evaluation. Evaluators performed a pre-exercise review of architecture documentation to capture approaches.",
+        "evaluator_inquiry_questions": [
+          "How does the cyclic executive ensure real-time performance? ",
+          "How is the system partitioned to ensure availability and safety? "
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Hardware is portable between platforms ('plug and play' architecture).",
+          "Applications are location-transparent and can migrate to other hardware for load balancing.",
+          "Every application is resident on every box."
+        ],
+        "runtime_constraints": [
+          "Inviolable timing and memory walls between applications (POSIX partitioning).",
+          "Applications must not overrun processing time limits or memory allotments."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "boot_time_limit": "2 seconds (warm boot) ",
+        "power_interruption_limit": "1.9 seconds ",
+        "guaranteed_resources": {
+          "sockets": "Number of sockets is known and guaranteed "
+        }
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Layered and Partitioned Style",
+          "questions": [
+            "Does the partitioning strategy successfully isolate failures? ",
+            "Do layers effectively isolate high-level graphics services? ",
+            "Does the client-server approach effectively decouple system parts? "
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Invalid data is entered by the pilot, and the system does not crash."
+        },
+        {
+          "id": "RS-02",
+          "description": "Invalid data comes from an actor on any bus, and the system does not crash."
+        },
+        {
+          "id": "RS-03",
+          "description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+        },
+        {
+          "id": "RS-04",
+          "description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+        },
+        {
+          "id": "RS-05",
+          "description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+        },
+        {
+          "id": "RS-06",
+          "description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+        },
+        {
+          "id": "RS-07",
+          "description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Minimize systems acquisition and sustainment costs ",
+          "Reduce the total ownership cost over the life of the avionics system ",
+          "Modernize the system with minimal impact to Army Special Operations readiness ",
+          "Ensure that new CAASs work well with other programs "
+        ],
+        "technical_constraints": [
+          "Large set of applicable standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) ",
+          "Must support multiple helicopter platforms (A/MH-6, MH-47, MH-60) "
+        ],
+        "architectural_drivers": [
+          "Availability ",
+          "Performance ",
+          "Modifiability ",
+          "Affordability ",
+          "Reliability "
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Layered and Partitioned Architecture",
+          "description": "The system uses layers to isolate high-level services (e.g., graphics) and POSIX partitioning to create inviolable timing and memory walls between applications, ensuring fault isolation and safety.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Partitioning isolates failures so that one partition failure does not affect others, allowing the system to continue functioning."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Timing and memory walls prevent applications from interfering with each other, reducing cascading failures."
+            }
+          ]
+        },
+        {
+          "approach_name": "Client-Server Pattern",
+          "description": "Applications use a client-server approach to decouple system components, enabling location transparency and dynamic load balancing.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decoupling through client-server allows components to be modified or replaced independently."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Location-transparent applications can migrate to balance load across hardware resources."
+            }
+          ]
+        },
+        {
+          "approach_name": "Plug-and-Play Hardware Architecture",
+          "description": "Hardware is designed to be portable between helicopter platforms with every application resident on every box, supporting platform independence.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Portable hardware and standardized interfaces enable easy platform migration and third-party upgrades."
+            },
+            {
+              "quality_attribute": "Affordability",
+              "rationale": "Common architecture across multiple platforms reduces acquisition and sustainment costs."
+            }
+          ]
+        },
+        {
+          "approach_name": "Standards-Based Open Architecture",
+          "description": "Built on commercial standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) to ensure interoperability and vendor independence.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Standards-based design facilitates third-party integration and future upgrades."
+            },
+            {
+              "quality_attribute": "Affordability",
+              "rationale": "Open standards reduce vendor lock-in and total ownership costs."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "System recovers from power interruption within 2 seconds",
+                "scenario_id": "A1",
+                "scenario_description": "When a 1.9-second power interruption occurs, the system executes a warm boot and is fully operational in 2 seconds.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "System continues operation despite partition failure",
+                "scenario_id": "A2",
+                "scenario_description": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Flight-critical data remains available despite hardware damage",
+                "scenario_id": "A3",
+                "scenario_description": "The data concentrator suffers battle damage, and all flight-critical information is still available.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Display system tolerates mission processor failure",
+                "scenario_id": "A4",
+                "scenario_description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "System handles invalid pilot input without crashing",
+                "scenario_id": "R1",
+                "scenario_description": "Invalid data is entered by the pilot, and the system does not crash.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "System handles invalid bus data without crashing",
+                "scenario_id": "R2",
+                "scenario_description": "Invalid data comes from an actor on any bus, and the system does not crash.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "System notifies pilot of sensor failures",
+                "scenario_id": "R3",
+                "scenario_description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Applications respect timing and memory constraints",
+                "scenario_id": "P1",
+                "scenario_description": "Under normal operations, no application overruns its processing time limit or memory allotment.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "System dynamically balances load across hardware resources",
+                "scenario_id": "P2",
+                "scenario_description": "Under high computational load, location-transparent applications migrate to balance processing across available hardware resources without performance degradation.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Third-party components integrate without system redesign",
+                "scenario_id": "M1",
+                "scenario_description": "A new third-party avionics component is integrated into the system within one development cycle without requiring changes to core architecture.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Affordability",
+            "children": [
+              {
+                "refinement": "Architecture is reusable across multiple helicopter platforms",
+                "scenario_id": "AF1",
+                "scenario_description": "The CAAS architecture is deployed on a new helicopter platform with minimal customization costs.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "When a 1.9-second power interruption occurs, the system executes a warm boot and is fully operational in 2 seconds.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "The data concentrator suffers battle damage, and all flight-critical information is still available.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "Invalid data is entered by the pilot, and the system does not crash.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Invalid data comes from an actor on any bus, and the system does not crash.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Under normal operations, no application overruns its processing time limit or memory allotment.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Under high computational load, location-transparent applications migrate to balance processing across available hardware resources without performance degradation.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A new third-party avionics component is integrated into the system within one development cycle without requiring changes to core architecture.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The CAAS architecture is deployed on a new helicopter platform with minimal customization costs.",
+          "primary_quality_attribute": [
+            "Affordability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "When a 1.9-second power interruption occurs, the system executes a warm boot and is fully operational in 2 seconds.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Power interruption during flight operations",
+          "stimulus": "1.9-second power loss",
+          "response_measure": "System fully operational within 2 seconds via warm boot",
+          "architectural_decisions": [
+            "POSIX partitioning maintains state isolation enabling rapid recovery",
+            "Layered architecture supports fast warm boot sequences",
+            "Critical state persistence mechanisms"
+          ],
+          "reasoning": "The partitioned architecture ensures that critical state is isolated and can be quickly restored. The 2-second recovery window requires efficient boot sequences and minimal inter-partition dependencies during startup.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Boot sequence timing may exceed 2 seconds under worst-case partition initialization scenarios",
+                "rationale": "If multiple partitions require sequential initialization with dependencies, cumulative boot time could violate the 2-second constraint"
+              },
+              {
+                "id": "R-02",
+                "description": "State persistence mechanisms may fail during abrupt power loss",
+                "rationale": "Incomplete writes to non-volatile storage during the 1.9-second window could corrupt critical state data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Partition isolation prevents cascading boot failures",
+                "rationale": "POSIX partitioning ensures one partition's boot failure does not delay others, supporting parallel recovery"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Partition initialization sequence timing",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Non-volatile storage write latency",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "State persistence frequency",
+                "conflicting_attributes": [
+                  "Availability (positive: more frequent saves reduce data loss)",
+                  "Performance (negative: frequent writes increase overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A2",
+            "text": "A partition fails, the rest of the processor continues working, and the system continues to function.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Normal flight operations",
+          "stimulus": "Single partition failure",
+          "response_measure": "Other partitions and system continue normal operation",
+          "architectural_decisions": [
+            "POSIX partitioning creates inviolable timing and memory walls",
+            "Fault isolation through strict partition boundaries",
+            "No shared state between critical partitions"
+          ],
+          "reasoning": "The partitioned architecture's memory and timing walls prevent fault propagation. Each partition operates independently, so a failure in one cannot corrupt or halt others.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Inter-partition communication failures may cascade if not properly handled",
+                "rationale": "If healthy partitions depend on data from the failed partition without timeout/fallback mechanisms, they may stall"
+              },
+              {
+                "id": "R-04",
+                "description": "Shared hardware resources (buses, I/O) may become bottlenecks or single points of failure",
+                "rationale": "While partitions are isolated in software, hardware resource contention or failure could affect multiple partitions"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Memory corruption in one partition cannot affect others",
+                "rationale": "Inviolable memory walls enforced by POSIX partitioning prevent cross-partition memory access"
+              },
+              {
+                "id": "NR-03",
+                "description": "Timing overruns in failed partition do not delay other partitions",
+                "rationale": "Timing walls ensure each partition has guaranteed CPU time slots independent of others"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Inter-partition communication timeout values",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Partition criticality classification",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Partition isolation strictness",
+                "conflicting_attributes": [
+                  "Availability (positive: stricter isolation improves fault containment)",
+                  "Performance (negative: stricter isolation reduces resource sharing efficiency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A3",
+            "text": "The data concentrator suffers battle damage, and all flight-critical information is still available.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Combat operations with battle damage",
+          "stimulus": "Data concentrator hardware failure",
+          "response_measure": "Flight-critical information remains accessible",
+          "architectural_decisions": [
+            "Redundant data paths and hardware components",
+            "Plug-and-play hardware architecture with every application resident on every box",
+            "Client-server pattern enabling location transparency"
+          ],
+          "reasoning": "The plug-and-play architecture ensures critical applications are replicated across hardware. Location transparency allows clients to access services from alternate hardware when primary sources fail.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Network bandwidth saturation during failover may delay critical data delivery",
+                "rationale": "Rerouting data through alternate paths may exceed available bus bandwidth, causing latency spikes"
+              },
+              {
+                "id": "R-06",
+                "description": "Incomplete data replication may leave gaps in flight-critical information",
+                "rationale": "If synchronization between redundant components lags, failover may expose stale or missing data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Application redundancy ensures service availability despite hardware loss",
+                "rationale": "Every application resident on every box means no single hardware failure eliminates a critical service"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Data replication synchronization frequency",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Network bus bandwidth allocation",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Hardware redundancy level",
+                "conflicting_attributes": [
+                  "Availability (positive: more redundancy improves fault tolerance)",
+                  "Affordability (negative: more redundancy increases hardware costs)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A4",
+            "text": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Normal flight operations",
+          "stimulus": "Mission processor failure in outboard MFD",
+          "response_measure": "Display continues operation; system unaffected",
+          "architectural_decisions": [
+            "Layered architecture isolates display services from mission processing",
+            "Client-server decoupling between display and processing components",
+            "Partition-based fault isolation"
+          ],
+          "reasoning": "The layered and client-server architecture decouples display rendering from mission processing. The display can continue operating with degraded functionality or by connecting to alternate processors.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Display may show stale or incorrect information if failover logic is incomplete",
+                "rationale": "Without proper detection and notification of processor failure, the display might render outdated mission data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Display rendering is independent of mission processor health",
+                "rationale": "Layered architecture ensures display services operate autonomously from mission processing logic"
+              },
+              {
+                "id": "NR-06",
+                "description": "Other system components are unaffected by localized MFD processor failure",
+                "rationale": "Partition isolation and decoupling prevent failure propagation beyond the affected MFD"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Failure detection timeout for mission processor",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Display-processor coupling tightness",
+                "conflicting_attributes": [
+                  "Availability (positive: looser coupling improves fault isolation)",
+                  "Performance (negative: looser coupling may increase latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "Invalid data is entered by the pilot, and the system does not crash.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with pilot interaction",
+          "stimulus": "Invalid pilot input",
+          "response_measure": "System continues operation without crash",
+          "architectural_decisions": [
+            "Input validation at application layer boundaries",
+            "Partition isolation prevents invalid data from corrupting other partitions",
+            "Standards-based interfaces (ARINC 661) enforce data contracts"
+          ],
+          "reasoning": "Layered architecture and standards-based interfaces enable robust input validation. Partition isolation ensures that even if one application mishandles input, it cannot crash other partitions.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Incomplete input validation may allow malformed data to propagate",
+                "rationale": "If validation logic has gaps, invalid data could reach internal components causing undefined behavior"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Partition boundaries contain any crash to the affected application",
+                "rationale": "Even if invalid input crashes one partition, POSIX partitioning prevents system-wide failure"
+              },
+              {
+                "id": "NR-08",
+                "description": "Standards-based interfaces provide well-defined input contracts",
+                "rationale": "ARINC 661 and other standards specify valid input ranges and formats, simplifying validation"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Input validation coverage and rigor",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Input validation strictness",
+                "conflicting_attributes": [
+                  "Reliability (positive: stricter validation prevents invalid data)",
+                  "Performance (negative: extensive validation increases processing overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R2",
+            "text": "Invalid data comes from an actor on any bus, and the system does not crash.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with external bus communication",
+          "stimulus": "Invalid data from external bus actor",
+          "response_measure": "System continues operation without crash",
+          "architectural_decisions": [
+            "Bus interface validation and sanitization",
+            "Partition isolation limits blast radius of invalid bus data",
+            "Standards-based bus protocols (IEEE P1386) with error detection"
+          ],
+          "reasoning": "Standards-based bus protocols include error detection mechanisms. Partition isolation ensures invalid data received by one partition cannot crash others. Interface layers validate and sanitize bus data before internal use.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Bus protocol error detection may miss certain malformed messages",
+                "rationale": "If bus standards do not cover all edge cases, some invalid data may pass through to applications"
+              },
+              {
+                "id": "R-10",
+                "description": "Shared bus resources may be disrupted by misbehaving actors",
+                "rationale": "A faulty bus actor could flood the bus, causing denial of service even if data is invalid"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Partition isolation contains failures from invalid bus data",
+                "rationale": "Even if invalid bus data crashes a receiving partition, other partitions remain operational"
+              },
+              {
+                "id": "NR-10",
+                "description": "Standards-based protocols provide built-in error detection",
+                "rationale": "IEEE P1386 and similar standards include checksums and framing to detect corrupted messages"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Bus message validation coverage",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Bus bandwidth allocation and prioritization",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Bus message validation depth",
+                "conflicting_attributes": [
+                  "Reliability (positive: deeper validation catches more errors)",
+                  "Performance (negative: validation adds latency to bus communication)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R3",
+            "text": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Flight operations with sensor monitoring",
+          "stimulus": "Doppler sensor failure",
+          "response_measure": "Pilot notification and countdown timer activation",
+          "architectural_decisions": [
+            "Sensor health monitoring at application layer",
+            "Event notification through layered architecture",
+            "Graceful degradation mechanisms"
+          ],
+          "reasoning": "The layered architecture supports sensor health monitoring services that detect failures and trigger notifications. The system continues operating with degraded capability rather than failing completely.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Notification delay may leave pilot unaware of sensor failure",
+                "rationale": "If health monitoring has long polling intervals, the pilot may not be notified promptly"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-11",
+                "description": "System continues operation despite sensor loss",
+                "rationale": "Graceful degradation design allows flight to continue with reduced sensor input"
+              },
+              {
+                "id": "NR-12",
+                "description": "Layered architecture isolates sensor failure from other subsystems",
+                "rationale": "Sensor interface layer prevents Doppler failure from affecting unrelated components"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Sensor health check frequency",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Notification latency from detection to pilot display",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Sensor health monitoring frequency",
+                "conflicting_attributes": [
+                  "Reliability (positive: frequent checks detect failures faster)",
+                  "Performance (negative: frequent checks consume CPU cycles)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Under normal operations, no application overruns its processing time limit or memory allotment.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal flight operations",
+          "stimulus": "Application execution under normal load",
+          "response_measure": "No timing or memory constraint violations",
+          "architectural_decisions": [
+            "POSIX partitioning enforces timing and memory walls",
+            "Static resource allocation per partition",
+            "DO 178B compliance ensures predictable execution"
+          ],
+          "reasoning": "POSIX partitioning provides hard real-time guarantees by allocating fixed time slices and memory regions to each partition. Applications cannot exceed their allocations, preventing resource contention.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Static resource allocation may be inefficient under varying load",
+                "rationale": "Fixed allocations cannot adapt to dynamic workload changes, potentially wasting resources or causing artificial constraints"
+              },
+              {
+                "id": "R-13",
+                "description": "Worst-case execution time estimates may be overly conservative",
+                "rationale": "If WCET analysis is too pessimistic, partitions may be over-allocated, reducing overall system capacity"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-13",
+                "description": "Timing walls guarantee each partition receives its allocated CPU time",
+                "rationale": "POSIX partitioning enforces temporal isolation, preventing one partition from starving others"
+              },
+              {
+                "id": "NR-14",
+                "description": "Memory walls prevent applications from exceeding allocated memory",
+                "rationale": "Hardware-enforced memory protection prevents overruns and ensures predictable memory usage"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Partition time slice allocation",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Partition memory allocation",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Partition resource allocation granularity",
+                "conflicting_attributes": [
+                  "Performance (positive: finer granularity improves utilization)",
+                  "Reliability (negative: finer granularity increases scheduling complexity and potential for errors)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Under high computational load, location-transparent applications migrate to balance processing across available hardware resources without performance degradation.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "High computational load conditions",
+          "stimulus": "Increased processing demand",
+          "response_measure": "Dynamic load balancing without performance degradation",
+          "architectural_decisions": [
+            "Client-server pattern with location transparency",
+            "Plug-and-play hardware with every application on every box",
+            "Dynamic service discovery and binding"
+          ],
+          "reasoning": "The client-server architecture with location transparency allows applications to migrate between hardware resources. The plug-and-play design ensures all hardware can host any application, enabling dynamic load balancing.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Migration overhead may cause transient performance degradation",
+                "rationale": "State transfer and service rebinding during migration consume network bandwidth and CPU cycles"
+              },
+              {
+                "id": "R-15",
+                "description": "Load balancing decisions may be suboptimal without global system view",
+                "rationale": "Distributed load balancing algorithms may make locally optimal but globally suboptimal migration decisions"
+              },
+              {
+                "id": "R-16",
+                "description": "Network bandwidth may become bottleneck during migration",
+                "rationale": "Simultaneous migrations or large state transfers could saturate bus bandwidth"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-15",
+                "description": "Application redundancy enables seamless migration",
+                "rationale": "Every application resident on every box means no code deployment needed during migration"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Migration trigger threshold (load level)",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-16",
+                "parameter": "State transfer bandwidth allocation",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Service discovery latency",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Migration aggressiveness (frequency and threshold)",
+                "conflicting_attributes": [
+                  "Performance (positive: aggressive migration balances load quickly)",
+                  "Reliability (negative: frequent migrations increase risk of transient failures)"
+                ]
+              },
+              {
+                "id": "T-10",
+                "parameter": "Location transparency overhead",
+                "conflicting_attributes": [
+                  "Modifiability (positive: location transparency enables flexible deployment)",
+                  "Performance (negative: indirection adds latency to service calls)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A new third-party avionics component is integrated into the system within one development cycle without requiring changes to core architecture.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System upgrade/integration phase",
+          "stimulus": "New third-party component integration request",
+          "response_measure": "Integration completed within one development cycle without core architecture changes",
+          "architectural_decisions": [
+            "Standards-based open architecture (ARINC 661, POSIX, CORBA)",
+            "Layered architecture with well-defined interfaces",
+            "Client-server decoupling"
+          ],
+          "reasoning": "Standards-based interfaces provide stable integration points. The layered architecture isolates new components from core system logic. Client-server decoupling allows new services to be added without modifying existing clients.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-17",
+                "description": "Third-party component may not fully comply with standards",
+                "rationale": "Vendor interpretation of standards may differ, requiring integration workarounds"
+              },
+              {
+                "id": "R-18",
+                "description": "Integration testing may reveal unforeseen interface incompatibilities",
+                "rationale": "Standards cover functional interfaces but may miss non-functional aspects like timing or resource usage"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-16",
+                "description": "Standards-based interfaces minimize integration effort",
+                "rationale": "ARINC 661, CORBA, and other standards provide well-documented, stable integration points"
+              },
+              {
+                "id": "NR-17",
+                "description": "Layered architecture isolates new components from core system",
+                "rationale": "New components integrate at defined layer boundaries without affecting internal layers"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-18",
+                "parameter": "Interface specification completeness and clarity",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Standards compliance verification rigor",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-11",
+                "parameter": "Interface abstraction level",
+                "conflicting_attributes": [
+                  "Modifiability (positive: higher abstraction simplifies integration)",
+                  "Performance (negative: abstraction layers add overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "AF1",
+            "text": "The CAAS architecture is deployed on a new helicopter platform with minimal customization costs.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Affordability",
+          "environment": "New platform deployment",
+          "stimulus": "Deployment to new helicopter platform",
+          "response_measure": "Minimal customization costs",
+          "architectural_decisions": [
+            "Plug-and-play hardware architecture portable across platforms",
+            "Standards-based open architecture reduces vendor lock-in",
+            "Common architecture across multiple platforms"
+          ],
+          "reasoning": "The plug-and-play hardware design and standards-based interfaces enable platform portability. Reusing a common architecture across platforms amortizes development costs and reduces per-platform customization.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-19",
+                "description": "Platform-specific hardware interfaces may require custom adapters",
+                "rationale": "Despite plug-and-play design, physical connectors or bus protocols may differ between platforms"
+              },
+              {
+                "id": "R-20",
+                "description": "Certification costs may not scale linearly with reuse",
+                "rationale": "Each platform may require separate DO 178B certification, reducing cost savings"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-18",
+                "description": "Common architecture reduces development and training costs",
+                "rationale": "Reusing architecture across platforms eliminates redundant design and reduces learning curve"
+              },
+              {
+                "id": "NR-19",
+                "description": "Standards-based design reduces vendor lock-in and procurement costs",
+                "rationale": "Open standards enable competitive bidding and third-party component sourcing"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-20",
+                "parameter": "Platform-specific customization scope",
+                "correlated_attribute": "Affordability"
+              },
+              {
+                "id": "S-21",
+                "parameter": "Certification reuse percentage across platforms",
+                "correlated_attribute": "Affordability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-12",
+                "parameter": "Architecture generality vs. platform optimization",
+                "conflicting_attributes": [
+                  "Affordability (positive: general architecture maximizes reuse)",
+                  "Performance (negative: platform-specific optimizations may be sacrificed)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,399 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Control movement, strategy, and operations of troops in real-time",
+      "Support a Commander commanding a set of Soldiers and their equipment (weapons, sensors)",
+      "Interface with numerous external command-and-control systems"
+    ],
+    "technical_constraints": [
+      "Must use a standard set of hardware and software",
+      "Communication via encrypted radio modem at 9600 baud (shared channel)",
+      "Extreme levels of system robustness required"
+    ],
+    "architectural_drivers": [
+      "Availability",
+      "Modifiability",
+      "Performance"
+    ]
+  },
+  "evaluation_inputs": {
+    "system_description": "The Battlefield Control System (BCS) is a real-time system used by army battalions to control troop movement, strategy, and operations. It supports a Commander who commands a set of Soldiers and their equipment (weapons, sensors). The system interfaces with external command-and-control systems to receive commands and intelligence and to report status. It operates on a client-server model where the Commander node acts as the server and Soldier nodes are clients, communicating exclusively via encrypted messages over a shared 9600 baud radio modem channel.",
+    "phase_1_discovery": {
+      "initial_documentation_status": "Minimal; high level data flows and functionality divisions with no clear mapping to software constructs or architectural styles.",
+      "evaluator_inquiry_questions": [
+        "What is the structure of the message-handling software (modules, functions, APIs, layers)?",
+        "What facilities exist in the software architecture for self-testing and monitoring of software components?",
+        "What facilities exist for redundancy, liveness monitoring, failover, and data consistency maintenance?",
+        "What is the process/task view of the system, including mapping to hardware?",
+        "What functional dependencies exist among software components ('uses' view)?",
+        "What data is kept in the database, how big is it, how much does it change, and who reads/writes it?",
+        "What is the anticipated frequency and volume of data being transmitted among system components?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "The Commander node acts as a server and the Soldier nodes are its clients.",
+        "Soldier nodes make requests of the Commander and update the server's database with their status.",
+        "Inter-node communication is only through encrypted messages sent via a radio modem.",
+        "Neither subsystem (Commander/Soldier) controls the other.",
+        "The radio modem is a shared communication channel; only one node can broadcast at any moment."
+      ],
+      "runtime_constraints": [
+        "Maximum of 25 Soldiers per Commander.",
+        "Radio modem speed is 9600 baud.",
+        "Initialization time budget (implicit) is 300 seconds."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "network_bandwidth": "9600 bits/second",
+      "message_sizes": {
+        "mission_plans": "280 Kbits",
+        "environmental_database_update": "66 Kbits",
+        "issued_orders_per_soldier": "18 Kbits",
+        "location_status_per_soldier": "12 Kbits",
+        "inventory_status_per_soldier": "42 Kbits"
+      },
+      "periodic_update_volume": "59,800 Kbits every 10 minutes"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Backup Commander (Availability)",
+        "questions": [
+          "How is the failure of a component detected?",
+          "How is the failure of a communication channel detected?",
+          "What is the latency for a spare component to be turned into a working replacement?",
+          "By what means is a failed component marked for replacement?",
+          "How are the system's working components notified that they should use the services of the spare?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS1",
+        "description": "Same information presented to user, but different presentation (location, fonts, sizes, colors, etc.)."
+      },
+      {
+        "id": "RS2",
+        "description": "Additional data requested to be presented to user."
+      },
+      {
+        "id": "RS3",
+        "description": "User requests a change of dialog."
+      },
+      {
+        "id": "RS4",
+        "description": "A new device is added to the network, e.g., a location device that returns accurate GPS data."
+      },
+      {
+        "id": "RS5",
+        "description": "An existing device adds additional fields that are not currently handled to existing messages."
+      },
+      {
+        "id": "RS6",
+        "description": "Map data format changes."
+      },
+      {
+        "id": "RS7",
+        "description": "The time budget for initialization is reduced from 5 minutes to 90 seconds."
+      },
+      {
+        "id": "RS8",
+        "description": "Modem baud rate is increased by a factor of 4."
+      },
+      {
+        "id": "RS9",
+        "description": "Operating system changes to Solaris."
+      },
+      {
+        "id": "RS10",
+        "description": "Operating schedule is unpredictable."
+      },
+      {
+        "id": "RS11",
+        "description": "Can a new schedule be accommodated by the OS?."
+      },
+      {
+        "id": "RS12",
+        "description": "Change the number of Soldier nodes from 25 to 35."
+      },
+      {
+        "id": "RS13",
+        "description": "Change the number of simultaneous missions from 3 to 6."
+      },
+      {
+        "id": "RS14",
+        "description": "A node converts from being a Soldier/client to become a Commander/server."
+      },
+      {
+        "id": "RS15",
+        "description": "Incoming message format changes."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Client-Server",
+        "description": "The system utilizes a client-server model where the Commander node acts as the server (central database and command hub) and the Soldier nodes act as clients (data consumers and status providers).",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Centralizes the management of the environmental database and mission plans, allowing for controlled distribution over the limited bandwidth."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Separates the concerns of the commander (strategy/coordination) from the soldiers (execution/sensing), allowing independent updates to client or server logic."
+          }
+        ]
+      },
+      {
+        "approach_name": "Message-Passing Architecture",
+        "description": "Communication is strictly performed via encrypted messages sent over a radio modem. This decouples the nodes and handles the physical constraints of the communication medium.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Security",
+            "rationale": "Encryption of the message stream is a primary requirement for battlefield operations to prevent interception."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Discrete messaging allows for the implementation of retry logic and acknowledgement patterns necessary for unreliable radio links."
+          }
+        ]
+      },
+      {
+        "approach_name": "Shared-Medium Access Control",
+        "description": "A protocol-level approach to manage the shared 9600 baud radio channel, ensuring only one node broadcasts at a time to prevent signal collisions.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Prevents the performance degradation that would occur from packet collisions and subsequent retransmissions on a very slow (9600 baud) channel."
+          },
+          {
+            "quality_attribute": "Availability",
+            "rationale": "Ensures that the shared communication channel remains usable and is not saturated by conflicting broadcasts."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Latency of mission plan updates",
+              "scenario_id": "P1",
+              "scenario_description": "Commander sends 1KB mission plan to 10 soldiers; all receive it within 5 minutes over 9600 baud link.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Data confidentiality",
+              "scenario_id": "S1",
+              "scenario_description": "Enemy intercepts radio signals; cannot decrypt battlefield data within 24 hours using standard computational resources.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "Message delivery success",
+              "scenario_id": "A1",
+              "scenario_description": "Radio link suffers intermittent interference; system retries and delivers soldier status update within 60 seconds.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Adding new sensor types",
+              "scenario_id": "M1",
+              "scenario_description": "A new environmental sensor is added to the Soldier node; requires no changes to the Commander node's core communication logic.",
+              "priority_tuple": {
+                "importance": "Low",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Commander sends 1KB mission plan to 10 soldiers; all receive it within 5 minutes over 9600 baud link.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Enemy intercepts radio signals; cannot decrypt battlefield data within 24 hours using standard computational resources.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "Radio link suffers intermittent interference; system retries and delivers soldier status update within 60 seconds.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "A new environmental sensor is added to the Soldier node; requires no changes to the Commander node's core communication logic.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Commander sends 1KB mission plan to 10 soldiers; all receive it within 5 minutes over 9600 baud link.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Normal operations",
+        "stimulus": "Mission plan update broadcast",
+        "response_measure": "Latency < 5 minutes for total distribution",
+        "architectural_decisions": [
+          "Shared-Medium Access Control",
+          "Client-Server"
+        ],
+        "reasoning": "At 9600 baud, effective throughput is approximately 800-1000 bytes/sec after overhead. 10KB of data (1KB per soldier) would take ~10-13 seconds in ideal conditions. The 5-minute window provides a massive buffer for retries and protocol negotiation, making the architecture highly likely to meet this goal.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Channel Saturation",
+              "rationale": "If mission plans increase in size or frequency, the 9600 baud link will quickly become a bottleneck, leading to exponential latency increases."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Protocol Overhead",
+              "rationale": "The 5-minute requirement is so lenient relative to the 1KB size that standard protocol overhead (TCP-like ACKs) will not jeopardize the deadline."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Baud Rate",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Message Payload Size",
+              "conflicting_attributes": [
+                "Performance",
+                "Modifiability"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "Enemy intercepts radio signals; cannot decrypt battlefield data within 24 hours using standard computational resources.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Security",
+        "environment": "Hostile/Battlefield",
+        "stimulus": "Radio signal interception by adversary",
+        "response_measure": "Decryption time > 24 hours",
+        "architectural_decisions": [
+          "Message-Passing Architecture with Encryption"
+        ],
+        "reasoning": "The use of encryption on the message stream addresses the confidentiality requirement. However, the strength of the encryption must be balanced against the processing power of the soldier nodes.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Resource Exhaustion on Soldier Nodes",
+              "rationale": "High-strength encryption (e.g., AES-256) may cause significant battery drain or CPU latency on low-power mobile soldier units."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Encryption Algorithm Complexity",
+              "correlated_attribute": "Security"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Encryption Key Length",
+              "conflicting_attributes": [
+                "Security",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "Radio link suffers intermittent interference; system retries and delivers soldier status update within 60 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Intermittent interference",
+        "stimulus": "Transmission failure due to signal noise",
+        "response_measure": "Successful delivery within 60 seconds",
+        "architectural_decisions": [
+          "Message-Passing Architecture",
+          "Shared-Medium Access Control"
+        ],
+        "reasoning": "The discrete messaging approach allows for individual packet retries. The shared-medium control prevents further collisions, which is essential when the signal is already degraded by external interference.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Retry Storm",
+              "rationale": "If multiple nodes experience interference simultaneously, uncoordinated retries could saturate the 9600 baud channel further."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Single Node Failure",
+              "rationale": "The decoupled message-passing nature ensures that one soldier's connection failure does not prevent others from communicating with the Commander."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Retry Interval Timer",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": []
+        }
+      }
+    ]
+  }
+}

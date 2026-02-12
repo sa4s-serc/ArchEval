@@ -1,0 +1,320 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Made in Nigeria Primary Healthcare Information System (MINPHIS)",
+      "date": "2015-01-07",
+      "ref": "https://www.ijcaonline.org/archives/volume46/number23/7107-9782/",
+      "evaluator_organization": "Obafemi Awolowo University, Computer Science and Engineering Department",
+      "phase_1_attendees": [
+        "Evaluator",
+        "Stakeholders"
+      ],
+      "phase_2_attendees": [
+        "System Administrator",
+        "System Analyst",
+        "Programmer",
+        "Requirement Engineer",
+        "Medical Record Officers",
+        "End Users (Doctors, Nurses, Pharmacist, Radiologist, Lab Technicians)",
+        "Management Staff",
+        "Architect"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "MINPHIS is a service-oriented health information system designed specifically for the Nigerian and African healthcare context. Originally based on MUMPS language, FileMan-database, and Kernel-package, the system has undergone modernization to a Client-Server architecture utilizing an RPC Broker. It serves as a low-cost, sustainable application for managing patient records, accounting, and medical records across federal, state, and local government healthcare tiers.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Pre-exercise review of architecture documentation was conducted, though architectural approaches required further identification and elicitation during the session.",
+        "evaluator_inquiry_questions": [
+          "How does the system function and behave during execution?",
+          "Questions related to run-time behavior (sent via text/email to remote users)"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Client-Server architecture",
+          "Database Layer utilizing FileMan and M Software",
+          "RPC Broker Server Layer for middleware communication"
+        ],
+        "runtime_constraints": [
+          "Transaction response time",
+          "System throughput",
+          "Web-based system performance with web services"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "storage_latency_limit": "200ms",
+        "report_generation_time": "10ms",
+        "transaction_completion_peak_load": "1 second",
+        "transaction_completion_double_peak_load": "4 seconds",
+        "throughput_peak_load": "150 normalised transactions per second"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Layered",
+          "questions": [
+            "How does the architecture respond to peak load scenarios?",
+            "How does the database structure affect performance and migration needs?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "No unauthorized access to the system (User)"
+        },
+        {
+          "id": "RS-02",
+          "description": "User errors in using system should be handled (User)"
+        },
+        {
+          "id": "RS-03",
+          "description": "All operations are processed in fastest possible speed (User)"
+        },
+        {
+          "id": "RS-04",
+          "description": "Proper data encapsulation and secure data structures (Architect)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Flexible implementation using other programming languages (Architect)"
+        },
+        {
+          "id": "RS-06",
+          "description": "Overall consistent behavior expected from the architecture (Architect)"
+        },
+        {
+          "id": "RS-07",
+          "description": "Framework should be complete, clear and perform exactly as required (Application Developer)"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Use for Keeping patient records",
+          "Use for Answering ad hoc queries from medical Researchers",
+          "Use to Provide performance information (e.g., mortality rates, patient counts)",
+          "Use for Resource Management Decisions",
+          "Produce on-demand & Periodic reports based on specific needs of Institution or Hospital"
+        ],
+        "technical_constraints": [
+          "An improved web-based system with web services",
+          "Transaction response time",
+          "System throughput"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Security",
+          "Reliability",
+          "Availability",
+          "Functionality",
+          "Modifiability",
+          "Portability",
+          "Conceptual Integrity"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Layering",
+          "description": "Use of distinct layers: FileMan (data-centric) and M Software at Database Layer, RPC Broker Server, Ready Made Components, and Actual Application.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Separation of concerns allows for optimized processing at the database level using FileMan."
+            }
+          ]
+        },
+        {
+          "approach_name": "API",
+          "description": "MINPHIS API comprises the M Procedures defined in RP file.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Standardized procedures allow for easier integration and updates."
+            }
+          ]
+        },
+        {
+          "approach_name": "Client Server Architecture",
+          "description": "Client-Server transaction processing separating the Database Layer and RPC Broker Server Layer.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Distributes processing load between client and server."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Minimize storage latency on patient DB to 200ms",
+                "scenario_id": "P1",
+                "scenario_description": "Data Latency",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Generate patient report within 10ms",
+                "scenario_id": "P2",
+                "scenario_description": "Data Latency",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "A user updates a patient's account in response to a change-of-address notification while the system is under peak load, and the transaction completes in less than 1 second.",
+                "scenario_id": "P3",
+                "scenario_description": "Transaction Response Time",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "A user updates a patient's account in response to a change-of-address notification while the system is under twice the current peak load, and the transaction completes in less than 4 seconds.",
+                "scenario_id": "P4",
+                "scenario_description": "Transaction Response Time",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "At peak load, the system is able to complete 150 normalised transactions per second.",
+                "scenario_id": "P5",
+                "scenario_description": "Transaction Throughput",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A hospital needs to centralize the record maintenance process across multiple affiliates; associated business process is re-engineered.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A manager wants a report on historical payment delinquency rates for people who were treated for some specified diseases.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A defect corrupts data and is not detected until the next reporting cycle.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "MINPHIS is installed in a hospital, and the hospital's existing database must be converted.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Introduce a new work flow process for patient check-in and check-out.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A report needs to be generated using information from two hospitals that use different configurations.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "Change the rules for generating a warning about conflicting medications.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "General Analysis",
+            "text": "Analysis of data redundancy and reliability trade-offs",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal Operation",
+          "stimulus": "Decision to maintain a backup database",
+          "response_measure": "System speed / Latency",
+          "architectural_decisions": [
+            "Decision to keep backup"
+          ],
+          "reasoning": "Maintaining a backup increases reliability but introduces overhead that affects performance.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "The decision to keep backup is a risk if the performance cost is excessive.",
+                "rationale": "Excessive overhead could degrade system responsiveness below acceptable limits."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR1",
+                "description": "The decision to keep backup is a non-risk if the performance cost is not excessive.",
+                "rationale": "Acceptable overhead allows for increased reliability without compromising user experience."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Number of components involved in processing the task",
+                "correlated_attribute": "Average speed at which the task is performed"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Backup Database",
+                "conflicting_attributes": [
+                  "Reliability (Improved)",
+                  "Performance (Degraded)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "Database Structure Analysis",
+            "text": "Evaluation of current database structure against modern requirements",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance / Evolution",
+          "stimulus": "Need for modern data management",
+          "response_measure": "Migration feasibility",
+          "architectural_decisions": [
+            "Hierarchical database structure (Current)"
+          ],
+          "reasoning": "The current hierarchical structure is limiting compared to relational models.",
+          "findings": {
+            "risks": [],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

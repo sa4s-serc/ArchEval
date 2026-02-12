@@ -1,0 +1,372 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Wargame 2000",
+      "date": "2000-11-01",
+      "ref": "https://sei.cmu.edu/library/using-the-architecture-tradeoff-analysis-method-to-evaluate-a-wargame-simulation-system-a-case-study/",
+      "evaluator_organization": "Software Engineering Institute (SEI)",
+      "phase_1_attendees": [
+        "Evaluation Team",
+        "System Architect",
+        "Project Manager",
+        "Senior Technical Personnel"
+      ],
+      "phase_2_attendees": [
+        "Evaluation Team",
+        "System Architect",
+        "Project Management",
+        "Developers",
+        "Testers",
+        "End Users",
+        "Maintainers"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "Wargame 2000 is a real-time, human-in-the-loop ballistic missile defense simulation system. It is designed to model concepts of operation, doctrine, and tactics in a realistic combat environment. The system supports distributed discrete event simulation, allowing for the integration of dissimilar parts and interoperability with other simulations via High Level Architecture (HLA).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Documentation existed in Rational Rose/UML but was considered weak for capturing discrete events. Some architectural drawings caused stakeholder confusion and required real-time refinement.",
+        "evaluator_inquiry_questions": [
+          "How are discrete simulation events represented in the static UML models?",
+          "Can you clarify the data flow in this architectural diagram to resolve stakeholder confusion?",
+          "How does the code reuse strategy align with the need for high-fidelity discrete event simulation?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed simulation environment capable of hosting online, offsite, and multiple simultaneous games.",
+          "Networked command centers allowing participants to play from their own locations."
+        ],
+        "runtime_constraints": [
+          "Must support 'Firm' real-time deadlines (statistical adherence).",
+          "Must provide 'Margin' (running faster than real-time) to support future requirements."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "initialization_time": "10 minutes",
+        "exercise_turnaround_frequency": "1 exercise per month",
+        "latency_constraints": {
+          "max_instantaneous_lag": "5 seconds",
+          "max_average_lag": "3 seconds"
+        },
+        "data_collection_window": "30 seconds post-termination",
+        "timeline_fidelity": "Within 10% of EADSIM events"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Distributed",
+          "questions": [
+            "How does the client-server separation impact the latency requirements for the human-in-the-loop displays?",
+            "How does the publish/subscribe mechanism handle peak load during high-density missile scenarios?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0."
+        },
+        {
+          "id": "RS-02",
+          "description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game."
+        },
+        {
+          "id": "RS-03",
+          "description": "Add cruise missile infrastructure into next software release."
+        },
+        {
+          "id": "RS-04",
+          "description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week."
+        },
+        {
+          "id": "RS-05",
+          "description": "Replace existing database with an object-oriented database within 5-10 staff years."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Answer the 'Big Five Questions' regarding operator knowledge and action timing",
+          "Serve as a rapid prototyping facility for interoperability studies",
+          "Support evolving mission needs and incremental functionality extensions"
+        ],
+        "technical_constraints": [
+          "Must be compliant with High Level Architecture (HLA) standards",
+          "Must run on government-owned contractor-operated infrastructure",
+          "Must support human-in-control experiments with 'fog-of-war' realism"
+        ],
+        "architectural_drivers": [
+          "Performance (Real-time & Margin)",
+          "Modifiability/Composability",
+          "Reliability",
+          "Interoperability",
+          "Fidelity"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server",
+          "description": "Separates the event generator and user interface from the core system logic.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Flexibility",
+              "rationale": "Allows independent upgrading of the Event Generator or UI without impacting the core."
+            }
+          ]
+        },
+        {
+          "approach_name": "Parallel Discrete Event Simulation",
+          "description": "Strategy used to generate and process simulation events.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Enables efficient processing of complex battle scenarios."
+            }
+          ]
+        },
+        {
+          "approach_name": "Publish/Subscribe",
+          "description": "Decoupling mechanism used within the MADSIM subsystem.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Reduces dependencies between components."
+            }
+          ]
+        },
+        {
+          "approach_name": "HLA Gateway",
+          "description": "Integration point for external simulations compliant with HLA standards.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Standardized interface for connecting to other DoD simulations."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Initialize quickly per specification",
+                "scenario_id": "P1",
+                "scenario_description": "Must perform all initialization activities within 10 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Meet real-time requirements",
+                "scenario_id": "P2",
+                "scenario_description": "Run simulations with no instantaneous lags greater than five seconds."
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability/Turnaround",
+            "children": [
+              {
+                "refinement": "Set-up Time/Composability",
+                "scenario_id": "M1",
+                "scenario_description": "Set-up and test time should be less than two weeks.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Accommodate New Requirements",
+                "scenario_id": "M2",
+                "scenario_description": "Build the graphical parameter file front end to allow user to click on an entity and change characteristics."
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Stays up during game",
+                "scenario_id": "R1",
+                "scenario_description": "Run scenarios without crashes; no hardware/software failures."
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "Distributed gaming",
+                "scenario_id": "I1",
+                "scenario_description": "Provide a virtual gaming site that includes online, offsite, and multiple games running simultaneously."
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Build the graphical parameter file front end.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Apply heavy data throughput to the GUI workstation and analyze performance.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Run an entire simulation without crashes; no hardware or software failures.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Simulation set-up and test time is less than two weeks.",
+          "primary_quality_attribute": [
+            "Turnaround Time"
+          ]
+        },
+        {
+          "scenario_text": "A pause in the simulation occurs signifying a timing problem; identify the source.",
+          "primary_quality_attribute": [
+            "Maintainability"
+          ]
+        },
+        {
+          "scenario_text": "Provides a virtual gaming site for distributed, simultaneous games.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "A new post-processor is added that produces a summary report.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Be able to make a change to the simulation entity base class and understand the impact.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "1",
+            "text": "Build the graphical parameter file front end. (This graphical set-up tool allows the user to click on an entity on the screen and change its characteristics).",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Turnaround Time (Performance vs Modifiability)",
+          "environment": "Exercise Preparation / Initialization",
+          "stimulus": "Need to configure simulation entities",
+          "response_measure": "Rapid turnaround (< 2 weeks setup)",
+          "architectural_decisions": [
+            "Use of text-based parameter files for initialization",
+            "Deferral of graphical configuration tool development"
+          ],
+          "reasoning": "Text files allow fast machine initialization but slow human configuration. The lack of a GUI tool creates a bottleneck for frequent exercise turnaround.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Inability to configure parameter files easily and consistently.",
+                "rationale": "Manual text editing is error-prone and slow, threatening the goal of one exercise per month."
+              },
+              {
+                "id": "R2",
+                "description": "Poor configuration management of parameter files.",
+                "rationale": "Manual changes are not effectively tracked against automated generation tools."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Configuration Interface (Text vs GUI)",
+                "conflicting_attributes": [
+                  "System Initialization Speed (Positive for Text)",
+                  "Operator Setup Speed (Negative for Text)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "6",
+            "text": "Provide a virtual gaming site that includes online, offsite, and multiple games running simultaneously and that allows participants to play from their own command centers.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Distributed Operation",
+          "stimulus": "External simulation connection request",
+          "response_measure": "Real-time performance",
+          "architectural_decisions": [
+            "Compliance with HLA Standards",
+            "Implementation of HLA Gateway"
+          ],
+          "reasoning": "The standard mandates the interface but not the implementation performance. The current gateway implementation is suspected to be insufficient for real-time demands.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R3",
+                "description": "HLA interface implementation may not meet performance expectations.",
+                "rationale": "Adherence to the standard does not guarantee the necessary throughput or latency for real-time gaming."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "General_Coding_Analysis",
+            "text": "Analysis of system stability and speed during high-load sensor initialization.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "System Start-up",
+          "stimulus": "Simultaneous sensor initialization",
+          "response_measure": "System stability / Margin",
+          "architectural_decisions": [
+            "Coding guidelines (Randomized start times)",
+            "Software monitors (Heart-beat checks)"
+          ],
+          "reasoning": "Simultaneous initialization spikes CPU/Network load. Monitoring adds overhead.",
+          "findings": {
+            "risks": [],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Adherence to coding guidelines (Randomization)",
+                "correlated_attribute": "Performance (Initialization spikes)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T2",
+                "parameter": "Reliability Monitoring Intensity",
+                "conflicting_attributes": [
+                  "Reliability (Positive)",
+                  "Performance/Margin (Negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

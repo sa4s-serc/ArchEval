@@ -1,0 +1,435 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Minimize systems acquisition and sustainment costs ",
+      "Reduce the total ownership cost over the life of the avionics system ",
+      "Modernize the system with minimal impact to Army Special Operations readiness ",
+      "Ensure that new CAASs work well with other programs "
+    ],
+    "technical_constraints": [
+      "Large set of applicable standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) ",
+      "Must support multiple helicopter platforms (A/MH-6, MH-47, MH-60) "
+    ],
+    "architectural_drivers": [
+      "Availability ",
+      "Performance ",
+      "Modifiability ",
+      "Affordability ",
+      "Reliability "
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The CAAS was already well into development at the time of evaluation. Evaluators performed a pre-exercise review of architecture documentation to capture approaches.",
+      "evaluator_inquiry_questions": [
+        "How does the cyclic executive ensure real-time performance? ",
+        "How is the system partitioned to ensure availability and safety? "
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Hardware is portable between platforms ('plug and play' architecture).",
+        "Applications are location-transparent and can migrate to other hardware for load balancing.",
+        "Every application is resident on every box."
+      ],
+      "runtime_constraints": [
+        "Inviolable timing and memory walls between applications (POSIX partitioning).",
+        "Applications must not overrun processing time limits or memory allotments."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "boot_time_limit": "2 seconds (warm boot) ",
+      "power_interruption_limit": "1.9 seconds ",
+      "guaranteed_resources": {
+        "sockets": "Number of sockets is known and guaranteed "
+      }
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Layered and Partitioned Style",
+        "questions": [
+          "Does the partitioning strategy successfully isolate failures? ",
+          "Do layers effectively isolate high-level graphics services? ",
+          "Does the client-server approach effectively decouple system parts? "
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Invalid data is entered by the pilot, and the system does not crash."
+      },
+      {
+        "id": "RS-02",
+        "description": "Invalid data comes from an actor on any bus, and the system does not crash."
+      },
+      {
+        "id": "RS-03",
+        "description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+      },
+      {
+        "id": "RS-04",
+        "description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+      },
+      {
+        "id": "RS-05",
+        "description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+      },
+      {
+        "id": "RS-06",
+        "description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+      },
+      {
+        "id": "RS-07",
+        "description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Layered Open Systems Architecture",
+        "description": "The system employs a layered approach using POSIX-compliant interfaces to decouple application software from the underlying hardware and Operating System, facilitating portability across different airframes.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Enables the migration of avionics functions between different helicopter platforms (A/MH-6, MH-47, MH-60) without rewriting core logic."
+          },
+          {
+            "quality_attribute": "Affordability",
+            "rationale": "Reduces lifecycle costs by allowing hardware upgrades or OS changes with minimal impact on application software."
+          }
+        ]
+      },
+      {
+        "approach_name": "Broker Pattern (CORBA Middleware)",
+        "description": "Uses a Common Object Request Broker Architecture (CORBA) to handle inter-process communication and location transparency for distributed components.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Components can be relocated or updated independently as long as the CORBA interfaces remain consistent."
+          },
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Standardized middleware provides a robust communication framework for critical avionics data exchange."
+          }
+        ]
+      },
+      {
+        "approach_name": "Standardized Cockpit Display System (ARINC 661)",
+        "description": "Adopts the ARINC 661 standard to separate the definition of the User Interface (the GUI) from the underlying application logic (the User Application).",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Allows for changes in cockpit display layouts and user interactions without modifying the functional flight code."
+          },
+          {
+            "quality_attribute": "Affordability",
+            "rationale": "Standardizes display management across platforms, reducing the need for unique display software for each helicopter type."
+          }
+        ]
+      },
+      {
+        "approach_name": "Component-Based Architecture",
+        "description": "Organizes system functionality into modular, reusable components that can be shared across the Army Special Operations helicopter fleet.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Promotes the use of proven, tested components across multiple platforms, reducing the risk of new defects."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Enables optimization of specific functional components while maintaining overall system integrity."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Portability",
+              "scenario_id": "M1",
+              "scenario_description": "Porting an existing avionics function from MH-60 to A/MH-6 requires < 10% change to core application logic.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Latency",
+              "scenario_id": "P1",
+              "scenario_description": "ARINC 661 cockpit display must reflect pilot input within 100ms under normal flight operations.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "Availability",
+              "scenario_id": "R1",
+              "scenario_description": "If a CORBA broker instance fails, the system must switch to a redundant broker within 500ms without loss of flight-critical data.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Affordability",
+          "children": [
+            {
+              "refinement": "Maintainability",
+              "scenario_id": "A1",
+              "scenario_description": "Upgrading the POSIX-compliant OS to a newer version requires < 2 person-months of integration and testing effort.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Porting an existing avionics function from MH-60 to A/MH-6 requires < 10% change to core application logic.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "ARINC 661 cockpit display must reflect pilot input within 100ms under normal flight operations.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "If a CORBA broker instance fails, the system must switch to a redundant broker within 500ms without loss of flight-critical data.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "Upgrading the POSIX-compliant OS to a newer version requires < 2 person-months of integration and testing effort.",
+        "primary_quality_attribute": [
+          "Affordability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "Porting an existing avionics function from MH-60 to A/MH-6 requires < 10% change to core application logic.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Development environment during platform migration",
+        "stimulus": "Request to port software to a different helicopter platform with different hardware",
+        "response_measure": "Code changes restricted to < 10% of core application logic",
+        "architectural_decisions": [
+          "Layered Open Systems Architecture",
+          "POSIX-compliant interfaces",
+          "Hardware Abstraction Layer (HAL)"
+        ],
+        "reasoning": "By isolating hardware-specific logic within a HAL and using POSIX for OS services, the core application remains platform-agnostic, minimizing the impact of hardware changes.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Proprietary POSIX extensions",
+              "rationale": "If developers use non-standard POSIX extensions provided by a specific OS vendor, the portability goal will be compromised."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Standardized HAL interfaces",
+              "rationale": "The use of well-defined HAL interfaces ensures that hardware swaps only require driver-level updates."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Granularity of the HAL API",
+              "correlated_attribute": "Modifiability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Abstraction Layer Depth",
+              "conflicting_attributes": [
+                "Modifiability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "ARINC 661 cockpit display must reflect pilot input within 100ms under normal flight operations.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Normal flight operations",
+        "stimulus": "Pilot interacts with a cockpit control (e.g., button press or dial turn)",
+        "response_measure": "Visual feedback on display within 100ms",
+        "architectural_decisions": [
+          "ARINC 661 Standardized Cockpit Display System",
+          "CORBA Middleware for User Application (UA) to Cockpit Display System (CDS) communication"
+        ],
+        "reasoning": "ARINC 661 decouples UI from logic, but the performance depends on the efficiency of the CORBA bus and the CDS rendering engine.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "CORBA Marshalling Overhead",
+              "rationale": "High-frequency display updates may be delayed by the serialization/deserialization overhead of CORBA messages."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Pre-defined ARINC 661 Widgets",
+              "rationale": "Using standardized widgets reduces the amount of data that needs to be transmitted compared to sending raw pixel data."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "CORBA Message Priority Queuing",
+              "correlated_attribute": "Latency"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Display Refresh Rate vs. Bus Load",
+              "conflicting_attributes": [
+                "Performance",
+                "Reliability"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "If a CORBA broker instance fails, the system must switch to a redundant broker within 500ms without loss of flight-critical data.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Runtime failure state",
+        "stimulus": "Primary CORBA broker process crash or hardware failure",
+        "response_measure": "Failover to redundant broker in < 500ms",
+        "architectural_decisions": [
+          "Broker Pattern (CORBA Middleware)",
+          "Redundant Broker Deployment",
+          "Health Monitoring Heartbeats"
+        ],
+        "reasoning": "Redundancy and location transparency provided by the Broker pattern allow for failover, provided the detection mechanism is fast enough.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Failover Logic Complexity",
+              "rationale": "Complex election algorithms or state synchronization between brokers can lead to 'split-brain' scenarios or exceed the 500ms window."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "CORBA Exception Handling",
+              "rationale": "CORBA's built-in support for re-binding to object references simplifies client-side recovery logic."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Heartbeat Frequency",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "State Synchronization Frequency",
+              "conflicting_attributes": [
+                "Reliability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "Upgrading the POSIX-compliant OS to a newer version requires < 2 person-months of integration and testing effort.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Affordability",
+        "environment": "Maintenance cycle",
+        "stimulus": "OS vendor releases a mandatory security/performance patch or version upgrade",
+        "response_measure": "Integration and testing effort < 2 person-months",
+        "architectural_decisions": [
+          "Layered Open Systems Architecture",
+          "Strict adherence to POSIX PSE52/PSE54 profiles"
+        ],
+        "reasoning": "Strict adherence to standardized profiles minimizes the surface area of changes required when the underlying OS kernel is updated.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-04",
+              "description": "Third-party Library Dependencies",
+              "rationale": "If the system depends on libraries that are not POSIX-compliant, upgrading the OS may break those dependencies, increasing effort."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-04",
+              "description": "Automated Regression Suite",
+              "rationale": "Existing automated tests for the application layer significantly reduce the manual effort required for OS validation."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-04",
+              "parameter": "Compiler Version Compatibility",
+              "correlated_attribute": "Affordability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-04",
+              "parameter": "Use of OS-Specific Performance Features",
+              "conflicting_attributes": [
+                "Performance",
+                "Affordability"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

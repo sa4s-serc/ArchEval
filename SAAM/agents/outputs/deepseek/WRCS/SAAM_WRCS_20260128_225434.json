@@ -1,0 +1,495 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "WRCS",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "To improve non-functional qualities such as portability, modifiability and extendibility."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Component-Based",
+          "Client-Server (implicit, with main.exe as client to DLL services)"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Current Production Architecture",
+            "description": "A reverse-engineered, component-based architecture for a commercial revision control system (WRCS). The system is built around a central executable (main.exe) that interacts with dynamic link libraries (DLLs) via direct calls, invocations, and Dynamic Data Exchange (DDE). This structure supports file management, change tracking, and collaborative development.",
+            "architecture_characteristics": "Modifiability, Extendibility, Portability, Separation of concerns (UI vs. core logic).",
+            "key_components": [
+              {
+                "component_id": "main.exe",
+                "component_name": "Main Executable",
+                "responsibilities": "Serves as the central orchestrator and primary user interface. It handles user interactions, coordinates operations between other components, and manages the overall workflow of revision control tasks.",
+                "dependencies": [
+                  "wrcs.dll",
+                  "hook.dll",
+                  "visdiff.exe"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "wrcs.dll",
+                "component_name": "Core Functionality Library",
+                "responsibilities": "Contains the essential revision control logic, including version tracking, branching, merging, and repository management.",
+                "dependencies": [],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "hook.dll",
+                "component_name": "Hook and Extensibility Library",
+                "responsibilities": "Acts as an interface gateway, providing hooks for extending WRCS functionality (e.g., custom menu items) and facilitating integration with other tools or workflows.",
+                "dependencies": [
+                  "main.exe"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "visdiff.exe",
+                "component_name": "Visual Difference Tool",
+                "responsibilities": "A standalone utility for visually comparing file differences (diffs). It is invoked by the main executable when users request visual diff operations.",
+                "dependencies": [
+                  "main.exe"
+                ],
+                "change_sensitivity": "Low"
+              }
+            ],
+            "data_flow": "User interactions initiate through the main.exe UI. For core revision control operations (e.g., commit, update), main.exe calls functions in wrcs.dll. Extensibility features (e.g., custom menus) are mediated via hook.dll. When visual file comparison is needed, main.exe invokes the separate visdiff.exe process, passing relevant file data. Communication between components uses direct calls, invocations, and DDE for inter-process communication where required.",
+            "architectural_constraints": [
+              "Tight coupling between main.exe and DLLs via direct calls and DDE.",
+              "Dependency on the Windows platform due to use of DLLs and DDE.",
+              "Architecture is reverse-engineered, not originally designed with explicit modular boundaries.",
+              "Limited scalability for distributed teams due to centralized components and DDE-based communication."
+            ],
+            "notes": "The architecture prioritizes modifiability and extendibility through its component-based design (DLLs), allowing updates to core logic (wrcs.dll) or extensibility features (hook.dll) with minimal impact on the UI (main.exe). However, the heavy reliance on main.exe as a central orchestrator creates a single point of coordination and potential failure. Portability is limited by Windows-specific technologies (DLLs, DDE). Changes to main.exe are highly sensitive, as they affect all integrations. Adding new, independent tools (like visdiff.exe) is relatively straightforward, but deeply integrating new core features requires changes to wrcs.dll and potentially main.exe."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "As a developer, I need to extend the system to support a new version control protocol (e.g., Git) by adding a new library module without modifying the Main Executable or Core Functionality Library, ensuring the change is isolated and testable within one development cycle.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Hook and Extensibility Library",
+            "Main Executable"
+          ],
+          "feasibility_note": "Indirect match. The current architecture includes a Hook and Extensibility Library, which suggests support for extensibility via DLLs and DDE. However, adding a new protocol may require changes to the Main Executable's invocation logic or data exchange patterns if not designed for plug-and-play modularity. Feasibility depends on the library's abstraction level and interface stability.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "This addresses the need for extendibility, allowing the system to adapt to new technologies and maintain competitiveness in the revision control market."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "As a system administrator, I need to deploy the system on a new operating system (e.g., Linux) without rewriting the Core Functionality Library or Visual Difference Tool, achieving full functionality within a 3-month migration timeline.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Main Executable",
+            "Core Functionality Library",
+            "Visual Difference Tool"
+          ],
+          "feasibility_note": "Indirect match. The architecture uses DLLs and DDE, which are Windows-specific technologies. Portability to Linux would likely require significant changes to replace DDE with cross-platform IPC and adapt DLLs to shared libraries (e.g., .so files). Direct calls between components may also need refactoring for OS compatibility.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "This supports portability, enabling the system to run on diverse platforms and expand its user base, which is critical for commercial adoption and operational flexibility."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "As a maintainer, I need to modify the change-tracking algorithm in the Core Functionality Library to improve performance by 20% without affecting the Hook and Extensibility Library or Visual Difference Tool, ensuring backward compatibility with existing project files.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Core Functionality Library",
+            "Main Executable"
+          ],
+          "feasibility_note": "Indirect match. The component-based architecture allows isolated changes to the Core Functionality Library via DLL interfaces. However, if the Main Executable has tight coupling or relies on specific data formats from the library, modifications could require updates to the executable. Feasibility hinges on well-defined APIs and encapsulation.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "This enhances modifiability, allowing for performance optimizations and updates to core features with minimal disruption, which reduces maintenance costs and improves system longevity."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "As an end-user, I need to visually compare differences between two file versions using the integrated Visual Difference Tool, with response times under 2 seconds for files up to 10 MB, while collaborating with multiple users on the same project.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Visual Difference Tool",
+            "Main Executable",
+            "Core Functionality Library"
+          ],
+          "feasibility_note": "Direct match. The current architecture includes a Visual Difference Tool as a key component, integrated via DDE or direct calls. This scenario aligns with existing capabilities for file management and change tracking, assuming the tool is designed for performance and multi-user access.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "This fulfills the core purpose of a revision control system\u2014managing files, tracking changes, and enabling collaboration\u2014directly supporting stakeholder needs for effective project organization."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "As a developer, I need to explore adding a machine learning-based code suggestion feature via the Hook and Extensibility Library, with a proof-of-concept that does not require changes to the Main Executable or Core Functionality Library.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Hook and Extensibility Library",
+            "Main Executable"
+          ],
+          "feasibility_note": "Indirect match. The extensibility library supports hooks, but adding ML features may strain the current DDE or invocation mechanisms if they require high-volume data exchange or new interaction patterns. Exploratory feasibility depends on the library's flexibility and resource constraints.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "This explores advanced extendibility for innovative features, potentially differentiating the system in the market, though it's optional and lower priority compared to core growth needs."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Indirect",
+          "rationale": "The current architecture includes a Hook and Extensibility Library (hook.dll) designed for extensibility, which suggests potential for adding new modules. However, adding a new version control protocol like Git without modifying the Main Executable (main.exe) is unlikely because main.exe directly calls wrcs.dll for core operations and may have tight coupling to specific protocols. The hook.dll provides hooks for custom menus, but does not inherently support plug-and-play protocol modules. The scenario requires changes to main.exe to invoke a new library and to hook.dll to mediate the integration, violating the 'no modification' constraint.",
+          "supporting_components": [
+            "hook.dll",
+            "main.exe"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "The architecture is heavily dependent on Windows-specific technologies: DLLs and Dynamic Data Exchange (DDE). Porting to Linux without rewriting the Core Functionality Library (wrcs.dll) or Visual Difference Tool (visdiff.exe) is infeasible because these components are compiled as Windows DLLs/EXEs. The Main Executable (main.exe) also relies on DDE for inter-process communication, which is not available on Linux. Significant architectural changes are needed to replace these with cross-platform alternatives.",
+          "supporting_components": [
+            "main.exe",
+            "wrcs.dll",
+            "visdiff.exe"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "The component-based design with wrcs.dll as a separate DLL supports modifiability. Changes to the change-tracking algorithm within wrcs.dll can be made without affecting hook.dll or visdiff.exe, as long as the public API (function signatures and data formats) remains stable. The Main Executable (main.exe) calls wrcs.dll, but if the interface is unchanged, main.exe may not require modifications. This aligns with the architecture's characteristic of separation of concerns and modifiability.",
+          "supporting_components": [
+            "wrcs.dll"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Direct",
+          "rationale": "The architecture already includes visdiff.exe as a standalone tool for visual file comparison, invoked by main.exe via DDE or direct calls. The scenario describes a core use case: comparing file versions. The system supports file management and collaboration through wrcs.dll. Performance (under 2 seconds for 10 MB files) depends on visdiff.exe's implementation, but the architectural integration exists. Multi-user collaboration is handled by the revision control logic in wrcs.dll, which is part of the current design.",
+          "supporting_components": [
+            "visdiff.exe",
+            "main.exe",
+            "wrcs.dll"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The Hook and Extensibility Library (hook.dll) provides hooks for extending functionality, but adding a machine learning-based code suggestion feature likely requires new data exchanges and integration patterns not originally designed. While a proof-of-concept might be possible via existing hooks, it would strain the DDE mechanism if high-volume data or real-time interaction is needed. The scenario's constraint of no changes to main.exe or wrcs.dll is challenging because hook.dll depends on main.exe, and new hooks may require updates to main.exe to recognize and invoke them.",
+          "supporting_components": [
+            "hook.dll",
+            "main.exe"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "hook.dll",
+            "wrcs.dll"
+          ],
+          "change_description": "1. Define a new protocol interface in hook.dll or a new protocol DLL. 2. Modify main.exe to dynamically load and invoke protocol modules via hook.dll, rather than hardcoding calls to wrcs.dll. 3. Update wrcs.dll's API to be more generic or create an abstraction layer to support multiple protocols. 4. Ensure data exchange (e.g., via DDE) accommodates new protocol data formats.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Tight coupling between main.exe and wrcs.dll makes plug-and-play protocol addition difficult.",
+            "DDE may not support flexible data structures for new protocols.",
+            "Testing isolation requires mocking or stubbing, which may be complex due to direct calls."
+          ],
+          "alternative_approaches": "Develop the Git protocol as a wrapper around wrcs.dll's existing functions, but this would still require changes to main.exe to invoke the wrapper. Alternatively, create a separate service that intercepts calls via hook.dll, but this adds complexity and may not meet the 'one development cycle' timeline."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "main.exe",
+            "wrcs.dll",
+            "hook.dll",
+            "visdiff.exe"
+          ],
+          "change_description": "1. Replace Windows DLLs with cross-platform shared libraries (e.g., .so files) and recompile wrcs.dll and hook.dll for Linux. 2. Replace DDE with a cross-platform IPC mechanism (e.g., sockets, pipes, or a message bus) for communication between main.exe and visdiff.exe. 3. Refactor main.exe to use conditional compilation or abstraction layers for OS-specific calls (e.g., file paths, process invocation). 4. Adapt visdiff.exe to run on Linux, possibly requiring a rewrite if it uses Windows-specific GUI libraries.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "DDE is Windows-specific and deeply integrated; replacing it risks breaking existing functionality.",
+            "The 3-month timeline is unrealistic for a full port given the architectural constraints.",
+            "Direct calls may assume Windows API functions that are not available on Linux."
+          ],
+          "alternative_approaches": "Use compatibility layers like Wine to run the Windows binaries on Linux, but this may not achieve 'full functionality' or performance. Alternatively, containerize the application in a Windows container on Linux, but this limits native integration and may not meet deployment goals."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "wrcs.dll"
+          ],
+          "change_description": "None required if the change is internal to wrcs.dll and maintains backward compatibility in its public interface. If the algorithm change alters data formats or function signatures, minor updates to main.exe may be needed.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Risk of unintended side effects if the algorithm change affects performance characteristics or data integrity.",
+            "Need for thorough testing to ensure backward compatibility with existing project files."
+          ],
+          "alternative_approaches": "If the algorithm change requires new parameters, consider extending the wrcs.dll API with new functions while keeping old ones deprecated, but this would still be localized to wrcs.dll."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [
+            "visdiff.exe",
+            "main.exe",
+            "wrcs.dll"
+          ],
+          "change_description": "None required architecturally. Performance tuning may be needed within visdiff.exe (e.g., optimizing diff algorithms for large files) and wrcs.dll (e.g., efficient file retrieval for collaboration), but these are implementation-level changes, not architectural.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "DDE communication between main.exe and visdiff.exe may introduce latency for large files, affecting the 2-second response time.",
+            "Multi-user collaboration depends on wrcs.dll's concurrency handling, which may need optimization for simultaneous access."
+          ],
+          "alternative_approaches": "If performance targets are not met, consider enhancing visdiff.exe with more efficient diff libraries or caching mechanisms, but this does not require architectural changes."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "hook.dll",
+            "main.exe"
+          ],
+          "change_description": "1. Extend hook.dll to support new hook types for ML suggestions (e.g., code completion events). 2. Modify main.exe to recognize and invoke these new hooks, potentially requiring updates to UI or event handling. 3. Implement a proof-of-concept ML service that communicates with hook.dll via DDE or a new IPC mechanism, which may strain existing DDE capacities.",
+          "change_extent": "Localized to Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "DDE may not be suitable for high-frequency, low-latency data exchange required by real-time ML suggestions.",
+            "Adding new hooks without changing main.exe is impractical because main.exe must be aware of hooks to trigger them.",
+            "Resource constraints (CPU/memory) for ML processing may exceed what the current architecture can support."
+          ],
+          "alternative_approaches": "Develop the ML feature as an external tool that interacts with WRCS via file system or command-line interfaces, bypassing hook.dll. However, this would not be 'integrated' as per the scenario. Alternatively, use existing hooks (e.g., custom menus) to trigger ML suggestions in a limited way, but this may not provide a seamless user experience."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "main.exe",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-05"
+          ]
+        },
+        {
+          "component": "hook.dll",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-05"
+          ]
+        },
+        {
+          "component": "wrcs.dll",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-04"
+          ]
+        },
+        {
+          "component": "visdiff.exe",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-02",
+            "S-04"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "main.exe",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-05"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Main.exe is central to all scenarios, especially S-01 (protocol addition) and S-02 (Linux port), which are high-risk, high-effort changes with widespread architectural impact. Failure to address its tight coupling and platform dependencies risks business agility (unable to add new protocols), market expansion (no Linux support), and integration of new features like ML (S-05). End-users face functionality loss, developers encounter high complexity, maintainers deal with brittle code, and administrators struggle with deployment flexibility."
+        },
+        {
+          "component": "wrcs.dll",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-03",
+            "S-04"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "Wrcs.dll is critical for protocol handling (S-01), cross-platform porting (S-02), and performance (S-04). Its coupling with main.exe (S-01) and Windows-specific dependencies (S-02) pose high risks: inability to adapt to new protocols or platforms could stall business growth. While S-03 (algorithm change) is low-risk, the component's centrality in high-impact scenarios makes it a hotspot. Developers face refactoring challenges, maintainers risk technical debt, and end-users may experience performance or compatibility issues."
+        },
+        {
+          "component": "hook.dll",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-05"
+          ],
+          "priority": "Medium",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "End-user"
+          ],
+          "rationale": "Hook.dll is involved in three indirect scenarios: protocol abstraction (S-01), Linux porting (S-02), and ML integration (S-05). Its role is significant but somewhat secondary to main.exe and wrcs.dll. However, not addressing its limitations (e.g., DDE constraints for real-time ML) could hinder feature delivery (S-05) and increase development effort for S-01/S-02. Developers bear the brunt of integration complexity, while end-users may see delayed or suboptimal new features."
+        },
+        {
+          "component": "visdiff.exe",
+          "scenario_ids": [
+            "S-02",
+            "S-04"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator"
+          ],
+          "rationale": "Visdiff.exe is impacted by S-02 (Linux port) and S-04 (performance). While S-04 is low-risk, S-02 requires significant changes (e.g., replacing DDE, adapting GUI) that affect user experience and deployment. Not addressing it could compromise the Linux port's success (business risk) and lead to poor performance for large files. End-users face usability issues, and administrators deal with cross-platform deployment challenges."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: The architecture handles localized, direct changes to individual components well, as evidenced by S-03 (algorithm change in wrcs.dll) and S-04 (performance tuning). These scenarios require minimal architectural modifications, are low effort and low risk, and maintain backward compatibility. This suggests the components have well-defined interfaces for internal changes.",
+          "Strength 2: The use of hook.dll provides a basic extensibility mechanism for integrating external functionality, as noted in S-01 and S-05. This architectural decision enables a degree of plugin-like behavior, allowing for indirect feature additions without a complete rewrite of the core application."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: The architecture suffers from high coupling and platform lock-in, making significant functional extensions and cross-platform support extremely difficult. S-01 (adding Git protocol) and S-02 (Linux port) are classified as 'Widespread' changes with 'High' effort and risk. The tight coupling between main.exe and wrcs.dll, reliance on Windows-specific DDE for IPC, and direct OS API calls create rigid dependencies that block business agility and market expansion.",
+          "Weakness 2: Critical communication mechanisms are inadequate for modern requirements. DDE is a bottleneck for cross-platform porting (S-02) and is unsuitable for high-frequency, low-latency data exchange required for real-time ML suggestions (S-05). This architectural limitation directly impacts the feasibility and performance of new features.",
+          "Weakness 3: Central components like main.exe are monolithic hotspots, involved in 4 out of 5 scenarios. As prioritized, its tight integration with multiple subsystems makes it a single point of failure for change, increasing complexity, risk, and effort for nearly all future evolution scenarios, from new protocols to new platforms."
+        ],
+        "modifiability_assessment": "The current architecture has low modifiability for strategic, business-critical changes. While it can absorb isolated, internal component changes, its high coupling, platform-specific dependencies, and inadequate communication mechanisms make widespread modifications (like adding protocols or porting to Linux) high-risk, high-effort endeavors that threaten the business goals of extensibility and portability."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Refactor main.exe to introduce a clear abstraction layer (e.g., a Protocol Manager interface) between it and protocol implementations. Decouple it from wrcs.dll by using dependency injection or a plugin architecture loaded via hook.dll.",
+          "rationale": "This directly addresses the core weakness of tight coupling highlighted in S-01 and makes main.exe a less critical hotspot. It enables plug-and-play protocol addition, significantly improving extensibility and reducing the effort for future protocol integrations.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Replace Windows-specific DDE with a cross-platform, message-based IPC mechanism (e.g., gRPC, WebSockets, or a lightweight message bus) for communication between main.exe, visdiff.exe, and future services like ML.",
+          "rationale": "This is foundational for achieving the Linux port (S-02) and enabling performant, real-time features like ML suggestions (S-05). It removes a major architectural barrier to portability and modern integration needs.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Extract platform-specific code from wrcs.dll and main.exe into separate abstraction layers or adapter modules, following the Ports and Adapters pattern.",
+          "rationale": "This systematically addresses the platform lock-in issue from S-02, making the core logic portable. It reduces the risk and effort of future platform migrations and aligns with the business goal of improved portability.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "As a quick win for S-05 (ML integration), prototype the ML feature as an external tool using file system or command-line interaction, leveraging existing hook.dll custom menu hooks for basic integration.",
+          "rationale": "This provides a tangible, lower-effort path to deliver new functionality without immediate, risky changes to core IPC. It validates the feature with users while buying time for the more foundational IPC refactoring.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

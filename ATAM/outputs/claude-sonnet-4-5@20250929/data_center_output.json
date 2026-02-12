@@ -1,0 +1,1134 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A centralized Data Center system designed to integrate dozens of existing, disparate academic information systems at Universitas Pendidikan Ganesha. The system functions as a backbone Data Warehouse (DWH) to synchronize data across the university, reduce redundancy, and support institutional accreditation. It aggregates data from various web-based applications (mostly PHP/MySQL) and was evaluated across three architectural options (Direct Connection, Web Services, ESB) before settling on a Spring Framework-based solution to accommodate legacy constraints.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Low maturity; the system was based on an initial prototype with no standard architectural evaluation practice previously applied. Design decisions were initially driven by immediate needs under tight schedules without thorough analysis.",
+        "evaluator_inquiry_questions": [
+          "How can existing systems be integrated to minimize data duplication?",
+          "What are the available architectural options considering the low-cost and open-source constraints?",
+          "How can binary data (images, audio, video) be handled if existing databases only store file paths?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Dozens of existing information systems operating on separate servers with separate databases.",
+          "Most existing applications are web-based, coded in PHP, using MySQL instances.",
+          "Binary files (images/audio) are stored physically on server hard drives, not in the databases."
+        ],
+        "runtime_constraints": [
+          "Strict reliance on low-cost, open-source software.",
+          "Limited human resources and developer expertise (mostly fresh graduates).",
+          "Legacy systems cannot accept major behavioral changes or new adapter installations."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "system_count": "Dozens of information systems",
+        "data_types": "Text, Binary (Image, Audio, Video)",
+        "network_protocol": "HTTP/REST (for Web Services option), JDBC (for Direct Connection)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Enterprise Service Bus (ESB)",
+          "questions": [
+            "Does the ESB support binary data transfer natively?",
+            "Can legacy systems connect to the ESB without installing new adapters?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy among them."
+        },
+        {
+          "id": "RS-02",
+          "description": "Each of the other connected applications must be able to connect to a centralized data-warehouse and pull data upon request as needed."
+        },
+        {
+          "id": "RS-03",
+          "description": "The DC system must be able to sync any duplicated master data from different applications."
+        },
+        {
+          "id": "RS-04",
+          "description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed."
+        },
+        {
+          "id": "RS-05",
+          "description": "The source system should not experience overload when another system is connected to get data."
+        },
+        {
+          "id": "RS-06",
+          "description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse."
+        },
+        {
+          "id": "RS-07",
+          "description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files."
+        },
+        {
+          "id": "RS-08",
+          "description": "Small to no change should be needed in any of the connected applications in order to implement the solution."
+        },
+        {
+          "id": "RS-09",
+          "description": "The cost in term of the required software development has to be minimum and preferably using open-source software."
+        },
+        {
+          "id": "RS-10",
+          "description": "The developed system has to be developer-friendly for enhancement purposes."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Accommodate needs of institutional accreditation",
+          "Organize and synchronize information from existing systems",
+          "Reduce duplication issues and problems from various data structures",
+          "Facilitate processes previously done manually",
+          "Create a centralized source for overall academic activity"
+        ],
+        "technical_constraints": [
+          "Low-cost",
+          "Open-source software",
+          "Tight development schedule",
+          "Limited human resources/developer experience",
+          "Existing systems use PHP and MySQL",
+          "Existing systems are disparate and separate"
+        ],
+        "architectural_drivers": [
+          "Security",
+          "Performance",
+          "Compliance",
+          "Modifiability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Data Warehouse (Centralized Repository)",
+          "description": "A centralized Data Center acting as a backbone DWH to aggregate and synchronize data from disparate academic systems",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Compliance",
+              "rationale": "Centralized data supports institutional accreditation requirements"
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Reduces data duplication and provides single source of truth"
+            }
+          ]
+        },
+        {
+          "approach_name": "Direct Connection (Evaluated Option)",
+          "description": "Direct JDBC connections between systems and data warehouse",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Low latency direct database access"
+            }
+          ]
+        },
+        {
+          "approach_name": "Web Services (Evaluated Option)",
+          "description": "HTTP/REST-based service integration layer",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Loose coupling between systems"
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Controlled access through service endpoints"
+            }
+          ]
+        },
+        {
+          "approach_name": "Enterprise Service Bus (Evaluated Option)",
+          "description": "ESB-based integration with message routing and transformation",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Centralized integration logic and routing"
+            }
+          ]
+        },
+        {
+          "approach_name": "Spring Framework (Selected Solution)",
+          "description": "Spring Framework-based implementation to accommodate legacy constraints with open-source technology",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Developer-friendly framework for enhancement purposes"
+            },
+            {
+              "quality_attribute": "Compliance",
+              "rationale": "Meets low-cost and open-source constraints"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Authentication of connected applications before data access",
+                "scenario_id": "S-01",
+                "scenario_description": "The DC system must verify the identity of any application attempting to connect and access data, ensuring 100% of data access requests are authenticated before granting access",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Prevention of unauthorized data access and data redundancy across systems",
+                "scenario_id": "S-02",
+                "scenario_description": "All applications connected to the centralized DWH must be authenticated to prevent unauthorized access and eliminate data redundancy among disparate academic systems",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Secure credential management for legacy system connections",
+                "scenario_id": "S-03",
+                "scenario_description": "Spring Framework must securely store and manage JDBC credentials for connections to legacy academic systems without exposing sensitive authentication data",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Source system availability during data synchronization (CPU < 70%)",
+                "scenario_id": "P-01",
+                "scenario_description": "When connected systems pull data from source applications, source system CPU utilization must remain below 70% to prevent operational overload",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Master data synchronization latency (< 5 minutes)",
+                "scenario_id": "P-02",
+                "scenario_description": "The DC system must synchronize duplicated master data from different applications and propagate changes to the DWH within 5 minutes without duplication errors",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "On-demand data pull response time",
+                "scenario_id": "P-03",
+                "scenario_description": "Connected applications must be able to pull data from the centralized DWH upon request with acceptable response times during normal operations",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Concurrent multi-system synchronization throughput",
+                "scenario_id": "P-04",
+                "scenario_description": "The Spring Framework-based DWH must handle concurrent data synchronization operations from multiple disparate academic systems without performance degradation",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "DWH query response time under reporting load (< 3 seconds)",
+                "scenario_id": "P-05",
+                "scenario_description": "Analytical queries against the centralized DWH must return results within 3 seconds under typical reporting workload to support institutional accreditation processes",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Minimal changes to existing legacy applications (< 100 LOC)",
+                "scenario_id": "M-01",
+                "scenario_description": "Implementing the Spring Framework integration solution must require fewer than 100 lines of code changes in any connected legacy application",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Addition of new data structures to existing applications",
+                "scenario_id": "M-02",
+                "scenario_description": "New data structures added to connected applications must be automatically reflected in the DWH schema without major refactoring of the Spring Framework integration layer",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Developer-friendly enhancement capability",
+                "scenario_id": "M-03",
+                "scenario_description": "Developers with limited Spring Framework experience must be able to add new integration features or modify existing data mappings within 2 weeks",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Addition of new legacy system to DWH integration",
+                "scenario_id": "M-04",
+                "scenario_description": "A new disparate academic system must be integrated into the centralized DWH using the Spring Framework architecture within 3 weeks without impacting existing integrations",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Use of open-source components for new integrations",
+                "scenario_id": "M-05",
+                "scenario_description": "New integration connectors must be developed using only open-source libraries compatible with the Spring Framework to minimize licensing costs",
+                "priority_tuple": {
+                  "importance": "Low",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Compliance",
+            "children": [
+              {
+                "refinement": "Support for institutional accreditation data requirements",
+                "scenario_id": "C-01",
+                "scenario_description": "The centralized DWH must provide aggregated data from all academic systems in formats required for institutional accreditation processes",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Binary data format support (images, audio, video)",
+                "scenario_id": "C-02",
+                "scenario_description": "The DC system must facilitate transfer and storage of binary format data including images, audio, and video files stored on legacy system hard drives",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "The DC system must verify the identity of any application attempting to connect and access data, ensuring 100% of data access requests are authenticated before granting access",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "All applications connected to the centralized DWH must be authenticated to prevent unauthorized access and eliminate data redundancy among disparate academic systems",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "Spring Framework must securely store and manage JDBC credentials for connections to legacy academic systems without exposing sensitive authentication data",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "When connected systems pull data from source applications, source system CPU utilization must remain below 70% to prevent operational overload",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The DC system must synchronize duplicated master data from different applications and propagate changes to the DWH within 5 minutes without duplication errors",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Connected applications must be able to pull data from the centralized DWH upon request with acceptable response times during normal operations",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The Spring Framework-based DWH must handle concurrent data synchronization operations from multiple disparate academic systems without performance degradation",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Analytical queries against the centralized DWH must return results within 3 seconds under typical reporting workload to support institutional accreditation processes",
+          "primary_quality_attribute": [
+            "Performance",
+            "Compliance"
+          ]
+        },
+        {
+          "scenario_text": "Implementing the Spring Framework integration solution must require fewer than 100 lines of code changes in any connected legacy application",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "New data structures added to connected applications must be automatically reflected in the DWH schema without major refactoring of the Spring Framework integration layer",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Developers with limited Spring Framework experience must be able to add new integration features or modify existing data mappings within 2 weeks",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A new disparate academic system must be integrated into the centralized DWH using the Spring Framework architecture within 3 weeks without impacting existing integrations",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "New integration connectors must be developed using only open-source libraries compatible with the Spring Framework to minimize licensing costs",
+          "primary_quality_attribute": [
+            "Modifiability",
+            "Compliance"
+          ]
+        },
+        {
+          "scenario_text": "The centralized DWH must provide aggregated data from all academic systems in formats required for institutional accreditation processes",
+          "primary_quality_attribute": [
+            "Compliance"
+          ]
+        },
+        {
+          "scenario_text": "The DC system must facilitate transfer and storage of binary format data including images, audio, and video files stored on legacy system hard drives",
+          "primary_quality_attribute": [
+            "Compliance"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "S-01",
+            "text": "The DC system must verify the identity of any application attempting to connect and access data, ensuring 100% of data access requests are authenticated before granting access",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with multiple applications requesting data access",
+          "stimulus": "Application attempts to connect and access DWH data",
+          "response_measure": "100% of data access requests authenticated before granting access",
+          "architectural_decisions": [
+            "Spring Security framework for authentication layer",
+            "Token-based authentication for application identity verification",
+            "Centralized authentication service at DWH entry point"
+          ],
+          "reasoning": "Spring Security provides robust authentication mechanisms. By implementing token-based authentication at the DWH gateway, all incoming requests can be intercepted and validated before data access is granted. This ensures 100% coverage as no direct database access bypasses the authentication layer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Authentication service becomes single point of failure",
+                "rationale": "If the centralized authentication service fails, all data access requests will be blocked, preventing legitimate applications from accessing the DWH"
+              },
+              {
+                "id": "R-02",
+                "description": "Performance overhead from authentication on every request",
+                "rationale": "Validating authentication tokens on every data access request adds latency, potentially conflicting with performance scenarios P-02 and P-03"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Spring Security framework maturity",
+                "rationale": "Spring Security is a well-established, battle-tested framework with proven authentication capabilities, reducing implementation risk"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Authentication token time-to-live (TTL)",
+                "correlated_attribute": "Security and Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Authentication cache size",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Authentication token caching strategy",
+                "conflicting_attributes": [
+                  "Performance (positive: reduces authentication overhead)",
+                  "Security (negative: increases window of vulnerability if token is compromised)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S-03",
+            "text": "Spring Framework must securely store and manage JDBC credentials for connections to legacy academic systems without exposing sensitive authentication data",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Spring Framework connecting to multiple legacy systems with different credentials",
+          "stimulus": "System initialization or connection pool creation requiring database credentials",
+          "response_measure": "Zero exposure of credentials in logs, configuration files, or memory dumps",
+          "architectural_decisions": [
+            "Spring Cloud Config with encryption for credential storage",
+            "Environment variable injection for sensitive properties",
+            "Vault integration for credential management",
+            "Connection pooling with encrypted credential storage"
+          ],
+          "reasoning": "Spring Framework supports externalized configuration with encryption capabilities. By using Spring Cloud Config or HashiCorp Vault integration, credentials can be encrypted at rest and decrypted only at runtime. Connection pools maintain credentials in memory securely without logging or exposing them in stack traces.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Credential exposure in application logs during debugging",
+                "rationale": "Developers may inadvertently log connection strings or enable verbose logging that exposes credentials during troubleshooting"
+              },
+              {
+                "id": "R-04",
+                "description": "Hardcoded credentials in legacy application code",
+                "rationale": "If legacy systems already have hardcoded credentials, the Spring integration layer inherits this vulnerability when connecting to them"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Spring Framework credential encryption support",
+                "rationale": "Spring provides built-in support for encrypted properties and secure credential management through multiple mechanisms"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Encryption key rotation frequency",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Credential storage location (local vs. remote vault)",
+                "conflicting_attributes": [
+                  "Security (positive: remote vault provides better security)",
+                  "Performance (negative: remote vault adds network latency to connection initialization)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P-01",
+            "text": "When connected systems pull data from source applications, source system CPU utilization must remain below 70% to prevent operational overload",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with multiple systems synchronizing data from source applications",
+          "stimulus": "Data synchronization request from DWH to source legacy system",
+          "response_measure": "Source system CPU utilization < 70%",
+          "architectural_decisions": [
+            "Batch processing with configurable batch sizes",
+            "Rate limiting on data pull requests",
+            "Off-peak scheduling for large data transfers",
+            "Connection pooling to limit concurrent connections",
+            "Incremental data synchronization (delta only)"
+          ],
+          "reasoning": "By implementing rate limiting and batch size controls in the Spring integration layer, the load on source systems can be regulated. Scheduling large transfers during off-peak hours and using incremental synchronization reduces CPU impact. Connection pooling prevents connection storms that could spike CPU usage.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Unpredictable query complexity from legacy systems",
+                "rationale": "Legacy systems may have inefficient database schemas or missing indexes, causing even small data pulls to consume excessive CPU"
+              },
+              {
+                "id": "R-06",
+                "description": "Concurrent synchronization from multiple DWH instances",
+                "rationale": "If multiple DWH nodes or processes simultaneously pull data from the same source system, aggregate CPU load could exceed 70% threshold"
+              },
+              {
+                "id": "R-07",
+                "description": "Lack of monitoring on source system CPU utilization",
+                "rationale": "Without real-time monitoring, the Spring Framework cannot dynamically adjust batch sizes or throttle requests when CPU approaches 70%"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Spring Batch framework capabilities",
+                "rationale": "Spring Batch provides robust batch processing with configurable chunk sizes and throttling, enabling controlled data extraction"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Batch size for data extraction",
+                "correlated_attribute": "Performance (source system CPU)"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Connection pool maximum size",
+                "correlated_attribute": "Performance (source system CPU)"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Synchronization polling interval",
+                "correlated_attribute": "Performance (source system CPU)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Batch size configuration",
+                "conflicting_attributes": [
+                  "Performance - Source CPU (positive: smaller batches reduce CPU load)",
+                  "Performance - Synchronization latency (negative: smaller batches increase total synchronization time)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P-02",
+            "text": "The DC system must synchronize duplicated master data from different applications and propagate changes to the DWH within 5 minutes without duplication errors",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with master data changes occurring in disparate source systems",
+          "stimulus": "Master data update in any connected legacy application",
+          "response_measure": "Changes propagated to DWH within 5 minutes with zero duplication errors",
+          "architectural_decisions": [
+            "Change Data Capture (CDC) mechanism for detecting updates",
+            "Spring Integration message channels for event-driven synchronization",
+            "Master Data Management (MDM) logic for deduplication",
+            "Unique key resolution strategy across systems",
+            "Asynchronous processing with message queues"
+          ],
+          "reasoning": "Spring Integration provides event-driven architecture capabilities. By implementing CDC or polling mechanisms with 1-2 minute intervals, changes can be detected quickly. MDM logic in the Spring layer resolves duplicates using business keys before writing to DWH. Asynchronous processing ensures non-blocking propagation within the 5-minute window.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Inconsistent master data keys across legacy systems",
+                "rationale": "Different legacy systems may use different identifiers for the same entity, making deduplication logic complex and error-prone"
+              },
+              {
+                "id": "R-09",
+                "description": "Network latency between source systems and DWH",
+                "rationale": "If source systems are geographically distributed, network latency could consume significant portion of the 5-minute budget"
+              },
+              {
+                "id": "R-10",
+                "description": "Concurrent updates to same master data entity",
+                "rationale": "If two systems update the same entity simultaneously, conflict resolution logic may introduce delays or errors"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Spring Integration event-driven capabilities",
+                "rationale": "Spring Integration provides robust message-driven architecture for near-real-time data propagation"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "CDC polling interval",
+                "correlated_attribute": "Performance (synchronization latency)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Message queue processing throughput",
+                "correlated_attribute": "Performance (synchronization latency)"
+              },
+              {
+                "id": "S-09",
+                "parameter": "MDM deduplication algorithm complexity",
+                "correlated_attribute": "Performance (synchronization latency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "CDC polling frequency",
+                "conflicting_attributes": [
+                  "Performance - Synchronization latency (positive: higher frequency reduces latency)",
+                  "Performance - Source system CPU (negative: higher frequency increases CPU load per P-01)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P-04",
+            "text": "The Spring Framework-based DWH must handle concurrent data synchronization operations from multiple disparate academic systems without performance degradation",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak operations with multiple legacy systems simultaneously synchronizing data",
+          "stimulus": "Concurrent synchronization requests from 5+ disparate academic systems",
+          "response_measure": "No performance degradation (throughput and latency remain within acceptable bounds)",
+          "architectural_decisions": [
+            "Thread pool configuration for concurrent processing",
+            "Separate connection pools per source system",
+            "Asynchronous processing with Spring @Async",
+            "Database connection pooling (HikariCP)",
+            "Load balancing across multiple DWH nodes if needed"
+          ],
+          "reasoning": "Spring Framework supports concurrent processing through thread pools and asynchronous execution. By configuring separate connection pools for each source system and using HikariCP for efficient connection management, the system can handle multiple concurrent synchronizations. Thread pool sizing based on available CPU cores prevents resource contention.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Thread pool exhaustion under high concurrency",
+                "rationale": "If more systems attempt synchronization than available threads, requests will queue and latency will increase"
+              },
+              {
+                "id": "R-12",
+                "description": "Database connection pool saturation",
+                "rationale": "Concurrent synchronizations may exhaust available database connections to the DWH, causing blocking and timeouts"
+              },
+              {
+                "id": "R-13",
+                "description": "Memory pressure from concurrent large data transfers",
+                "rationale": "If multiple systems transfer large datasets simultaneously, heap memory may be exhausted, causing garbage collection pauses or OutOfMemory errors"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Spring async processing maturity",
+                "rationale": "Spring's @Async and TaskExecutor abstractions provide proven concurrent processing capabilities"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Thread pool core and max size",
+                "correlated_attribute": "Performance (concurrency)"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Database connection pool size",
+                "correlated_attribute": "Performance (concurrency)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "JVM heap size allocation",
+                "correlated_attribute": "Performance (concurrency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Thread pool size configuration",
+                "conflicting_attributes": [
+                  "Performance - Concurrency (positive: larger pool handles more concurrent requests)",
+                  "Performance - CPU utilization (negative: too many threads cause context switching overhead)"
+                ]
+              },
+              {
+                "id": "T-06",
+                "parameter": "Connection pool size per source system",
+                "conflicting_attributes": [
+                  "Performance - DWH throughput (positive: more connections increase throughput)",
+                  "Performance - Source system CPU (negative: more connections increase load per P-01)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M-01",
+            "text": "Implementing the Spring Framework integration solution must require fewer than 100 lines of code changes in any connected legacy application",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Integration of a legacy academic system with the Spring-based DWH",
+          "stimulus": "Developer implements integration connector for a legacy system",
+          "response_measure": "< 100 lines of code (LOC) changes in legacy application",
+          "architectural_decisions": [
+            "Database-level integration using triggers or views",
+            "Spring Framework handles all integration logic externally",
+            "Configuration-driven integration (no code changes in legacy apps)",
+            "JDBC read-only access to legacy databases",
+            "Minimal instrumentation in legacy apps (optional event publishing)"
+          ],
+          "reasoning": "By implementing integration at the database level (reading from legacy databases via JDBC) or using database triggers to publish events, the Spring Framework can extract data without modifying legacy application code. Configuration files in Spring define data mappings and synchronization rules, keeping legacy apps unchanged.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Complex data transformations require legacy app changes",
+                "rationale": "If legacy data formats are incompatible with DWH schema and cannot be transformed externally, legacy application code may need modification beyond 100 LOC"
+              },
+              {
+                "id": "R-15",
+                "description": "Binary data access requires file system integration",
+                "rationale": "Per scenario C-02, binary files stored on legacy hard drives may require file system agents or APIs in legacy apps, potentially exceeding 100 LOC"
+              },
+              {
+                "id": "R-16",
+                "description": "Real-time event publishing requires instrumentation",
+                "rationale": "If near-real-time synchronization (P-02) requires event publishing from legacy apps, instrumentation code may exceed 100 LOC"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "Database-level integration feasibility",
+                "rationale": "JDBC-based data extraction requires zero changes to legacy application code, only database access configuration"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Complexity of data transformation logic",
+                "correlated_attribute": "Modifiability (LOC in legacy apps)"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Degree of schema mismatch between legacy and DWH",
+                "correlated_attribute": "Modifiability (LOC in legacy apps)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Integration approach (database-level vs. application-level)",
+                "conflicting_attributes": [
+                  "Modifiability - Legacy app changes (positive: database-level requires zero LOC)",
+                  "Performance - Synchronization latency (negative: database polling adds latency vs. real-time events)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M-02",
+            "text": "New data structures added to connected applications must be automatically reflected in the DWH schema without major refactoring of the Spring Framework integration layer",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Legacy application undergoes schema evolution (new tables/columns added)",
+          "stimulus": "Developer adds new data structure to a connected legacy application",
+          "response_measure": "DWH schema updated automatically without major Spring Framework refactoring",
+          "architectural_decisions": [
+            "Schema discovery and introspection mechanisms",
+            "Dynamic mapping configuration (e.g., Hibernate auto-DDL)",
+            "Metadata-driven integration approach",
+            "Convention-over-configuration for new entities",
+            "Automated schema migration tools (Flyway/Liquibase)"
+          ],
+          "reasoning": "Spring Data JPA with Hibernate can auto-generate DWH schema based on entity definitions. By using schema introspection on legacy databases and metadata-driven mapping, new structures can be discovered and mapped automatically. Flyway or Liquibase can manage DWH schema migrations declaratively without code changes.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-17",
+                "description": "Complex data types require custom mapping logic",
+                "rationale": "New data structures with complex types (nested objects, arrays) may require custom converters or transformers, necessitating Spring code changes"
+              },
+              {
+                "id": "R-18",
+                "description": "Breaking schema changes in legacy systems",
+                "rationale": "If legacy apps rename or drop columns, automated mapping may fail or create data inconsistencies in DWH"
+              },
+              {
+                "id": "R-19",
+                "description": "Performance impact of auto-DDL in production",
+                "rationale": "Hibernate auto-DDL can cause schema locks or performance issues in production DWH environments"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Spring Data JPA schema generation capabilities",
+                "rationale": "Spring Data JPA with Hibernate provides robust auto-DDL features for schema evolution"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Degree of schema change (additive vs. breaking)",
+                "correlated_attribute": "Modifiability (refactoring effort)"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Complexity of data type mappings",
+                "correlated_attribute": "Modifiability (refactoring effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Schema evolution strategy (auto-DDL vs. manual migration)",
+                "conflicting_attributes": [
+                  "Modifiability (positive: auto-DDL requires no manual intervention)",
+                  "Security and Compliance (negative: auto-DDL may create uncontrolled schema changes)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M-04",
+            "text": "A new disparate academic system must be integrated into the centralized DWH using the Spring Framework architecture within 3 weeks without impacting existing integrations",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Production DWH with multiple existing integrations running",
+          "stimulus": "Request to integrate a new legacy academic system",
+          "response_measure": "Integration completed within 3 weeks with zero impact to existing integrations",
+          "architectural_decisions": [
+            "Modular integration architecture (separate Spring modules per system)",
+            "Isolated connection pools per integration",
+            "Configuration-driven integration setup",
+            "Template-based integration patterns",
+            "Independent deployment of new integration modules"
+          ],
+          "reasoning": "Spring Framework's modular architecture allows new integration modules to be developed and deployed independently. By using configuration templates and reusable patterns, developers can quickly set up new integrations. Isolated connection pools and separate Spring contexts ensure new integrations don't affect existing ones.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-20",
+                "description": "Shared DWH database schema contention",
+                "rationale": "New integration writing to shared DWH tables may cause locking or constraint violations affecting existing integrations"
+              },
+              {
+                "id": "R-21",
+                "description": "Insufficient developer familiarity with Spring Framework",
+                "rationale": "Per scenario M-03, developers with limited Spring experience may take longer than 3 weeks to implement integration correctly"
+              },
+              {
+                "id": "R-22",
+                "description": "Undocumented legacy system data structures",
+                "rationale": "If the new legacy system lacks documentation, understanding data structures and relationships may exceed 3-week timeline"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Spring Framework modularity",
+                "rationale": "Spring's modular architecture supports independent development and deployment of integration modules"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-17",
+                "parameter": "Complexity of new legacy system schema",
+                "correlated_attribute": "Modifiability (integration timeline)"
+              },
+              {
+                "id": "S-18",
+                "parameter": "Developer Spring Framework expertise level",
+                "correlated_attribute": "Modifiability (integration timeline)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Integration isolation level",
+                "conflicting_attributes": [
+                  "Modifiability - Impact isolation (positive: high isolation prevents impact to existing integrations)",
+                  "Performance - Resource utilization (negative: high isolation duplicates resources like connection pools)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "C-02",
+            "text": "The DC system must facilitate transfer and storage of binary format data including images, audio, and video files stored on legacy system hard drives",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Compliance",
+          "environment": "Legacy systems with binary files stored on local file systems",
+          "stimulus": "Request to synchronize binary data from legacy system to DWH",
+          "response_measure": "Binary files successfully transferred and stored in DWH without corruption",
+          "architectural_decisions": [
+            "File system integration layer in Spring Framework",
+            "Binary data storage strategy (BLOB in database vs. file system with metadata)",
+            "Chunked file transfer for large files",
+            "Checksum validation for data integrity",
+            "Spring Integration File adapters for file system access"
+          ],
+          "reasoning": "Spring Integration provides File adapters for reading from file systems. Binary data can be transferred in chunks to avoid memory issues and stored either as BLOBs in the DWH database or in a separate file storage with metadata in the database. Checksum validation ensures data integrity during transfer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-23",
+                "description": "Large binary files exceed memory limits",
+                "rationale": "Video files can be gigabytes in size; loading entire files into memory for transfer may cause OutOfMemory errors"
+              },
+              {
+                "id": "R-24",
+                "description": "File system access permissions on legacy systems",
+                "rationale": "Spring Framework integration layer may lack necessary file system permissions on legacy system hard drives"
+              },
+              {
+                "id": "R-25",
+                "description": "Network bandwidth saturation from binary transfers",
+                "rationale": "Transferring large binary files may saturate network bandwidth, impacting other synchronization operations and violating performance scenarios"
+              },
+              {
+                "id": "R-26",
+                "description": "Database BLOB storage performance degradation",
+                "rationale": "Storing large binary files as BLOBs in the DWH database may degrade query performance per scenario P-05"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Spring Integration File adapter capabilities",
+                "rationale": "Spring Integration provides robust file system integration with support for various protocols and chunked transfers"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-19",
+                "parameter": "Binary file size distribution",
+                "correlated_attribute": "Performance (transfer time and memory usage)"
+              },
+              {
+                "id": "S-20",
+                "parameter": "File transfer chunk size",
+                "correlated_attribute": "Performance (memory usage and throughput)"
+              },
+              {
+                "id": "S-21",
+                "parameter": "Binary storage strategy (BLOB vs. file system)",
+                "correlated_attribute": "Performance (DWH query performance)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-10",
+                "parameter": "Binary data storage location (database BLOB vs. separate file storage)",
+                "conflicting_attributes": [
+                  "Compliance - Data centralization (positive: BLOB storage keeps all data in DWH)",
+                  "Performance - Query performance (negative: BLOBs degrade database query performance per P-05)"
+                ]
+              },
+              {
+                "id": "T-11",
+                "parameter": "File transfer chunk size",
+                "conflicting_attributes": [
+                  "Performance - Memory usage (positive: smaller chunks reduce memory footprint)",
+                  "Performance - Transfer throughput (negative: smaller chunks increase overhead and reduce throughput)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P-05",
+            "text": "Analytical queries against the centralized DWH must return results within 3 seconds under typical reporting workload to support institutional accreditation processes",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Typical reporting workload with multiple concurrent analytical queries",
+          "stimulus": "User executes analytical query for accreditation reporting",
+          "response_measure": "Query results returned within 3 seconds",
+          "architectural_decisions": [
+            "Database indexing strategy for common query patterns",
+            "Materialized views for pre-aggregated data",
+            "Query result caching (Spring Cache with Redis/Ehcache)",
+            "Database partitioning for large tables",
+            "Read replicas for analytical workloads"
+          ],
+          "reasoning": "By implementing appropriate database indexes, materialized views for common aggregations, and query result caching in Spring, most analytical queries can be served within 3 seconds. Database partitioning and read replicas further improve query performance by distributing load and optimizing data access patterns.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-27",
+                "description": "Ad-hoc queries bypass optimization strategies",
+                "rationale": "Users may execute complex ad-hoc queries that don't benefit from indexes or materialized views, exceeding 3-second threshold"
+              },
+              {
+                "id": "R-28",
+                "description": "Data volume growth degrades query performance",
+                "rationale": "As DWH accumulates historical data, query performance may degrade over time even with indexes"
+              },
+              {
+                "id": "R-29",
+                "description": "Cache invalidation complexity with frequent updates",
+                "rationale": "If master data updates frequently (per P-02), cache invalidation logic becomes complex and may serve stale data"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "Spring Cache abstraction maturity",
+                "rationale": "Spring Cache provides proven caching abstraction with support for multiple cache providers"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-22",
+                "parameter": "Database index coverage",
+                "correlated_attribute": "Performance (query response time)"
+              },
+              {
+                "id": "S-23",
+                "parameter": "Cache TTL configuration",
+                "correlated_attribute": "Performance (query response time)"
+              },
+              {
+                "id": "S-24",
+                "parameter": "Materialized view refresh frequency",
+                "correlated_attribute": "Performance (query response time and data freshness)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-12",
+                "parameter": "Cache TTL duration",
+                "conflicting_attributes": [
+                  "Performance - Query response time (positive: longer TTL increases cache hit rate)",
+                  "Compliance - Data freshness (negative: longer TTL may serve outdated data for accreditation reports)"
+                ]
+              },
+              {
+                "id": "T-13",
+                "parameter": "Materialized view refresh frequency",
+                "conflicting_attributes": [
+                  "Performance - Query response time (positive: pre-aggregated data serves queries faster)",
+                  "Performance - DWH write load (negative: frequent refresh increases database write operations)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

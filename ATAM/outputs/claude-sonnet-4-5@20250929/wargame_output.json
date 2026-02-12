@@ -1,0 +1,953 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "Wargame 2000 is a real-time, human-in-the-loop ballistic missile defense simulation system. It is designed to model concepts of operation, doctrine, and tactics in a realistic combat environment. The system supports distributed discrete event simulation, allowing for the integration of dissimilar parts and interoperability with other simulations via High Level Architecture (HLA).",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Documentation existed in Rational Rose/UML but was considered weak for capturing discrete events. Some architectural drawings caused stakeholder confusion and required real-time refinement.",
+        "evaluator_inquiry_questions": [
+          "How are discrete simulation events represented in the static UML models?",
+          "Can you clarify the data flow in this architectural diagram to resolve stakeholder confusion?",
+          "How does the code reuse strategy align with the need for high-fidelity discrete event simulation?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed simulation environment capable of hosting online, offsite, and multiple simultaneous games.",
+          "Networked command centers allowing participants to play from their own locations."
+        ],
+        "runtime_constraints": [
+          "Must support 'Firm' real-time deadlines (statistical adherence).",
+          "Must provide 'Margin' (running faster than real-time) to support future requirements."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "initialization_time": "10 minutes",
+        "exercise_turnaround_frequency": "1 exercise per month",
+        "latency_constraints": {
+          "max_instantaneous_lag": "5 seconds",
+          "max_average_lag": "3 seconds"
+        },
+        "data_collection_window": "30 seconds post-termination",
+        "timeline_fidelity": "Within 10% of EADSIM events"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Client-Server / Distributed",
+          "questions": [
+            "How does the client-server separation impact the latency requirements for the human-in-the-loop displays?",
+            "How does the publish/subscribe mechanism handle peak load during high-density missile scenarios?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Simulation controller initiates simulation execution, starts subordinate processes, and runs from T=-infinity to T=0."
+        },
+        {
+          "id": "RS-02",
+          "description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game."
+        },
+        {
+          "id": "RS-03",
+          "description": "Add cruise missile infrastructure into next software release."
+        },
+        {
+          "id": "RS-04",
+          "description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week."
+        },
+        {
+          "id": "RS-05",
+          "description": "Replace existing database with an object-oriented database within 5-10 staff years."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Answer the 'Big Five Questions' regarding operator knowledge and action timing",
+          "Serve as a rapid prototyping facility for interoperability studies",
+          "Support evolving mission needs and incremental functionality extensions"
+        ],
+        "technical_constraints": [
+          "Must be compliant with High Level Architecture (HLA) standards",
+          "Must run on government-owned contractor-operated infrastructure",
+          "Must support human-in-control experiments with 'fog-of-war' realism"
+        ],
+        "architectural_drivers": [
+          "Performance (Real-time & Margin)",
+          "Modifiability/Composability",
+          "Reliability",
+          "Interoperability",
+          "Fidelity"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Client-Server / Distributed Architecture",
+          "description": "The system employs a client-server separation to support distributed simulation environments with networked command centers, allowing participants to play from their own locations and supporting online, offsite, and multiple simultaneous games.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Enables integration with other simulations via HLA and supports distributed participation across multiple locations."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Client-server separation impacts latency requirements for human-in-the-loop displays, requiring careful management of the 5-second max instantaneous lag and 3-second max average lag constraints."
+            }
+          ]
+        },
+        {
+          "approach_name": "Publish/Subscribe Mechanism",
+          "description": "Used to handle data distribution and event notification across the distributed simulation environment, particularly during high-density missile scenarios.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Handles peak load during high-density missile scenarios while maintaining real-time deadlines."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decouples components, allowing for easier integration of new simulation elements and doctrine changes."
+            }
+          ]
+        },
+        {
+          "approach_name": "Distributed Discrete Event Simulation",
+          "description": "Core architectural pattern supporting the integration of dissimilar simulation parts with timeline fidelity requirements (within 10% of EADSIM events).",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Fidelity",
+              "rationale": "Ensures accurate representation of combat scenarios with precise event timing and sequencing."
+            },
+            {
+              "quality_attribute": "Composability",
+              "rationale": "Allows integration of dissimilar parts and supports incremental functionality extensions."
+            }
+          ]
+        },
+        {
+          "approach_name": "High Level Architecture (HLA) Compliance",
+          "description": "Standards-based approach for interoperability with other simulations and systems.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "Ensures compatibility with other HLA-compliant simulations and supports rapid prototyping for interoperability studies."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Standardized interfaces facilitate integration of new components and mission capabilities."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Real-time response for human-in-the-loop displays",
+                "scenario_id": "P1",
+                "scenario_description": "During normal operations, human-in-the-loop displays must maintain max instantaneous lag < 5 seconds and max average lag < 3 seconds to support operator decision-making.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Simulation initialization time",
+                "scenario_id": "P2",
+                "scenario_description": "Simulation controller initiates simulation execution, starts subordinate processes, and completes initialization from T=-infinity to T=0 within 10 minutes.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Margin - faster than real-time execution",
+                "scenario_id": "P3",
+                "scenario_description": "System runs faster than real-time to provide margin for future requirements and support monthly exercise turnaround frequency.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Peak load handling during high-density scenarios",
+                "scenario_id": "P4",
+                "scenario_description": "During high-density missile scenario peak load, publish/subscribe mechanism maintains real-time deadlines without degradation.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Doctrine rule set modification",
+                "scenario_id": "M1",
+                "scenario_description": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game (within 1 month exercise cycle).",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Adding new mission capabilities",
+                "scenario_id": "M2",
+                "scenario_description": "Add cruise missile infrastructure into next software release to support evolving mission needs.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Major system reconfiguration",
+                "scenario_id": "M3",
+                "scenario_description": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "HLA compliance for external integration",
+                "scenario_id": "I1",
+                "scenario_description": "Integrate with other HLA-compliant simulations to serve as rapid prototyping facility for interoperability studies.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Support for distributed participation",
+                "scenario_id": "I2",
+                "scenario_description": "Support online, offsite, and multiple simultaneous games with networked command centers allowing participants to play from their own locations.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Firm real-time deadline adherence",
+                "scenario_id": "R1",
+                "scenario_description": "System maintains statistical adherence to firm real-time deadlines during continuous operation, with data collection window of 30 seconds post-termination.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Fidelity",
+            "children": [
+              {
+                "refinement": "Timeline accuracy for combat scenarios",
+                "scenario_id": "F1",
+                "scenario_description": "Distributed discrete event simulation maintains timeline fidelity within 10% of EADSIM events to accurately answer the 'Big Five Questions' regarding operator knowledge and action timing.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During normal operations, human-in-the-loop displays must maintain max instantaneous lag < 5 seconds and max average lag < 3 seconds to support operator decision-making.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "Simulation controller initiates simulation execution, starts subordinate processes, and completes initialization from T=-infinity to T=0 within 10 minutes.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "System runs faster than real-time to provide margin for future requirements and support monthly exercise turnaround frequency.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "During high-density missile scenario peak load, publish/subscribe mechanism maintains real-time deadlines without degradation.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game (within 1 month exercise cycle).",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Add cruise missile infrastructure into next software release to support evolving mission needs.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Integrate with other HLA-compliant simulations to serve as rapid prototyping facility for interoperability studies.",
+          "primary_quality_attribute": [
+            "Interoperability",
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Support online, offsite, and multiple simultaneous games with networked command centers allowing participants to play from their own locations.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "System maintains statistical adherence to firm real-time deadlines during continuous operation, with data collection window of 30 seconds post-termination.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "Distributed discrete event simulation maintains timeline fidelity within 10% of EADSIM events to accurately answer the 'Big Five Questions' regarding operator knowledge and action timing.",
+          "primary_quality_attribute": [
+            "Fidelity"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During normal operations, human-in-the-loop displays must maintain max instantaneous lag < 5 seconds and max average lag < 3 seconds to support operator decision-making.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with distributed human-in-the-loop displays across networked command centers",
+          "stimulus": "Continuous stream of simulation events requiring real-time display updates",
+          "response_measure": "Max instantaneous lag < 5 seconds, max average lag < 3 seconds",
+          "architectural_decisions": [
+            "Client-Server separation with distributed architecture",
+            "Publish/Subscribe mechanism for event distribution",
+            "Network bandwidth allocation for display updates"
+          ],
+          "reasoning": "The client-server architecture enables distributed displays but introduces network latency. The publish/subscribe mechanism must efficiently route display-relevant events to minimize propagation delays. Meeting the 3-second average and 5-second instantaneous lag constraints requires careful network provisioning and event filtering to prevent display clients from being overwhelmed.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Network latency variability in distributed environment may cause instantaneous lag to exceed 5-second threshold",
+                "rationale": "Wide-area network connections to offsite command centers are subject to congestion and routing variability beyond system control, potentially violating hard real-time constraints for human operators"
+              },
+              {
+                "id": "R-02",
+                "description": "Publish/Subscribe event flooding during peak scenarios may overwhelm display clients",
+                "rationale": "High-density missile scenarios generate massive event volumes; without proper filtering and prioritization, display clients may experience processing backlogs leading to lag accumulation"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Average lag constraint of 3 seconds provides sufficient margin for typical network conditions",
+                "rationale": "The 3-second average allows for occasional spikes while maintaining acceptable operator experience under normal network conditions with proper event prioritization"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network bandwidth between server and distributed clients",
+                "correlated_attribute": "Performance (display lag)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Event filtering granularity in publish/subscribe mechanism",
+                "correlated_attribute": "Performance (display update latency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Event update frequency to displays",
+                "conflicting_attributes": [
+                  "Performance (reduced lag with lower frequency)",
+                  "Fidelity (reduced accuracy with lower frequency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Simulation controller initiates simulation execution, starts subordinate processes, and completes initialization from T=-infinity to T=0 within 10 minutes.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "System startup with distributed simulation components across multiple nodes",
+          "stimulus": "Simulation controller initiates execution sequence",
+          "response_measure": "Complete initialization within 10 minutes",
+          "architectural_decisions": [
+            "Distributed discrete event simulation with coordinated initialization",
+            "Client-server architecture requiring process orchestration",
+            "HLA compliance with federation initialization protocols"
+          ],
+          "reasoning": "The 10-minute initialization window must accommodate starting distributed processes, establishing network connections, synchronizing initial state across all nodes, and completing HLA federation join procedures. The distributed architecture adds complexity compared to monolithic systems but provides necessary scalability.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Distributed process startup dependencies may create initialization bottlenecks",
+                "rationale": "Sequential dependencies in initialization (e.g., server must start before clients) combined with network delays could approach or exceed the 10-minute budget if not carefully orchestrated"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "10-minute window provides adequate margin for typical initialization sequences",
+                "rationale": "Modern distributed systems can typically complete process startup and state synchronization within minutes; the 10-minute budget allows for reasonable fault recovery"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Number of distributed simulation nodes",
+                "correlated_attribute": "Performance (initialization time)"
+              },
+              {
+                "id": "S-04",
+                "parameter": "Initial state data volume requiring synchronization",
+                "correlated_attribute": "Performance (initialization time)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P3",
+            "text": "System runs faster than real-time to provide margin for future requirements and support monthly exercise turnaround frequency.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal simulation execution without human-in-the-loop constraints",
+          "stimulus": "Simulation execution of combat scenarios",
+          "response_measure": "Execution speed > 1x real-time",
+          "architectural_decisions": [
+            "Distributed discrete event simulation with optimized event processing",
+            "Publish/Subscribe mechanism for efficient event routing",
+            "Separation of human-in-the-loop displays from core simulation"
+          ],
+          "reasoning": "Faster-than-real-time execution requires efficient event processing and minimal synchronization overhead. The distributed architecture must balance parallelism benefits against coordination costs. Decoupling displays allows core simulation to run at maximum speed when human interaction is not required.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Distributed synchronization overhead may prevent faster-than-real-time execution",
+                "rationale": "Discrete event simulation across distributed nodes requires frequent synchronization to maintain causality; this overhead could limit speedup, especially during high-density scenarios with many inter-node dependencies"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Publish/Subscribe decoupling enables core simulation to run independently of display constraints",
+                "rationale": "When displays are not active, the simulation can execute at maximum speed without being throttled by human-in-the-loop lag requirements"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Event processing capacity per simulation node",
+                "correlated_attribute": "Performance (execution speed)"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Synchronization frequency between distributed nodes",
+                "correlated_attribute": "Performance (execution speed)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Degree of distribution (number of nodes)",
+                "conflicting_attributes": [
+                  "Performance (parallelism benefits)",
+                  "Performance (synchronization overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P4",
+            "text": "During high-density missile scenario peak load, publish/subscribe mechanism maintains real-time deadlines without degradation.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak load conditions with high-density missile scenario generating maximum event volume",
+          "stimulus": "Massive simultaneous missile launches creating event storm",
+          "response_measure": "Maintain real-time deadlines without degradation",
+          "architectural_decisions": [
+            "Publish/Subscribe mechanism with scalable event routing",
+            "Event prioritization and filtering strategies",
+            "Distributed processing to handle peak loads"
+          ],
+          "reasoning": "High-density missile scenarios represent worst-case load conditions. The publish/subscribe mechanism must scale to handle event storms while maintaining real-time responsiveness. This requires efficient routing algorithms, adequate network bandwidth, and possibly event aggregation or filtering to prevent subscriber overload.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "Publish/Subscribe broker may become bottleneck during peak event storms",
+                "rationale": "Centralized or insufficiently distributed pub/sub infrastructure could saturate under high-density missile scenario loads, causing event queuing delays that violate real-time deadlines"
+              },
+              {
+                "id": "R-06",
+                "description": "Network bandwidth saturation during peak loads may cause event delivery delays",
+                "rationale": "High-density scenarios generate correlated event bursts that could exceed network capacity, particularly on links to distributed command centers"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Event filtering and prioritization can reduce load on non-critical subscribers",
+                "rationale": "Publish/Subscribe pattern allows selective event delivery; subscribers can filter irrelevant events, reducing processing load during peak scenarios"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Publish/Subscribe broker processing capacity",
+                "correlated_attribute": "Performance (peak load handling)"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Network bandwidth for event distribution",
+                "correlated_attribute": "Performance (real-time deadline adherence)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Event granularity (fine-grained vs. aggregated)",
+                "conflicting_attributes": [
+                  "Fidelity (fine-grained events provide more detail)",
+                  "Performance (aggregated events reduce volume)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "Change joint firing doctrine rule set in the automated weapon target assigner in time for the next game (within 1 month exercise cycle).",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development and testing environment between exercises",
+          "stimulus": "Request to modify firing doctrine rules",
+          "response_measure": "Complete modification within 1 month exercise cycle",
+          "architectural_decisions": [
+            "Modular rule-based architecture for doctrine representation",
+            "Separation of doctrine rules from core simulation logic",
+            "Testing framework for validating rule changes"
+          ],
+          "reasoning": "Meeting the 1-month cycle requires doctrine rules to be externalized from core code, ideally in declarative format. The publish/subscribe mechanism supports loose coupling between doctrine components and simulation. Testing must be efficient to validate changes within the time budget.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Doctrine rule changes may have unforeseen interactions with other simulation components",
+                "rationale": "Complex rule sets can have non-obvious dependencies; insufficient testing time within the 1-month cycle could allow defects to reach production exercises"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "1-month cycle provides adequate time for isolated rule set modifications",
+                "rationale": "If doctrine rules are properly modularized and externalized, simple rule changes can be implemented and tested within weeks"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Degree of coupling between doctrine rules and core simulation",
+                "correlated_attribute": "Modifiability (change implementation time)"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Comprehensiveness of automated test suite",
+                "correlated_attribute": "Modifiability (validation time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Rule expressiveness (flexibility vs. simplicity)",
+                "conflicting_attributes": [
+                  "Modifiability (simple rules easier to change)",
+                  "Fidelity (complex rules capture doctrine nuances)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "Add cruise missile infrastructure into next software release to support evolving mission needs.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development environment for major capability addition",
+          "stimulus": "Requirement to add new weapon system type",
+          "response_measure": "Complete addition within next software release cycle",
+          "architectural_decisions": [
+            "HLA compliance for standardized component interfaces",
+            "Publish/Subscribe mechanism for loose coupling",
+            "Distributed discrete event simulation supporting heterogeneous entities"
+          ],
+          "reasoning": "Adding cruise missile infrastructure requires new entity types, behaviors, and interactions. HLA compliance provides standardized interfaces for integration. The publish/subscribe mechanism allows new components to subscribe to relevant events without modifying existing publishers. The discrete event simulation framework must accommodate new event types.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-08",
+                "description": "Cruise missile addition may require modifications to multiple existing components",
+                "rationale": "New weapon systems often interact with detection, tracking, engagement, and damage assessment components; ripple effects could extend development time beyond release cycle"
+              },
+              {
+                "id": "R-09",
+                "description": "Performance impact of cruise missile simulation may not be predictable until integration",
+                "rationale": "Cruise missiles have different flight profiles and engagement timelines than ballistic missiles; computational load and event generation patterns may stress the system differently"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "HLA compliance facilitates integration of new entity types",
+                "rationale": "Standardized HLA interfaces and object models provide clear integration points for new simulation components"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Degree of interface standardization (HLA compliance)",
+                "correlated_attribute": "Modifiability (integration effort)"
+              },
+              {
+                "id": "S-12",
+                "parameter": "Modularity of existing weapon system implementations",
+                "correlated_attribute": "Modifiability (reuse vs. reimplementation)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Cruise missile model fidelity",
+                "conflicting_attributes": [
+                  "Fidelity (detailed models improve accuracy)",
+                  "Performance (complex models increase computational load)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M3",
+            "text": "Reconfigure Wargame 2000 from running a theater ballistic missile defense simulation to a national missile defense simulation in one week.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Operational system requiring major reconfiguration",
+          "stimulus": "Request to change mission scope from theater to national defense",
+          "response_measure": "Complete reconfiguration within one week",
+          "architectural_decisions": [
+            "Parameterized scenario configuration",
+            "Modular component architecture allowing substitution",
+            "Separation of scenario data from simulation logic"
+          ],
+          "reasoning": "The 1-week reconfiguration requirement is extremely aggressive for such a major scope change. This demands that theater vs. national differences be primarily configuration-driven rather than code-driven. Geographic scope, sensor coverage, weapon inventories, and threat characteristics must be parameterizable.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-10",
+                "description": "One week is insufficient for major architectural changes required by theater-to-national transition",
+                "rationale": "Theater and national missile defense have fundamentally different scales, timelines, and engagement geometries; if these differences require code changes rather than configuration, 1 week is unrealistic"
+              },
+              {
+                "id": "R-11",
+                "description": "Testing and validation cannot be thorough within 1-week timeframe",
+                "rationale": "Major reconfigurations introduce risk of subtle errors; 1 week allows minimal testing, potentially compromising exercise validity"
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-13",
+                "parameter": "Degree of parameterization vs. hard-coding of mission scope",
+                "correlated_attribute": "Modifiability (reconfiguration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Configuration flexibility (parameterization depth)",
+                "conflicting_attributes": [
+                  "Modifiability (high flexibility enables rapid reconfiguration)",
+                  "Performance (excessive parameterization adds runtime overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "I1",
+            "text": "Integrate with other HLA-compliant simulations to serve as rapid prototyping facility for interoperability studies.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Federation of multiple HLA-compliant simulations",
+          "stimulus": "Request to integrate with external HLA simulation",
+          "response_measure": "Successful federation establishment and data exchange",
+          "architectural_decisions": [
+            "HLA compliance with standardized FOM/SOM",
+            "Publish/Subscribe mechanism mapping to HLA RTI",
+            "Standardized object and interaction models"
+          ],
+          "reasoning": "HLA compliance is the primary architectural decision enabling this scenario. The system's internal publish/subscribe mechanism must map cleanly to HLA's RTI services. Standardized Federation Object Model (FOM) and Simulation Object Model (SOM) definitions are critical for semantic interoperability.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-12",
+                "description": "Semantic mismatches between FOMs may require custom translation logic",
+                "rationale": "While HLA provides syntactic interoperability, different simulations may model entities and interactions differently, requiring mapping logic that undermines rapid prototyping goals"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "HLA RTI handles low-level communication and synchronization",
+                "rationale": "HLA infrastructure provides proven mechanisms for distributed simulation coordination, reducing integration effort"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Degree of FOM/SOM standardization across federates",
+                "correlated_attribute": "Interoperability (integration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "FOM granularity and detail",
+                "conflicting_attributes": [
+                  "Interoperability (detailed FOM improves semantic clarity)",
+                  "Modifiability (detailed FOM constrains future changes)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "I2",
+            "text": "Support online, offsite, and multiple simultaneous games with networked command centers allowing participants to play from their own locations.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Distributed gaming environment with multiple concurrent exercises",
+          "stimulus": "Multiple simultaneous exercises with geographically distributed participants",
+          "response_measure": "Successful multi-game operation with participant connectivity",
+          "architectural_decisions": [
+            "Client-Server architecture with distributed clients",
+            "Network infrastructure supporting multiple concurrent sessions",
+            "Session isolation and resource partitioning"
+          ],
+          "reasoning": "Supporting multiple simultaneous games requires session isolation to prevent cross-contamination while sharing infrastructure. The client-server architecture must scale to support multiple server instances or multi-tenant operation. Network design must accommodate concurrent games without interference.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-13",
+                "description": "Resource contention between simultaneous games may cause performance degradation",
+                "rationale": "Multiple concurrent exercises compete for server CPU, memory, and network bandwidth; without proper resource allocation, one game could impact others"
+              },
+              {
+                "id": "R-14",
+                "description": "Network partitions could isolate distributed participants from their game session",
+                "rationale": "Wide-area network failures could disconnect offsite participants; recovery mechanisms must handle reconnection without disrupting exercise flow"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Client-server separation naturally supports distributed participation",
+                "rationale": "The architectural pattern inherently accommodates remote clients connecting over networks"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Server resource capacity (CPU, memory, network)",
+                "correlated_attribute": "Interoperability (number of simultaneous games supported)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Session isolation strictness",
+                "conflicting_attributes": [
+                  "Reliability (strict isolation prevents cross-game interference)",
+                  "Performance (isolation overhead reduces efficiency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "System maintains statistical adherence to firm real-time deadlines during continuous operation, with data collection window of 30 seconds post-termination.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Continuous operation under real-time constraints",
+          "stimulus": "Ongoing simulation execution with firm deadlines",
+          "response_measure": "Statistical adherence to real-time deadlines (measured over 30-second windows)",
+          "architectural_decisions": [
+            "Distributed discrete event simulation with deadline scheduling",
+            "Real-time operating system or priority scheduling",
+            "Monitoring and measurement infrastructure"
+          ],
+          "reasoning": "Firm real-time deadlines require predictable execution with bounded latency. The distributed architecture complicates this by introducing network delays and synchronization points. Statistical adherence (rather than absolute guarantees) suggests the system can tolerate occasional deadline misses but must maintain overall performance.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-15",
+                "description": "Distributed synchronization may cause unpredictable deadline violations",
+                "rationale": "Network delays and remote node failures can cause cascading deadline misses that exceed acceptable statistical thresholds"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-09",
+                "description": "Statistical adherence allows for occasional transient overloads",
+                "rationale": "The 30-second measurement window permits short-term deadline misses as long as overall performance meets requirements"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-16",
+                "parameter": "Network latency variance between distributed nodes",
+                "correlated_attribute": "Reliability (deadline adherence)"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Event processing priority scheme",
+                "correlated_attribute": "Reliability (critical deadline adherence)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "Deadline strictness (firm vs. soft)",
+                "conflicting_attributes": [
+                  "Reliability (firm deadlines ensure predictability)",
+                  "Performance (soft deadlines allow better average throughput)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "F1",
+            "text": "Distributed discrete event simulation maintains timeline fidelity within 10% of EADSIM events to accurately answer the 'Big Five Questions' regarding operator knowledge and action timing.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Fidelity",
+          "environment": "Combat scenario simulation requiring high-fidelity event timing",
+          "stimulus": "Complex engagement scenarios with precise timing requirements",
+          "response_measure": "Timeline accuracy within 10% of EADSIM reference",
+          "architectural_decisions": [
+            "Distributed discrete event simulation with synchronized clocks",
+            "Event ordering and causality preservation mechanisms",
+            "High-resolution timing infrastructure"
+          ],
+          "reasoning": "The 10% fidelity requirement demands precise event timing across distributed nodes. Clock synchronization, event ordering, and causality preservation are critical. The distributed architecture introduces challenges because events on different nodes must maintain correct temporal relationships despite network delays.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-16",
+                "description": "Clock drift between distributed nodes may accumulate beyond 10% tolerance",
+                "rationale": "Without robust clock synchronization (e.g., NTP, PTP), independent node clocks will drift, causing timeline divergence that violates fidelity requirements"
+              },
+              {
+                "id": "R-17",
+                "description": "Network delays may cause event reordering that violates causality",
+                "rationale": "Events generated on different nodes may arrive out of order due to variable network delays, potentially causing incorrect simulation outcomes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "10% tolerance provides reasonable margin for distributed timing variations",
+                "rationale": "The tolerance allows for small timing discrepancies inherent in distributed systems while maintaining sufficient accuracy for operator decision analysis"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-18",
+                "parameter": "Clock synchronization accuracy between nodes",
+                "correlated_attribute": "Fidelity (timeline accuracy)"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Event timestamp resolution",
+                "correlated_attribute": "Fidelity (temporal precision)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-10",
+                "parameter": "Synchronization frequency",
+                "conflicting_attributes": [
+                  "Fidelity (frequent sync improves accuracy)",
+                  "Performance (sync overhead reduces throughput)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

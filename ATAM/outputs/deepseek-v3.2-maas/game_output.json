@@ -1,0 +1,462 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A component-based software architecture designed to facilitate game portability across different commercial and bespoke game engines. The core concept employs a 'game space' component that services game logic (plot/story) to multiple game engines (views) without requiring modification to the game itself. It utilizes a variant of the Model-View-Controller pattern where the game space acts as the Model and the game engines act as Views, connected via Adapters.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The text implies that like traditional system development cycles, the requirements document lacked or weakly articulated quality attributes, requiring the evaluation team to elicit them. Architectural decisions also had to be elicited as they were not fully listed in the documentation.",
+        "evaluator_inquiry_questions": [
+          "Does the game engine require the game state to be put in its own game state?",
+          "Does the game engine require objects to be represented in its own Game Model representation?",
+          "Does the game engine require the behaviour to be specified in the game engine's own language or format?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Distributed environment where the game space and game engine run on different machines",
+          "Adapters are placed in the same application as the game space to minimize overhead"
+        ],
+        "runtime_constraints": [
+          "Network overhead due to distributed environment",
+          "Processing power limitations of the machine running the game engine",
+          "Mid-game scripting performance overhead (approx. 10x slower than pre-compiled code)"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "target_display_rate": "20 FPS",
+        "response_time_threshold": "< 1 second",
+        "scripting_performance_penalty": "10x slower than pre-compiled"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Model-View-Controller (MVC) / Game-based Architecture",
+          "questions": [
+            "How does the architecture break the direct link between the game space's game state and the game engine's game state?",
+            "How does the architecture break the direct link between the game space's game model and the game engine's game model?",
+            "How does the architecture ensure game behaviour is not formatted in the game engine's proprietary format?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Run two games from the same domain"
+        },
+        {
+          "id": "RS-02",
+          "description": "Run two games from two different domains"
+        },
+        {
+          "id": "RS-03",
+          "description": "Interoperate between two game engines"
+        },
+        {
+          "id": "RS-04",
+          "description": "Run two behaviour engines (internal and external)"
+        },
+        {
+          "id": "RS-05",
+          "description": "Increase the load by increasing the number of NPCs the user can interact with"
+        },
+        {
+          "id": "RS-06",
+          "description": "Increase the load by simulating multiple number of simultaneous players"
+        },
+        {
+          "id": "RS-07",
+          "description": "Run the game space on the same machine as the game engine"
+        },
+        {
+          "id": "RS-08",
+          "description": "Run the behaviour engine and the game space on the same machine as the game engine"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Break the current tightly coupled practices employed when developing games using game engines",
+          "Make the architecture flexible to accommodate different games"
+        ],
+        "technical_constraints": [
+          "Must support commercial off-the-shelf (COTS) game engines (e.g., Torque)",
+          "Must support bespoke simulation engines",
+          "Distributed environment to offload processing from the game engine machine"
+        ],
+        "architectural_drivers": [
+          "Portability",
+          "Modifiability",
+          "Performance"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Model-View-Controller (MVC) Variant",
+          "description": "The core architecture uses a variant of MVC where the 'game space' component acts as the Model (containing game logic/plot), and different commercial/bespoke game engines act as Views. Adapters connect the Model to the Views.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Portability",
+              "rationale": "Decouples the game logic (Model) from the rendering/engine-specific details (Views). New game engines can be integrated by implementing a new Adapter without modifying the core game logic, enabling portability across engines."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Separation of concerns allows changes to the game logic (Model) or a specific game engine (View) to be made independently, as long as the Adapter interface is stable. This reduces the impact of changes."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "The architectural constraint places Adapters in the same application as the game space (Model) to minimize communication overhead. This design decision aims to mitigate the performance impact of the distributed environment and network latency."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Player action response time < 200ms during peak load",
+                "scenario_id": "P1",
+                "scenario_description": "During a peak load of 10,000 concurrent players, when a player performs an in-game action (e.g., moving a character), the system processes the action and updates the game state with a latency of less than 200ms.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Adapter communication overhead adds < 10ms latency",
+                "scenario_id": "P2",
+                "scenario_description": "The architectural constraint of co-locating Adapters with the Model ensures the communication overhead between the game space (Model) and any game engine (View) via its Adapter adds less than 10ms of additional latency under normal load.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Integrate a new game engine within 2 person-months",
+                "scenario_id": "M1",
+                "scenario_description": "To support a new commercial game engine, a development team can implement a new Adapter conforming to the stable interface, enabling full integration of the engine with the core game logic, without changes to the Model, within 2 person-months of effort.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Modify core game plot logic with zero changes to Adapters",
+                "scenario_id": "M2",
+                "scenario_description": "When the game design team requests a change to the core game plot or logic (the Model), developers can implement the change without requiring modifications to any existing game engine Adapters, as long as the Adapter interface remains stable.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Portability",
+            "children": [
+              {
+                "refinement": "Deploy game to a new target platform (engine+OS) in 1 month",
+                "scenario_id": "PT1",
+                "scenario_description": "The system can be ported to run on a new combination of game engine and operating system (e.g., from Engine A on Windows to Engine B on Linux) by developing a new Adapter for that engine and ensuring the core Model compiles for the new OS, completing the port within one calendar month.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During a peak load of 10,000 concurrent players, when a player performs an in-game action (e.g., moving a character), the system processes the action and updates the game state with a latency of less than 200ms.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The architectural constraint of co-locating Adapters with the Model ensures the communication overhead between the game space (Model) and any game engine (View) via its Adapter adds less than 10ms of additional latency under normal load.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "To support a new commercial game engine, a development team can implement a new Adapter conforming to the stable interface, enabling full integration of the engine with the core game logic, without changes to the Model, within 2 person-months of effort.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When the game design team requests a change to the core game plot or logic (the Model), developers can implement the change without requiring modifications to any existing game engine Adapters, as long as the Adapter interface remains stable.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The system can be ported to run on a new combination of game engine and operating system (e.g., from Engine A on Windows to Engine B on Linux) by developing a new Adapter for that engine and ensuring the core Model compiles for the new OS, completing the port within one calendar month.",
+          "primary_quality_attribute": [
+            "Portability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During a peak load of 10,000 concurrent players, when a player performs an in-game action (e.g., moving a character), the system processes the action and updates the game state with a latency of less than 200ms.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak load (10,000 concurrent players)",
+          "stimulus": "Player performs an in-game action (e.g., moving a character)",
+          "response_measure": "Latency < 200ms",
+          "architectural_decisions": [
+            "Use of Model-View-Controller (MVC) variant with Adapters co-located with the Model (game space)",
+            "Decoupling of game logic (Model) from rendering engines (Views)"
+          ],
+          "reasoning": "The co-location of Adapters with the Model minimizes network latency for intra-process communication, which is critical for meeting the 200ms target. However, the Model itself must handle 10,000 concurrent actions efficiently. The single Model component could become a bottleneck if its internal processing logic or data structures are not optimized for high concurrency, risking the latency target.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "The central 'game space' Model component may become a performance bottleneck under peak load of 10,000 concurrent players, causing action processing latency to exceed 200ms.",
+                "rationale": "The architecture centralizes core game logic in one Model component. While Adapter communication is fast due to co-location, the Model's internal throughput (e.g., thread contention, lock granularity, state update complexity) is not addressed by the pattern and could be insufficient for the target load."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Network latency between the Model and game engine Views is not a significant risk for this latency target due to the architectural constraint of co-locating Adapters with the Model.",
+                "rationale": "The design decision to place Adapters in the same application as the Model ensures communication is intra-process or uses very fast IPC, likely keeping overhead well below the 10ms target (P2) and a small fraction of the 200ms total budget."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Model component's internal action processing throughput (actions/sec)",
+                "correlated_attribute": "Performance (Response time)"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Number of concurrent players/actions",
+                "correlated_attribute": "Performance (Response time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Centralization of game logic in a single Model component",
+                "conflicting_attributes": [
+                  "Modifiability (Positive: Logic is in one place, easier to modify)",
+                  "Performance (Negative: Can become a scalability bottleneck)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "The architectural constraint of co-locating Adapters with the Model ensures the communication overhead between the game space (Model) and any game engine (View) via its Adapter adds less than 10ms of additional latency under normal load.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal load",
+          "stimulus": "Game state update requires communication from Model to View via Adapter",
+          "response_measure": "Adapter communication overhead < 10ms",
+          "architectural_decisions": [
+            "Architectural constraint to co-locate Adapters with the Model (game space) component"
+          ],
+          "reasoning": "Co-location eliminates network round-trips, making intra-process communication or local IPC the primary mechanism. This should reliably keep overhead under 10ms. The risk is if an Adapter implementation performs heavy processing (e.g., complex data transformation) or blocks on I/O, violating the latency budget.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-02",
+                "description": "A poorly implemented Adapter performing computationally expensive transformations or blocking operations could introduce more than 10ms of latency.",
+                "rationale": "The architectural constraint ensures low network overhead, but does not guarantee the execution time of the Adapter's translation logic. Complex data mapping or synchronous disk/network calls within an Adapter could violate the target."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Network transmission delay is a non-risk for the 10ms overhead target due to the co-location constraint.",
+                "rationale": "Physical network latency (often 1ms+ per hop) is eliminated by design, removing a major variable from the latency equation."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Complexity of data transformation within an Adapter",
+                "correlated_attribute": "Performance (Latency)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Co-location of Adapter with Model",
+                "conflicting_attributes": [
+                  "Performance (Positive: Minimizes network latency)",
+                  "Portability/Deployment (Negative: May complicate deployment if the Model and a specific game engine must reside on different machines for other reasons)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "To support a new commercial game engine, a development team can implement a new Adapter conforming to the stable interface, enabling full integration of the engine with the core game logic, without changes to the Model, within 2 person-months of effort.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development phase",
+          "stimulus": "Decision to integrate a new commercial game engine",
+          "response_measure": "Integration effort \u2264 2 person-months",
+          "architectural_decisions": [
+            "Use of a stable Adapter interface to decouple Model from Views",
+            "Encapsulation of engine-specific code within Adapters"
+          ],
+          "reasoning": "The MVC pattern with a defined Adapter interface isolates engine-specific details. If the interface is well-designed and the new engine's capabilities are similar to existing ones, integration is primarily implementing the interface. Risk arises if the new engine has fundamentally different paradigms, requiring complex workarounds or changes to the interface itself, which would ripple to other Adapters.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "The stable Adapter interface may lack necessary abstractions for a game engine with fundamentally different rendering or input paradigms, forcing interface changes and increasing integration effort beyond 2 months.",
+                "rationale": "The interface design is based on assumptions about existing engines. A novel engine might require new methods or data structures, breaking the interface's stability and causing changes to the Model or other Adapters."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Modifying the core Model logic is not required for a standard engine integration, protecting the core from changes.",
+                "rationale": "The separation provided by the Adapter pattern ensures the Model remains agnostic to the specific View, so adding a new View (engine) does not necessitate Model changes."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Stability and completeness of the Adapter interface definition",
+                "correlated_attribute": "Modifiability (Integration effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Generality of the Adapter interface",
+                "conflicting_attributes": [
+                  "Modifiability/Portability (Positive: A very general interface can accommodate many engine types)",
+                  "Performance (Negative: A highly general interface might require inefficient data translations or indirect calls)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "When the game design team requests a change to the core game plot or logic (the Model), developers can implement the change without requiring modifications to any existing game engine Adapters, as long as the Adapter interface remains stable.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance phase",
+          "stimulus": "Request to change core game plot or logic",
+          "response_measure": "Zero changes required to existing Adapters",
+          "architectural_decisions": [
+            "Separation of concerns: Game logic isolated in Model component",
+            "Stable Adapter interface defines the contract between Model and Views"
+          ],
+          "reasoning": "This is a core benefit of the MVC pattern. Changes to the Model's internal logic do not affect the Adapters if the data and events passed through the interface remain consistent. The risk is that a Model change inadvertently alters the interface semantics or data format, forcing Adapter updates.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "A change to the Model's internal logic may unintentionally alter the structure or semantics of data sent through the Adapter interface, breaking existing Adapters.",
+                "rationale": "Developers must be disciplined to keep the interface contract stable. A change that modifies the type, meaning, or ordering of notifications could cause Adapters to malfunction, violating the 'zero changes' goal."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "The architectural separation ensures that purely internal Model optimizations or algorithm changes do not require Adapter modifications.",
+                "rationale": "As long as the public interface (methods, data structures) of the Model towards the Adapters is unchanged, the Adapters are unaffected."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Strictness of adherence to the Adapter interface contract during Model development",
+                "correlated_attribute": "Modifiability (Change impact)"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "PT1",
+            "text": "The system can be ported to run on a new combination of game engine and operating system (e.g., from Engine A on Windows to Engine B on Linux) by developing a new Adapter for that engine and ensuring the core Model compiles for the new OS, completing the port within one calendar month.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Portability",
+          "environment": "Porting initiative",
+          "stimulus": "Decision to deploy on a new target platform (new game engine + OS)",
+          "response_measure": "Port completion time \u2264 1 calendar month",
+          "architectural_decisions": [
+            "Decoupling of Model from game engine via Adapters",
+            "Isolation of OS dependencies primarily within the Model and potentially within Adapters"
+          ],
+          "reasoning": "The Adapter pattern handles engine portability. OS portability depends on the Model's code. If the Model is written in a portable language (e.g., C++ with standard libraries) and avoids OS-specific calls, recompilation is straightforward. The one-month timeline assumes the new engine's API is well-documented and similar in complexity to existing ones.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "The core Model may contain non-portable, OS-specific code (e.g., file paths, threading libraries, networking APIs), making compilation and testing for a new OS take longer than one month.",
+                "rationale": "Portability across OSes is not automatically guaranteed by the MVC pattern. The Model's implementation must be designed for portability, which is a separate concern from the decoupling from Views."
+              },
+              {
+                "id": "R-06",
+                "description": "The new game engine's API may be poorly documented or require significantly more complex Adapter logic, extending development time beyond the one-month schedule.",
+                "rationale": "The effort estimate is sensitive to the complexity of the target engine. An engine with a convoluted or unstable API can make Adapter development unpredictable."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "The need to modify existing Adapters for other engines is a non-risk during a port to a new engine.",
+                "rationale": "The architecture allows a new Adapter to be developed independently. Existing Adapters for other engines remain unchanged and functional."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Portability of the Model's source code (use of standard libraries, abstraction of OS services)",
+                "correlated_attribute": "Portability (Porting effort)"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Complexity and maturity of the new game engine's API",
+                "correlated_attribute": "Portability (Porting effort)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Use of high-performance, OS-specific APIs in the Model",
+                "conflicting_attributes": [
+                  "Performance (Positive: Can leverage optimized OS features)",
+                  "Portability (Negative: Increases effort to port to a new OS)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

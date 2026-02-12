@@ -1,0 +1,1043 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "Plant Genotyping and Phenotyping Analysis Systems (Galaxy, iPlant, GenAp, LemnaTec)",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Ensuring global food security; facilitating reproducibility of experiments; high throughput processing of large/heterogeneous data; making analysis results available to researchers."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Model-View-Controller (MVC)",
+          "Service-Oriented",
+          "Cloud-Native"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Galaxy - Web-Based Workflow Platform",
+            "description": "A web-based platform using the MVC pattern to separate data management, user interface, and business logic. Designed for biomedical researchers to create and execute reproducible computational workflows through a browser without programming knowledge.",
+            "architecture_characteristics": "High scalability (cloud-based), strong modularity (language-independent tools), good reproducibility (workflow management), web accessibility, extensible through APIs",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Model",
+                "responsibilities": "Manages all database operations - storing and retrieving experimental data, workflow definitions, user information, and job histories in a relational database",
+                "dependencies": [
+                  "Database System"
+                ],
+                "change_sensitivity": "High - Changes here affect data integrity and all components that read/write data"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "View (Web Interface)",
+                "responsibilities": "Presents the user interface in web browsers, displays workflows, visualizes results, and captures user interactions",
+                "dependencies": [
+                  "C-03 (Controller)",
+                  "C-01 (Model)"
+                ],
+                "change_sensitivity": "Low - UI changes can be made independently without affecting core functionality"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Controller",
+                "responsibilities": "Orchestrates application logic, processes user requests from the View, coordinates between Model and other services, manages workflow execution",
+                "dependencies": [
+                  "C-01 (Model)",
+                  "C-04 (Job Manager)",
+                  "C-05 (ToolBox)"
+                ],
+                "change_sensitivity": "High - Central coordination point; changes affect overall system behavior"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Job Manager",
+                "responsibilities": "Executes computational jobs, allocates computing resources (CPU, memory), tracks job status (queued, running, completed, failed), manages job queues",
+                "dependencies": [
+                  "C-05 (ToolBox)",
+                  "CloudMan",
+                  "Computing Resources"
+                ],
+                "change_sensitivity": "Medium - Can be enhanced for better resource management, but changes affect job execution reliability"
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "ToolBox",
+                "responsibilities": "Registry and manager for all analysis tools (regardless of programming language), provides tool metadata, handles tool versioning and dependencies",
+                "dependencies": [
+                  "External Tools/Software"
+                ],
+                "change_sensitivity": "Medium - Adding tools is straightforward; changing tool management affects all workflows"
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "API",
+                "responsibilities": "Provides programmatic access to Galaxy functionality, enables integration with external applications, supports multiple programming languages (Python, R, etc.)",
+                "dependencies": [
+                  "C-03 (Controller)",
+                  "C-01 (Model)"
+                ],
+                "change_sensitivity": "Medium - API changes can break external integrations; versioning is critical"
+              },
+              {
+                "component_id": "C-07",
+                "component_name": "CloudMan",
+                "responsibilities": "Manages cloud infrastructure, provisions and scales computing resources dynamically, handles cluster configuration",
+                "dependencies": [
+                  "Cloud Provider (AWS, etc.)"
+                ],
+                "change_sensitivity": "Medium - Infrastructure changes affect scalability but not core functionality"
+              }
+            ],
+            "data_flow": "User interacts with View (web browser) \u2192 Controller receives request \u2192 Controller queries/updates Model (database) \u2192 For analysis jobs: Controller sends to Job Manager \u2192 Job Manager selects appropriate Tool from ToolBox \u2192 Tool executes on CloudMan resources \u2192 Results stored in Model \u2192 View displays results to user. API provides alternative entry point directly to Controller for programmatic access.",
+            "architectural_constraints": [
+              "Requires web browser access - not suitable for offline work",
+              "Relational database can become bottleneck with extremely large datasets",
+              "Tool execution depends on availability of cloud resources",
+              "MVC pattern requires all requests to flow through Controller, limiting some parallel operations",
+              "Language-independent tools must be wrapped/configured to work within Galaxy framework"
+            ],
+            "what_it_can_do": [
+              "Execute complex multi-step workflows reproducibly",
+              "Scale computing resources up/down based on demand",
+              "Add new analysis tools without changing core system",
+              "Support multiple users simultaneously through web interface",
+              "Integrate with external applications via API",
+              "Track complete history of analyses for reproducibility"
+            ],
+            "what_it_cannot_easily_do": [
+              "Work offline or without internet connectivity",
+              "Handle real-time hardware control (e.g., imaging equipment)",
+              "Process data that cannot be moved to cloud (security/privacy restrictions)",
+              "Provide desktop application features or local file system integration",
+              "Support highly interactive, low-latency data exploration (web round-trips add delay)",
+              "Customize deeply without understanding MVC architecture"
+            ],
+            "change_impact_scenarios": {
+              "adding_new_analysis_tool": "LOW impact - ToolBox designed for this; minimal changes needed",
+              "changing_database_schema": "HIGH impact - affects Model and all dependent components; requires migration",
+              "scaling_to_10x_users": "MEDIUM impact - CloudMan handles compute scaling; may need database optimization",
+              "adding_real_time_imaging": "HIGH impact - architecture not designed for hardware control; major redesign needed",
+              "integrating_with_new_external_system": "LOW-MEDIUM impact - use existing API or extend it",
+              "changing_cloud_provider": "MEDIUM impact - CloudMan abstraction helps, but provider-specific features may need rework"
+            },
+            "notes": "Galaxy's MVC architecture provides excellent separation of concerns, making UI changes easy and tool additions straightforward. The web-based nature ensures accessibility but limits offline use. Best suited for workflow-based analysis where reproducibility is critical. The architecture assumes data can be centralized and moved to computing resources."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A plant researcher uploads a 500GB heterogeneous dataset (containing both genomic sequences and high-resolution phenotyping images) through the Web Interface, and the system successfully processes the workflow within 24 hours, storing results in the Model layer and making them accessible through the API for downstream analysis.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "View (Web Interface)",
+            "Controller",
+            "Model",
+            "Job Manager",
+            "API",
+            "CloudMan"
+          ],
+          "feasibility_note": "Directly supported by current architecture. CloudMan handles cloud resource scaling, Job Manager orchestrates processing, and MVC pattern separates concerns. However, 24-hour SLA and 500GB threshold need verification against current CloudMan provisioning capabilities.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Directly addresses high throughput processing of large/heterogeneous data and making analysis results available to researchers. Critical for ensuring global food security through timely plant trait analysis."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A computational biologist creates a new plant phenotyping workflow using existing tools from the ToolBox, executes it on a test dataset of 10,000 images, and the system automatically captures complete provenance metadata (tool versions, parameters, execution environment) enabling exact reproduction of results by another researcher 6 months later.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "View (Web Interface)",
+            "Controller",
+            "ToolBox",
+            "Job Manager",
+            "Model"
+          ],
+          "feasibility_note": "Partially supported. Current architecture has ToolBox and workflow execution capabilities, but explicit provenance capture and versioning mechanisms are not detailed in the component list. May require metadata management enhancements in the Model layer.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Directly addresses facilitating reproducibility of experiments - a core scientific requirement. Enables validation and building upon previous research for food security applications."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A developer integrates a new machine learning-based phenotype prediction tool into the ToolBox by implementing a standardized API wrapper, and the tool becomes immediately available to all users through the Web Interface without requiring system restart or manual configuration.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "API",
+            "ToolBox",
+            "Controller",
+            "View (Web Interface)"
+          ],
+          "feasibility_note": "Supported by current architecture through API and ToolBox components. Success depends on whether standardized tool integration interfaces exist and whether the Controller can dynamically discover new tools. Hot-deployment capability not explicitly mentioned.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Enables extensibility for new analytical methods critical to advancing plant research. Reduces time-to-deployment for new capabilities supporting evolving food security challenges."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "When a critical security vulnerability is discovered in a genomic analysis tool within the ToolBox, a system maintainer patches the affected tool, updates its version metadata, and the system automatically notifies all users who have workflows dependent on that tool, providing migration guidance to the patched version within 4 hours of patch availability.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "ToolBox",
+            "Model",
+            "Controller",
+            "View (Web Interface)",
+            "API"
+          ],
+          "feasibility_note": "Requires architectural enhancement. Current architecture lacks explicit dependency tracking, notification system, and workflow-tool relationship management. Would need to add: dependency graph in Model, notification service, and workflow analysis capabilities.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Critical for maintaining system security and data integrity in research environments. Ensures reproducibility isn't compromised by outdated or vulnerable tools. Protects valuable genomic and phenotyping data assets."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A system administrator monitors CloudMan resource utilization and observes that 15 concurrent phenotyping workflows (each processing 100GB image datasets) are queued. The system automatically provisions additional cloud compute nodes within 10 minutes, distributes jobs across the expanded infrastructure via Job Manager, and deallocates resources within 5 minutes of job completion to optimize costs.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "CloudMan",
+            "Job Manager",
+            "Controller"
+          ],
+          "feasibility_note": "Directly supported by CloudMan and Job Manager components. Auto-scaling is implied by cloud-based architecture, but specific timing thresholds (10-minute provisioning, 5-minute deallocation) need validation. Monitoring dashboard may need enhancement.",
+          "priority": "High",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Ensures high throughput processing capabilities scale with demand. Critical for supporting multiple research teams working on food security projects. Balances performance with operational cost efficiency."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "A research consortium requires that all phenotyping analysis results and associated workflows be exported in a standardized, interoperable format (e.g., ISA-Tab for metadata, MIAPPE for phenotyping data) and transferred to an external long-term archive repository via the API, maintaining complete data lineage for regulatory compliance and cross-institution collaboration.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "API",
+            "Model",
+            "Controller"
+          ],
+          "feasibility_note": "Requires architectural extension. Current API likely supports data export, but standardized format compliance (ISA-Tab, MIAPPE) and data lineage preservation require specific export modules. Model layer needs schema mapping capabilities for heterogeneous data standards.",
+          "priority": "Medium",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Addresses making analysis results available to researchers beyond the platform. Essential for global food security collaboration across institutions and ensuring long-term data preservation for reproducibility."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "A developer needs to debug a failed genotyping workflow that processed 50,000 plant samples. The system provides detailed execution logs showing each tool's input/output, resource consumption, and failure point through a debugging interface accessible via the Web Interface, allowing the developer to identify that a specific tool failed due to malformed input data in sample #23,847.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "View (Web Interface)",
+            "Job Manager",
+            "Controller",
+            "ToolBox"
+          ],
+          "feasibility_note": "Partially supported. Job Manager likely tracks execution status, but granular per-tool logging and debugging interface capabilities are not explicitly detailed. May require enhanced logging infrastructure and specialized debugging views in the Web Interface.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Critical for maintaining and improving workflow reliability. Reduces time to resolution for processing failures, ensuring high throughput capabilities remain effective for large-scale plant research projects."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "The system administrator implements a disaster recovery test by simulating complete failure of the primary cloud region. CloudMan automatically fails over to a secondary region, restores the most recent system state from backups within 2 hours, and all in-progress workflows resume from their last checkpoint without data loss or requiring user intervention.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "CloudMan",
+            "Model",
+            "Job Manager",
+            "Controller"
+          ],
+          "feasibility_note": "Requires significant architectural enhancement. Current architecture doesn't explicitly mention multi-region deployment, checkpoint/restart capabilities, or automated failover mechanisms. Would need: distributed Model layer, stateful job checkpointing in Job Manager, and geo-redundant CloudMan configuration.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Ensures business continuity for critical food security research. Protects against data loss in long-running experiments. While important, this is exploratory as it represents significant infrastructure investment."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A plant researcher with no programming experience uses the Web Interface to construct a complex workflow combining genomic variant calling (5 tools) and image-based phenotype extraction (3 tools) through drag-and-drop interface, validates the workflow with a small test dataset (100 samples), then scales execution to 100,000 samples across heterogeneous data types without modifying the workflow definition.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "View (Web Interface)",
+            "Controller",
+            "ToolBox",
+            "Job Manager",
+            "CloudMan"
+          ],
+          "feasibility_note": "Directly supported by current architecture. MVC pattern with Web Interface enables no-code workflow creation. ToolBox provides tool catalog, Job Manager handles execution, and CloudMan scales resources. This aligns with stated design goal of supporting researchers without programming knowledge.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Core value proposition for non-technical researchers. Democratizes access to complex computational analysis essential for plant trait appraisal and food security research. Addresses automation of scientific workflows and high throughput processing."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "A system maintainer applies a major version upgrade to the Controller component that introduces breaking API changes. The system maintains backward compatibility by running both old and new Controller versions simultaneously for 3 months, automatically routing legacy workflows to the old version while new workflows use the updated version, allowing gradual user migration without service disruption.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Controller",
+            "API",
+            "View (Web Interface)",
+            "Job Manager"
+          ],
+          "feasibility_note": "Requires architectural enhancement for versioning and routing. Current architecture doesn't explicitly support component versioning or request routing based on workflow compatibility. Would need: version-aware API gateway, workflow metadata indicating required Controller version, and parallel component deployment capability.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Enables system evolution without breaking existing research workflows. Critical for maintaining reproducibility while advancing platform capabilities. Reduces maintenance burden and user friction during upgrades."
+        },
+        {
+          "scenario_id": "S-11",
+          "scenario_text": "A system administrator configures resource quotas and priority queues in the Job Manager so that time-sensitive crop disease analysis workflows (supporting immediate food security threats) receive priority allocation of CloudMan resources over routine exploratory analyses, with guaranteed execution start within 15 minutes during peak usage periods.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Job Manager",
+            "CloudMan",
+            "Controller"
+          ],
+          "feasibility_note": "Requires enhancement to Job Manager. Current architecture likely has basic job queuing, but priority-based scheduling, quota management, and SLA guarantees require sophisticated scheduling algorithms and policy enforcement mechanisms. CloudMan integration for priority-based provisioning needed.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Ensures critical food security research receives appropriate resource allocation. Balances competing demands on shared infrastructure. Supports organizational mission prioritization for global food security impact."
+        },
+        {
+          "scenario_id": "S-12",
+          "scenario_text": "A developer creates a custom visualization plugin for novel phenotyping metrics (e.g., 3D plant architecture models) and integrates it into the View component through a plugin API. The visualization becomes available to all users for workflows producing compatible output data, with the system automatically detecting compatible workflows and offering the visualization option.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "View (Web Interface)",
+            "API",
+            "Controller",
+            "Model"
+          ],
+          "feasibility_note": "Requires architectural extension for plugin system. Current MVC architecture has View component, but extensible plugin framework with automatic compatibility detection requires: plugin registry, data type ontology in Model, and dynamic UI composition in View. Represents significant enhancement to visualization capabilities.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Enables domain-specific visualization innovations for plant phenotyping. Enhances interpretability of complex analysis results. While valuable, this is exploratory as it requires substantial framework development for plugin ecosystem."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture explicitly supports large dataset processing through CloudMan (scalable cloud resources), Job Manager (workflow orchestration), and the MVC pattern. The 500GB upload, processing, and API access are all within stated capabilities. The only uncertainty is the 24-hour SLA, which depends on CloudMan provisioning speed rather than architectural limitations.",
+          "supporting_components": [
+            "C-02",
+            "C-03",
+            "C-01",
+            "C-04",
+            "C-07",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While the architecture supports workflow creation and execution through ToolBox and Job Manager, explicit provenance metadata capture (tool versions, parameters, execution environment) is not detailed in the component specifications. The Model layer would need enhancement to store comprehensive provenance metadata, and the ToolBox needs explicit version tracking mechanisms.",
+          "supporting_components": [
+            "C-02",
+            "C-03",
+            "C-05",
+            "C-04"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Indirect",
+          "rationale": "The architecture supports tool integration through ToolBox and API, but 'hot-deployment' (immediate availability without system restart) is not explicitly mentioned. The Controller's ability to dynamically discover new tools and the View's ability to refresh the tool catalog without restart require specific implementation details not present in the current architecture description.",
+          "supporting_components": [
+            "C-06",
+            "C-05",
+            "C-03",
+            "C-02"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "This scenario requires multiple capabilities not present in the current architecture: (1) dependency tracking between workflows and tools, (2) a notification system, (3) workflow-tool relationship management in the Model, and (4) automated migration guidance generation. The ToolBox handles versioning, but the broader dependency management and notification infrastructure is missing.",
+          "supporting_components": [
+            "C-05"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Direct",
+          "rationale": "CloudMan is explicitly designed to 'manage cloud infrastructure, provision and scale computing resources dynamically.' Job Manager handles job queuing and execution. The auto-scaling capability is a core architectural feature. The specific timing thresholds (10-minute provisioning, 5-minute deallocation) are implementation details rather than architectural constraints.",
+          "supporting_components": [
+            "C-07",
+            "C-04",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "While the API component supports programmatic access and data export, compliance with specific standardized formats (ISA-Tab, MIAPPE) and complete data lineage preservation require specialized export modules. The Model layer needs schema mapping capabilities to transform internal data representations to these external standards, which is not currently specified.",
+          "supporting_components": [
+            "C-06",
+            "C-01",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "Job Manager tracks job status (queued, running, completed, failed), but granular per-tool logging with input/output tracking, resource consumption metrics, and sample-level failure identification requires enhanced logging infrastructure. A specialized debugging interface in the View component is also not currently specified.",
+          "supporting_components": [
+            "C-04",
+            "C-03"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "This scenario requires fundamental architectural enhancements not present: (1) multi-region deployment capability, (2) automated failover mechanisms, (3) checkpoint/restart capabilities for long-running jobs, (4) geo-redundant data replication in the Model layer. The current architecture describes single-region cloud deployment without disaster recovery provisions.",
+          "supporting_components": [
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Direct",
+          "rationale": "This scenario perfectly aligns with the stated design goal: 'Designed for biomedical researchers to create and execute reproducible computational workflows through a browser without programming knowledge.' The View provides the drag-and-drop interface, ToolBox provides the tool catalog, Controller orchestrates execution, Job Manager handles scaling, and CloudMan provisions resources.",
+          "supporting_components": [
+            "C-02",
+            "C-03",
+            "C-05",
+            "C-04",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "The architecture does not support component versioning, parallel deployment of multiple Controller versions, or intelligent request routing based on workflow compatibility. The MVC pattern with Controller as the central coordination point makes running multiple versions simultaneously architecturally complex. This requires significant infrastructure for version management and routing.",
+          "supporting_components": [
+            "C-03",
+            "C-06"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-11",
+          "classification": "Indirect",
+          "rationale": "Job Manager handles job queuing and resource allocation, but priority-based scheduling, quota management, and SLA guarantees (15-minute execution start) require sophisticated scheduling algorithms and policy enforcement not currently specified. Integration with CloudMan for priority-based resource provisioning also needs enhancement.",
+          "supporting_components": [
+            "C-04",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-12",
+          "classification": "Indirect",
+          "rationale": "The View component handles visualization, but an extensible plugin framework with automatic compatibility detection requires: (1) plugin registry and lifecycle management, (2) data type ontology for compatibility matching, (3) dynamic UI composition capabilities, and (4) plugin API specification. These plugin ecosystem capabilities are not present in the current architecture.",
+          "supporting_components": [
+            "C-02"
+          ],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. May need operational tuning of CloudMan provisioning policies to ensure 24-hour SLA for 500GB datasets, but this is configuration rather than architectural change.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Web-based upload of 500GB may be slow or unreliable; consider alternative data ingestion methods (e.g., direct cloud storage integration)",
+            "Database performance with very large result sets may need optimization",
+            "24-hour SLA depends on cloud provider resource availability"
+          ],
+          "alternative_approaches": "For very large datasets, implement direct cloud storage integration (S3, etc.) to bypass web upload limitations. Use data references in Model rather than storing entire datasets in relational database."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-05",
+            "C-04"
+          ],
+          "change_description": "Enhance Model (C-01) to store comprehensive provenance metadata including tool versions, parameters, execution environment details, and timestamps. Extend ToolBox (C-05) to maintain explicit version history and dependency information. Modify Job Manager (C-04) to capture execution environment snapshots (OS, libraries, resource configurations) at runtime.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Database schema changes in Model affect all components that read/write data (high change sensitivity)",
+            "Provenance metadata can grow large, impacting storage and query performance",
+            "Capturing complete execution environment may require containerization or VM snapshots",
+            "Need to define provenance metadata standards (e.g., W3C PROV, PREMIS)"
+          ],
+          "alternative_approaches": "Implement provenance capture using existing workflow management standards (CWL - Common Workflow Language) which includes built-in provenance tracking. Use containerization (Docker) to capture execution environment, storing container image references in Model. Implement provenance as separate metadata store rather than extending main database schema."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-05",
+            "C-03",
+            "C-02"
+          ],
+          "change_description": "Implement hot-deployment capability in ToolBox (C-05) with dynamic tool registry that monitors for new tool additions. Modify Controller (C-03) to periodically refresh tool catalog without restart. Enhance View (C-02) to dynamically update tool listings using AJAX/WebSocket for real-time updates without page refresh.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Tool validation and testing before making available to all users",
+            "Cache invalidation across distributed Controller instances if horizontally scaled",
+            "Potential race conditions if tool is accessed while still being registered",
+            "Need rollback mechanism if tool integration fails"
+          ],
+          "alternative_approaches": "Implement tool staging area where new tools are deployed but marked as 'beta' until validated. Use message queue (e.g., RabbitMQ) to notify all Controller instances of new tool availability. Implement tool registry as separate microservice with event-driven updates to ToolBox."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-05",
+            "C-03",
+            "C-02"
+          ],
+          "change_description": "Extend Model (C-01) to store workflow-tool dependency graph and user contact information. Enhance ToolBox (C-05) with vulnerability tracking and patch management. Add notification service to Controller (C-03) for user alerts. Implement workflow analysis capability to identify affected workflows. Add notification UI to View (C-02) for displaying alerts and migration guidance.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Requires new notification infrastructure (email, in-app notifications)",
+            "Dependency graph construction may be computationally expensive for large workflow repositories",
+            "Migration guidance generation requires understanding of tool API changes",
+            "4-hour SLA is aggressive for complex dependency analysis and notification delivery",
+            "Need to track which users have acknowledged notifications"
+          ],
+          "alternative_approaches": "Implement simpler broadcast notification to all users when any tool is updated, rather than targeted dependency analysis. Use external vulnerability scanning tools (e.g., Snyk, OWASP Dependency-Check) integrated with ToolBox. Implement workflow deprecation warnings rather than automatic migration, allowing users to update at their own pace. Create tool compatibility matrix in ToolBox to guide manual migration."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. May need to configure CloudMan auto-scaling policies and Job Manager queue monitoring thresholds to meet specific timing requirements (10-minute provisioning, 5-minute deallocation).",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Cloud provider provisioning speed may not guarantee 10-minute SLA during high-demand periods",
+            "Aggressive 5-minute deallocation may terminate resources needed for subsequent jobs",
+            "Cost optimization vs. performance trade-off requires careful tuning",
+            "Monitoring dashboard may need enhancement for administrator visibility"
+          ],
+          "alternative_approaches": "Implement predictive auto-scaling based on historical usage patterns to pre-provision resources before peak periods. Use spot/preemptible instances for cost optimization with fallback to on-demand instances. Implement resource pooling with warm standby instances to reduce provisioning time. Add cost monitoring dashboard to View component for administrator oversight."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-06",
+            "C-01",
+            "C-03"
+          ],
+          "change_description": "Extend API (C-06) with standardized export endpoints supporting ISA-Tab, MIAPPE, and other formats. Implement schema mapping layer in Model (C-01) to transform internal data representations to external standards. Add data lineage tracking to Controller (C-03) to capture complete processing history. Implement export validation to ensure compliance with target standards.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Multiple competing standards require maintaining multiple export modules",
+            "Schema mapping complexity increases with heterogeneous data types",
+            "Data lineage preservation requires comprehensive provenance tracking (relates to S-02)",
+            "External archive repositories may have different authentication/authorization requirements",
+            "Large dataset exports may timeout or fail over HTTP API"
+          ],
+          "alternative_approaches": "Implement export as asynchronous job with notification upon completion rather than synchronous API call. Use existing data exchange standards like BagIt for packaging data with metadata. Leverage existing bioinformatics data conversion tools (e.g., ISA-tools) as external services called by API. Implement export templates that users can customize for their specific consortium requirements. Use cloud-to-cloud transfer for large datasets rather than API-mediated export."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-04",
+            "C-05",
+            "C-02",
+            "C-01"
+          ],
+          "change_description": "Enhance Job Manager (C-04) with comprehensive logging infrastructure capturing per-tool input/output, resource consumption (CPU, memory, I/O), and error details. Modify ToolBox (C-05) to standardize tool logging output. Extend Model (C-01) to store execution logs with efficient querying capabilities. Add debugging interface to View (C-02) with log search, filtering, and visualization features.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Detailed logging for 50,000 samples generates massive log volumes",
+            "Log storage and indexing performance critical for large-scale workflows",
+            "Sample-level granularity (#23,847) requires structured logging with sample identifiers",
+            "Real-time log streaming vs. batch log collection trade-offs",
+            "Log retention policies needed to manage storage costs"
+          ],
+          "alternative_approaches": "Implement centralized logging using existing tools (ELK stack: Elasticsearch, Logstash, Kibana) rather than custom solution. Use structured logging formats (JSON) for easier parsing and querying. Implement log sampling for very large workflows (e.g., log every 100th sample in detail). Store logs in separate time-series database optimized for log data. Implement progressive disclosure in debugging UI (summary \u2192 tool-level \u2192 sample-level details)."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-07",
+            "C-01",
+            "C-04",
+            "C-03"
+          ],
+          "change_description": "Redesign CloudMan (C-07) for multi-region deployment with automated failover orchestration. Implement geo-redundant Model (C-01) with continuous replication across regions. Add checkpoint/restart capability to Job Manager (C-04) to save job state periodically. Modify Controller (C-03) to detect region failures and redirect requests. Implement distributed consensus mechanism for state coordination.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Multi-region architecture fundamentally changes deployment model",
+            "Database replication introduces consistency challenges (CAP theorem trade-offs)",
+            "Checkpoint/restart requires stateful job execution not currently supported",
+            "2-hour recovery time objective (RTO) is aggressive for complete region failover",
+            "Significant cost increase for maintaining redundant infrastructure",
+            "Testing disaster recovery scenarios is complex and expensive"
+          ],
+          "alternative_approaches": "Implement simpler backup/restore strategy with longer RTO (e.g., 24 hours) rather than active-active multi-region. Use cloud provider's managed database services with built-in replication (e.g., AWS RDS Multi-AZ). Implement workflow-level restart rather than job-level checkpointing (users re-submit failed workflows). Focus on data backup and recovery rather than zero-downtime failover. Use infrastructure-as-code (Terraform) for rapid environment recreation in alternate region."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No architectural changes required. This scenario represents the core design intent of the Galaxy platform. The drag-and-drop workflow builder, tool catalog, and scalable execution are fundamental capabilities already present.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Workflow validation with small test dataset before large-scale execution is best practice but not architecturally enforced",
+            "Scaling from 100 to 100,000 samples may reveal performance bottlenecks not apparent in testing",
+            "Heterogeneous data type handling (genomic + image) requires appropriate tool compatibility"
+          ],
+          "alternative_approaches": "Implement workflow validation step that estimates resource requirements based on test run before allowing large-scale execution. Add workflow templates for common analysis patterns to guide non-technical users. Implement progressive execution (run on increasing sample sizes) to identify issues before full-scale deployment."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-06",
+            "C-02",
+            "C-04"
+          ],
+          "change_description": "Implement API versioning in API component (C-06) with version-aware routing. Deploy multiple Controller instances (C-03) with different versions behind intelligent load balancer/API gateway. Extend workflow metadata in Model to track required Controller version. Modify View (C-02) to indicate workflow compatibility. Update Job Manager (C-04) to route jobs to appropriate Controller version.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Running multiple Controller versions doubles infrastructure costs during migration period",
+            "Shared Model layer must be compatible with both Controller versions (schema challenges)",
+            "Determining workflow compatibility automatically is complex",
+            "3-month parallel operation period is long and expensive",
+            "Version routing logic adds complexity and potential failure points",
+            "Testing both versions simultaneously increases QA burden"
+          ],
+          "alternative_approaches": "Implement API versioning with backward compatibility layer in single Controller rather than parallel deployments. Use feature flags to gradually enable new functionality while maintaining old behavior. Implement blue-green deployment with rapid rollback capability rather than long parallel operation. Provide migration tools that automatically update workflow definitions to new API version. Schedule maintenance windows for breaking changes rather than attempting zero-downtime migration."
+        },
+        {
+          "scenario_id": "S-11",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-04",
+            "C-07",
+            "C-03"
+          ],
+          "change_description": "Enhance Job Manager (C-04) with priority queue implementation, quota management, and SLA-aware scheduling algorithms. Integrate with CloudMan (C-07) for priority-based resource provisioning. Add policy engine to Controller (C-03) for defining and enforcing resource allocation rules. Implement monitoring and alerting for SLA violations.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Priority scheduling can lead to starvation of low-priority jobs",
+            "Defining 'time-sensitive' vs. 'routine' requires policy framework and governance",
+            "15-minute SLA guarantee during peak usage requires over-provisioning resources (cost impact)",
+            "Priority determination may require workflow metadata or user input",
+            "Quota enforcement requires user/group management and accounting",
+            "Balancing fairness with priority can be complex"
+          ],
+          "alternative_approaches": "Implement simpler fair-share scheduling with configurable weights rather than strict priorities. Use separate job queues for different priority levels with dedicated resource pools. Implement reservation system where users can request guaranteed execution windows. Use economic models (credits/tokens) for resource allocation rather than administrative priorities. Implement preemption where low-priority jobs can be paused to accommodate high-priority jobs."
+        },
+        {
+          "scenario_id": "S-12",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-06",
+            "C-03",
+            "C-01"
+          ],
+          "change_description": "Design and implement plugin framework in View (C-02) with plugin lifecycle management (install, enable, disable, uninstall). Create plugin API specification in API component (C-06). Implement data type ontology in Model (C-01) for compatibility matching. Add plugin registry and discovery mechanism to Controller (C-03). Develop plugin development kit and documentation.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Plugin framework is major architectural addition requiring significant design effort",
+            "Security concerns with third-party plugins (code execution, data access)",
+            "Plugin compatibility across Galaxy version upgrades",
+            "Data type ontology development is complex and requires domain expertise",
+            "Automatic compatibility detection may produce false positives/negatives",
+            "Plugin quality and maintenance responsibility unclear",
+            "Performance impact of dynamic UI composition"
+          ],
+          "alternative_approaches": "Implement visualization plugins as external web applications accessed via iframe rather than integrated plugins. Use existing visualization libraries (e.g., D3.js, Plotly) with configuration-based customization rather than code plugins. Create visualization templates that users can customize through UI rather than code. Implement server-side rendering of visualizations and serve as static images/HTML. Use Jupyter notebooks integration for custom visualizations rather than custom plugin framework."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-01",
+          "scenario_count": 6,
+          "scenarios": [
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-05",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-07"
+          ]
+        },
+        {
+          "component": "C-04",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-02",
+            "S-07",
+            "S-08",
+            "S-10",
+            "S-11"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 7,
+          "scenarios": [
+            "S-03",
+            "S-04",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-10",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-06",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-06",
+            "S-10",
+            "S-12"
+          ]
+        },
+        {
+          "component": "C-07",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-08",
+            "S-11"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-03",
+            "S-04",
+            "S-06",
+            "S-08",
+            "S-10",
+            "S-11",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Controller is the central orchestration component hit by 7 scenarios spanning critical business functions: disaster recovery (S-08, High risk), API evolution (S-10, High risk/effort), and user-facing capabilities (S-03, S-04, S-12). Failure to address creates single point of failure for system availability, blocks platform evolution, and prevents critical features like tool deprecation notifications (4-hour SLA) and plugin extensibility. Impacts all stakeholder roles: end-users lose functionality, developers face integration challenges, maintainers struggle with version management, and administrators cannot enforce policies."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08",
+            "S-12"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Model (database) is foundational data layer affected by 6 scenarios with widespread change extent. Critical for regulatory compliance (S-02 provenance tracking, S-06 data export standards), disaster recovery (S-08 geo-redundant replication), and operational debugging (S-07 log storage for 50K samples). Schema changes have high sensitivity affecting all components. Not addressing risks: audit failures, inability to share data with consortia, data loss during outages, and inability to troubleshoot production issues. Database performance bottlenecks impact end-user experience directly."
+        },
+        {
+          "component": "C-04",
+          "scenario_ids": [
+            "S-02",
+            "S-07",
+            "S-08",
+            "S-10",
+            "S-11"
+          ],
+          "priority": "High",
+          "rank": 3,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "Job Manager orchestrates workflow execution across 5 scenarios including mission-critical disaster recovery (S-08 checkpoint/restart, High risk), operational excellence (S-07 debugging logs, S-11 priority scheduling), and platform evolution (S-10 version routing). Failure to enhance creates: inability to recover from region failures (violates 2-hour RTO), inability to debug failed workflows with 50K samples, unfair resource allocation causing SLA violations for time-sensitive work, and blocking API migration. System administrators cannot meet SLAs, end-users experience job failures and delays."
+        },
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-03",
+            "S-04",
+            "S-07",
+            "S-10",
+            "S-12"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "End-user",
+            "Developer"
+          ],
+          "rationale": "View (UI) impacts end-user experience across 5 scenarios but with lower operational risk than backend components. Critical for user productivity (S-03 real-time tool updates, S-07 debugging interface, S-12 plugin visualizations) and communication (S-04 deprecation notifications). Not addressing degrades user experience: researchers must manually check for new tools, cannot efficiently debug workflow failures, miss critical tool updates (4-hour SLA violation), and lack domain-specific visualizations. Primarily affects end-users and plugin developers, but doesn't create system-wide failures."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-02",
+            "S-03",
+            "S-04",
+            "S-07"
+          ],
+          "priority": "Medium",
+          "rank": 5,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "End-user"
+          ],
+          "rationale": "ToolBox manages tool lifecycle across 4 scenarios with medium risk. Essential for operational agility (S-03 hot-deployment), security (S-04 vulnerability tracking), compliance (S-02 tool version provenance), and debugging (S-07 standardized logging). Not addressing creates: delayed tool availability requiring system restarts, security vulnerabilities in production tools, inability to reproduce analyses (regulatory risk), and inconsistent logging hampering troubleshooting. Primarily impacts developers integrating tools and maintainers managing tool updates, with secondary impact on end-users waiting for new capabilities."
+        },
+        {
+          "component": "C-06",
+          "scenario_ids": [
+            "S-06",
+            "S-10",
+            "S-12"
+          ],
+          "priority": "Medium",
+          "rank": 6,
+          "impacted_roles": [
+            "Developer",
+            "End-user",
+            "Maintainer"
+          ],
+          "rationale": "API enables integration and evolution across 3 scenarios with medium-high effort requirements. Critical for data sharing (S-06 standards export), platform evolution (S-10 versioning for zero-downtime migration), and extensibility (S-12 plugin framework). Not addressing blocks: consortium data submission requirements, ability to upgrade platform without breaking existing workflows (3-month parallel operation), and third-party visualization integration. Primarily impacts developers building integrations and end-users needing to export data, but doesn't create immediate operational failures."
+        },
+        {
+          "component": "C-07",
+          "scenario_ids": [
+            "S-08",
+            "S-11"
+          ],
+          "priority": "Low",
+          "rank": 7,
+          "impacted_roles": [
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "CloudMan handles infrastructure provisioning for 2 scenarios, both important but with mitigation options. S-08 (disaster recovery) has high risk but very high cost and complexity (multi-region active-active), making simpler backup/restore alternatives more practical. S-11 (priority scheduling) has medium risk with localized changes. Not addressing means: longer recovery times during outages (accept 24-hour RTO vs. 2-hour), and less sophisticated resource allocation (fair-share vs. priority-based). Primarily impacts system administrators managing infrastructure. Lower rank because alternative approaches significantly reduce necessity of complex changes."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strong separation of concerns with MVC pattern: The architecture cleanly separates View (C-02), Controller (C-03), and Model (C-01), enabling independent evolution. Evidence: S-03 (tool catalog updates) requires only localized changes to View and Controller without Model modifications; S-09 demonstrates core workflow capabilities work as designed with no architectural changes needed.",
+          "Cloud-native scalability foundation: CloudMan (C-07) and Job Manager (C-04) provide elastic resource provisioning that handles variable workloads effectively. Evidence: S-01 (500GB datasets) and S-05 (auto-scaling) require only configuration tuning rather than architectural changes; S-09 successfully scales from 100 to 100,000 samples using existing infrastructure.",
+          "Modular tool integration via ToolBox: The ToolBox component (C-05) provides clean abstraction for integrating heterogeneous analysis tools. Evidence: S-03 achieves hot-deployment with localized changes and low effort; the architecture supports diverse tool types (genomic, image analysis) without fundamental restructuring.",
+          "API-driven integration layer: The API component (C-06) enables programmatic access and external integrations. Evidence: S-06 (data export) extends API with new endpoints using widespread but manageable changes; the API provides foundation for S-12 plugin framework without requiring complete redesign."
+        ],
+        "architectural_weaknesses": [
+          "Controller as monolithic orchestration bottleneck: C-03 is impacted by 7 scenarios (highest hotspot) with widespread changes required, indicating excessive coupling and responsibility concentration. Evidence: S-08 (disaster recovery), S-10 (API versioning), and S-11 (priority scheduling) all require Controller modifications; running parallel Controller versions (S-10) doubles infrastructure costs and creates schema compatibility challenges with shared Model layer.",
+          "Database schema rigidity and change sensitivity: Model (C-01) affects 6 scenarios with widespread change extent, and schema modifications impact all components. Evidence: S-02 (provenance metadata) has high change sensitivity affecting all data readers/writers; S-08 (geo-replication) introduces CAP theorem consistency challenges; S-07 (massive log volumes for 50K samples) creates storage and query performance concerns.",
+          "Lack of event-driven architecture for cross-component coordination: Multiple scenarios require synchronous component modifications that could be decoupled through messaging. Evidence: S-03 (tool updates) requires cache invalidation across distributed Controllers; S-04 (deprecation notifications) needs new notification infrastructure spanning 4 components; S-08 (failover) requires distributed consensus mechanism not currently supported.",
+          "Insufficient observability and operational infrastructure: The architecture lacks built-in support for comprehensive logging, monitoring, and debugging at scale. Evidence: S-07 requires widespread changes across 4 components to add logging infrastructure; S-04 needs new notification service for 4-hour SLA; S-11 requires monitoring and alerting for SLA violations as new capability.",
+          "Stateless job execution model limits resilience: Job Manager (C-04) lacks checkpoint/restart capabilities needed for long-running workflows. Evidence: S-08 (disaster recovery) requires fundamental redesign to add stateful job execution with high risk and effort; 2-hour RTO is unachievable without checkpointing; workflow failures require complete re-execution from start.",
+          "Tight coupling between API versioning and deployment model: The architecture cannot support multiple API versions simultaneously without expensive parallel infrastructure. Evidence: S-10 requires running multiple Controller instances for 3 months with high risk/effort; shared Model layer must be compatible with both versions creating schema migration challenges; version routing adds complexity and failure points."
+        ],
+        "modifiability_assessment": "The architecture demonstrates moderate modifiability with strong component boundaries (MVC pattern) but significant coupling through the Controller and Model layers. The concentration of 7 scenarios on Controller and 6 on Model, combined with widespread change extents and high-risk modifications (S-08, S-10), indicates architectural rigidity in core orchestration and data management that will increasingly constrain evolution as requirements grow."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Decompose Controller (C-03) into domain-specific microservices using event-driven architecture: separate workflow orchestration, tool management, notification service, and policy enforcement into independent services communicating via message queue (e.g., RabbitMQ, Kafka).",
+          "rationale": "Addresses the highest hotspot (7 scenarios) by reducing coupling and enabling independent evolution. Event-driven approach solves S-03 (tool update notifications), S-04 (deprecation alerts), and S-08 (failover coordination) without synchronous cross-component changes. Microservices enable S-10 (API versioning) through independent service deployment rather than parallel Controller instances. Reduces blast radius of changes and improves testability.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement separate provenance and logging data stores using time-series databases (e.g., InfluxDB, TimescaleDB) and centralized logging (ELK stack) rather than extending relational Model schema.",
+          "rationale": "Addresses Model hotspot (6 scenarios) by reducing schema change sensitivity. Separates append-only operational data (S-02 provenance, S-07 logs) from transactional workflow data, preventing performance degradation with 50K sample workflows. Time-series databases optimize for write-heavy workloads and time-based queries needed for debugging. Enables independent scaling and retention policies. Reduces risk of schema migrations affecting all components.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Add checkpoint/restart capability to Job Manager (C-04) using workflow-level state snapshots stored in object storage (S3), enabling incremental progress and recovery without complete re-execution.",
+          "rationale": "Critical for S-08 disaster recovery (reduces 2-hour RTO from unachievable to feasible) and improves resilience for long-running workflows with 50K+ samples. Enables partial workflow restart after failures, reducing wasted computation and user frustration. Checkpoint data in object storage provides durability without complex database replication. Foundation for future capabilities like workflow migration and preemption (S-11).",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement API Gateway pattern with version routing, rate limiting, and authentication/authorization centralization, decoupling API versioning from Controller deployment.",
+          "rationale": "Solves S-10 (zero-downtime migration) by enabling multiple API versions to coexist through gateway routing rather than parallel Controller infrastructure, reducing costs and complexity. Provides single point for cross-cutting concerns (auth, monitoring, quotas) needed for S-11 (priority scheduling) and S-06 (external archive integration). Enables gradual API evolution with backward compatibility layers. Industry-standard pattern with mature tooling (Kong, AWS API Gateway).",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Adopt containerization (Docker) for tool packaging and execution environment capture, with container registry integrated into ToolBox (C-05).",
+          "rationale": "Addresses S-02 (provenance tracking) by capturing complete execution environment as container image reference rather than complex metadata. Enables S-03 (hot-deployment) through container-based tool distribution. Improves reproducibility and simplifies S-04 (vulnerability scanning) using existing container security tools (Snyk, Clair). Provides foundation for S-08 (disaster recovery) through portable execution environments. Industry best practice for scientific workflow systems.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement plugin framework for View (C-02) using iframe-based isolation with postMessage API for secure communication, rather than integrated code plugins.",
+          "rationale": "Addresses S-12 (visualization plugins) with lower security risk and simpler implementation than full plugin framework. Iframe isolation prevents malicious plugin code from accessing core application data. Enables third-party visualization development without Galaxy version coupling. Reduces effort from High to Medium by leveraging browser security model. Allows gradual migration from embedded visualizations to plugin architecture.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Establish data export pipeline using asynchronous job pattern with cloud-to-cloud transfer for large datasets, rather than synchronous API calls.",
+          "rationale": "Solves S-06 (consortium data sharing) timeout issues for large datasets by making export a background job with notification upon completion. Enables direct cloud storage transfer (S3 to archive repository) bypassing API bandwidth limits. Reuses existing Job Manager infrastructure rather than building new export mechanism. Provides better user experience with progress tracking and retry capability. Reduces API (C-06) complexity.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement infrastructure-as-code (Terraform/CloudFormation) with automated backup/restore procedures targeting 24-hour RTO, rather than active-active multi-region deployment.",
+          "rationale": "Addresses S-08 (disaster recovery) with realistic effort and cost. Active-active multi-region has High risk/effort and doubles infrastructure costs; 2-hour RTO is overly aggressive for research platform. 24-hour RTO meets business continuity needs at fraction of cost. IaC enables rapid environment recreation in alternate region. Automated backups to geo-redundant storage protect against data loss. Pragmatic alternative balancing resilience and resources.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Implement priority scheduling using separate job queues with dedicated resource pools and fair-share algorithms, rather than complex SLA-aware scheduling.",
+          "rationale": "Addresses S-11 (time-sensitive workflows) with simpler implementation than policy engine and quota management. Separate queues (high/medium/low priority) with CloudMan resource allocation prevents starvation while meeting SLA needs. Fair-share within priority levels balances responsiveness and fairness. Avoids over-provisioning required for strict 15-minute guarantees. Provides foundation for future economic models (credits/tokens) if needed.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Add workflow validation and resource estimation step before large-scale execution, using test run results to predict full-scale requirements.",
+          "rationale": "Addresses S-09 concern about scaling from 100 to 100K samples revealing unexpected bottlenecks. Prevents costly failures by identifying issues early. Improves user experience by setting realistic expectations for execution time and cost. Leverages existing Job Manager monitoring to collect resource metrics from test runs. Low-effort enhancement with high user value. Complements rather than replaces architectural improvements.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

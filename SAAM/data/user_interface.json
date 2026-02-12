@@ -1,0 +1,295 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "10.5555/257734.257746",
+      "paper_title": "SAAM: a method for analyzing the properties of software architectures",
+      "authors": [
+        "Rick Kazman",
+        "Len Bass",
+        "Mike Webb",
+        "Gregory D. Abowd"
+      ],
+      "year": "1994",
+      "venue": "ICSE '94: Proceedings of the 16th international conference on Software engineering",
+      "doi_or_url": "https://doi.org/10.5555/257734.257746",
+      "extraction_date": "2026-01-09"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "User Interface Development Environments",
+        "domain": "User Interface Software",
+        "system_description": "Architectures for developing the user interface portion of interactive systems.",
+        "system_maturity": "Production",
+        "business_goals": "To produce modifiable interactive systems."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "To establish a method for describing and analyzing software architectures (SAAM) and demonstrate it by analyzing user interface architectures with respect to the quality of modifiability.",
+        "evaluation_type": "Architecture Comparison",
+        "architectures_evaluated": "3"
+      },
+      "participants": [
+        {
+          "role": "Researcher",
+          "count": "4"
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Layered",
+          "Component-Based"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Serpent",
+            "description": "Identifies a dialogue controller, the presentation and the application as three distinct processes. All communication is mediated by constraints on shared data in an active database.",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Dialogue Controller",
+                "responsibilities": "Mediates the user's interaction with an application through the control of the presentation. Contains Dialogue Manager and Active Database."
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Presentation",
+                "responsibilities": "Provide techniques for supporting interaction at both the logical and physical level."
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "Application",
+                "responsibilities": "Contain the computational semantics required for the application."
+              }
+            ],
+            "assumptions": [
+              "There is typically only one application per run-time instance.",
+              "There is typically only one presentation module per run-time instance."
+            ]
+          },
+          {
+            "architecture_id": "A-02",
+            "name": "Chiron",
+            "description": "Consists of a client and a server. The client consists of an application which exports abstract data types (ADTs). The server consists of an ADL, a virtual window system, and an instruction/event interpreter.",
+            "key_components": [
+              {
+                "component_id": "C-04",
+                "component_name": "Chiron Client",
+                "responsibilities": "Contains Application, Dispatchers, and Artists."
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "Chiron Server",
+                "responsibilities": "Contains ADL, Virtual Window System, and I/E Interpreter."
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "Artist",
+                "responsibilities": "Maintains abstract representations of associated ADTs."
+              }
+            ],
+            "assumptions": []
+          },
+          {
+            "architecture_id": "A-03",
+            "name": "Garnet",
+            "description": "A single process with Common Lisp and the X11 window system as its foundations. The Garnet toolkit is built on top of this foundation.",
+            "key_components": [
+              {
+                "component_id": "C-07",
+                "component_name": "Widget set",
+                "responsibilities": "Logical interaction."
+              },
+              {
+                "component_id": "C-08",
+                "component_name": "Interactors",
+                "responsibilities": "Hide X11 details."
+              },
+              {
+                "component_id": "C-09",
+                "component_name": "Opal Graphics",
+                "responsibilities": "Hide X11 details."
+              },
+              {
+                "component_id": "C-10",
+                "component_name": "Garnet Applications",
+                "responsibilities": "Fulfill functions of dialogue, functional core adapter, and functional core."
+              }
+            ],
+            "assumptions": []
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "Expert Judgment",
+        "scenario_sources": [
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": []
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "None"
+      }
+    },
+    "ground_truth_outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "Change the toolkit (e.g. a move from using Motif to Fresco).",
+          "scenario_type": "Change (Exploratory)",
+          "stakeholder": "Developer",
+          "priority": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "Add a single option to a menu, reflecting some piece of application functionality which must be made available to a user.",
+          "scenario_type": "Change (Growth)",
+          "stakeholder": "Developer",
+          "priority": "High"
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Indirect",
+          "rationale": "Classified as a 'modification' (Adaptation to new operating environments) requiring changes to the system."
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "Classified as a 'modification' (Extension of capabilities) involving adding new features."
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "affected_components": [
+            "Presentation",
+            "Dialogue Manager"
+          ],
+          "change_description": "Change Serpent's glue code; modifications to dialogue manager if new interaction capability is needed.",
+          "change_extent": "Moderate",
+          "estimated_effort": "Medium",
+          "issues_identified": [
+            "Serpent provides no architectural support; glue code is not isolated structurally."
+          ]
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "affected_components": [
+            "Dialogue Manager"
+          ],
+          "change_description": "Change in the behavior of the dialogue.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "issues_identified": [
+            "Serpent provides adequate architectural support; change is isolated in the dialogue manager."
+          ]
+        },
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-02",
+          "affected_components": [
+            "Virtual Window System"
+          ],
+          "change_description": "Different toolkits could be inserted into the architecture as long as they comply with interface conventions.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "issues_identified": [
+            "Chiron provides significant support; strict separation of concerns aids modifiability."
+          ]
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-02",
+          "affected_components": [
+            "Artist"
+          ],
+          "change_description": "Modification restricted to an Artist which is associated to the ADT containing the desired function.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "issues_identified": [
+            "Chiron provides architectural support."
+          ]
+        },
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-03",
+          "affected_components": [
+            "Interactors",
+            "Opal Graphics",
+            "Widget set"
+          ],
+          "change_description": "Toolkit isolated to these three components which hide X11 dependencies.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "issues_identified": [
+            "Supported by the architecture."
+          ]
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-03",
+          "affected_components": [
+            "Garnet Applications"
+          ],
+          "change_description": "Locating and modifying the affected Lisp code.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "issues_identified": [
+            "Not architecturally supported; dialogue is monolithic."
+          ]
+        }
+      ],
+      "scenario_interactions": [],
+      "overall_results": {
+        "architectural_strengths": [
+          "Chiron provides strict separation of concerns via the Virtual Window System.",
+          "Serpent isolates dialogue behavior in the Dialogue Manager.",
+          "Garnet isolates toolkit dependencies behind Interactors and Opal Graphics."
+        ],
+        "architectural_weaknesses": [
+          "Serpent does not isolate logical interaction code (glue) structurally.",
+          "Garnet has monolithic dialogue, making menu changes difficult."
+        ],
+        "modifiability_assessment": "Systems with a clear allocation of the Arch/Slinky functional partitioning to their structure (like Chiron) provided better architectural support for the modifications."
+      },
+      "architecture_comparison": [
+        {
+          "architecture_id": "A-02",
+          "rank": 1,
+          "rationale": "Provides architectural support for both benchmark modifications (changing toolkit and adding menu option)."
+        },
+        {
+          "architecture_id": "A-01",
+          "rank": 2,
+          "rationale": "Provides support for adding a menu option but not for changing the toolkit."
+        },
+        {
+          "architecture_id": "A-03",
+          "rank": 2,
+          "rationale": "Provides support for changing the toolkit but not for adding a menu option."
+        }
+      ],
+      "recommendations": []
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Inferred 'Indirect' classification for scenarios as they are explicitly described as 'classes of modifications' and 'benchmark tasks' to test modifiability.",
+        "Inferred ranking based on the number of scenarios supported (Chiron: 2/2, Serpent: 1/2, Garnet: 1/2)."
+      ]
+    }
+  }
+}

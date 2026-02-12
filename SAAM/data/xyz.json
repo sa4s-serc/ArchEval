@@ -1,0 +1,247 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "10.1109/CSMR.2011.41",
+      "paper_title": "Comparing the Maintainability of two Alternative Architectures of a Postal System: SOA vs. non-SOA",
+      "authors": [
+        "Maurizio Leotta",
+        "Filippo Ricca",
+        "Gianna Reggio",
+        "Egidio Astesiano"
+      ],
+      "year": "2011",
+      "venue": "15th European Conference on Software Maintenance and Reengineering",
+      "doi_or_url": "10.1109/CSMR.2011.41",
+      "extraction_date": "2026-01-09"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "XYZ",
+        "domain": "Postal System",
+        "system_description": "A large non object oriented legacy system used by postal organizations that offer their customers specific services in order to manage big amounts of physical mail starting from electronic data files.",
+        "system_maturity": "Production",
+        "business_goals": "Improve maintainability, reduce the time to close the change requests, and have a more agile IT system that can be adapted to change faster."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "To compare two alternative architectures of the target postal system to understand whether a New Architecture based on SOA could reduce the maintenance/evolution times.",
+        "evaluation_type": "Architecture Comparison",
+        "architectures_evaluated": "2"
+      },
+      "participants": [
+        {
+          "role": "Researcher",
+          "count": "4"
+        },
+        {
+          "role": "System Expert",
+          "count": "<Numeric if available>"
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "High",
+        "architecture_styles": [
+          "Legacy",
+          "Distributed",
+          "SOA"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "Actual",
+            "name": "Actual Architecture",
+            "description": "Reflects the real architecture of the current System. Electronic files are acquired by Front End, sent to Server, which creates SubServer processes. Batches are normalized, checked, cleaned, pre-generated, dispatched, generated and sent to Printing Centers.",
+            "key_components": [
+              {
+                "component_id": "Front End",
+                "component_name": "Front End",
+                "responsibilities": "Acquires electronic files (batches) submitted by customers and sends them to the Server."
+              },
+              {
+                "component_id": "Server",
+                "component_name": "Server",
+                "responsibilities": "Handles in parallel all received files; creates SubServer process for each batch."
+              },
+              {
+                "component_id": "SubServer",
+                "component_name": "SubServer",
+                "responsibilities": "Transforms batch inch by inch using Normalizer, Checker & Cleaner, and Pre-Generator & Generator."
+              },
+              {
+                "component_id": "Normalizer",
+                "component_name": "Normalizer",
+                "responsibilities": "Transforms data."
+              },
+              {
+                "component_id": "Checker & Cleaner",
+                "component_name": "Checker & Cleaner",
+                "responsibilities": "Checks and cleans data."
+              },
+              {
+                "component_id": "Pre-Generator & Generator",
+                "component_name": "Pre-Generator & Generator",
+                "responsibilities": "Generates output."
+              },
+              {
+                "component_id": "DB",
+                "component_name": "DB",
+                "responsibilities": "Stores relevant information; contains Dispatcher Stored Procedures."
+              }
+            ],
+            "assumptions": [
+              "<If any>"
+            ]
+          },
+          {
+            "architecture_id": "New",
+            "name": "New Architecture (SOA)",
+            "description": "Based on SOA principles. The Server manages the parallel execution of several running orchestrators (the Batches) which call Web services.",
+            "key_components": [
+              {
+                "component_id": "Server_SOA",
+                "component_name": "Server",
+                "responsibilities": "Manages parallel execution of running orchestrators (Batches)."
+              },
+              {
+                "component_id": "Batch",
+                "component_name": "Batch (Orchestrators)",
+                "responsibilities": "Calls Web services to fulfill tasks."
+              },
+              {
+                "component_id": "Dispatcher_WS",
+                "component_name": "Dispatcher (Web Service)",
+                "responsibilities": "Realizes splitting of batches."
+              },
+              {
+                "component_id": "Checker_WS",
+                "component_name": "Checker (Web Service)",
+                "responsibilities": "<Brief description>"
+              },
+              {
+                "component_id": "Cleaner_WS",
+                "component_name": "Cleaner (Web Service)",
+                "responsibilities": "<Brief description>"
+              }
+            ],
+            "assumptions": [
+              "High cohesion and low coupling among components."
+            ]
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "Discussion meetings",
+        "scenario_sources": [
+          "Experts of the system",
+          "Company needs",
+          "Customer needs"
+        ],
+        "scenario_types": [
+          "Change (Growth)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Maintainability",
+        "secondary_quality_attributes": [
+          "Evolvability"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "None"
+      }
+    },
+    "ground_truth_outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "new_input_format",
+          "scenario_text": "Modifying the postal system so that it is able to accept and handle a new input batch format called C.",
+          "scenario_type": "Change (Growth)",
+          "stakeholder": "Customer",
+          "priority": "High | Medium | Low"
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "new_input_format",
+          "classification": "Indirect",
+          "rationale": "Requires modification of existing components and addition of new components in both architectures to handle the new format."
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "new_input_format",
+          "architecture_id": "Actual",
+          "affected_components": [
+            "Normalizer",
+            "Normalizer Type C",
+            "Pre-Generator & Generator",
+            "Pre-Generator & Generator Type C",
+            "SubServer"
+          ],
+          "change_description": "Management of new Normalizer Type C, management of tool for format C, management of new Pre-Generator & Generator Type C, introduction of new type of flow.",
+          "change_extent": "Moderate",
+          "estimated_effort": "Medium",
+          "issues_identified": [
+            "Requires 5 impacted components (3 Modifications, 2 Additions).",
+            "Total effort: 3 Medium, 2 Light."
+          ]
+        },
+        {
+          "scenario_id": "new_input_format",
+          "architecture_id": "New",
+          "affected_components": [
+            "Server",
+            "Batch Type C",
+            "Pre-Generator Type C",
+            "Generator Type C"
+          ],
+          "change_description": "Management of a new type of Batch/Input, introduction of new type of Batch, new Pre-Generator, new Generator.",
+          "change_extent": "Moderate",
+          "estimated_effort": "Low",
+          "issues_identified": [
+            "Requires 4 impacted components (1 Modification, 3 Additions).",
+            "Total effort: 1 Medium, 3 Light."
+          ]
+        }
+      ],
+      "scenario_interactions": [],
+      "overall_results": {
+        "architectural_strengths": [
+          "New Architecture requires fewer changes (modifications plus additions) to accommodate scenarios.",
+          "New Architecture requires lower total effort."
+        ],
+        "architectural_weaknesses": [
+          "Actual Architecture requires more changes (35 vs 27).",
+          "Actual Architecture requires higher effort (11 High/21 Med vs 8 High/8 Med)."
+        ],
+        "modifiability_assessment": "Preliminary results are in favour of the New Architecture that can be adapted to change faster than the actual one."
+      },
+      "architecture_comparison": [
+        {
+          "architecture_id": "New",
+          "rank": 1,
+          "rationale": "Requires fewer changes (27 vs 35) and less effort (more 'Low' effort changes, fewer 'High' effort changes) to fit the considered ten scenarios."
+        },
+        {
+          "architecture_id": "Actual",
+          "rank": 2,
+          "rationale": "Requires more component modifications and additions, and higher estimated effort for the evaluated scenarios."
+        }
+      ],
+      "recommendations": [
+        "Proceed with migration towards SOA (re-engineering) if the comparison is completely in favour of the New Architecture.",
+        "Otherwise, perform restructuring at the level of code (refactoring)."
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Partial",
+      "missing_information": [
+        "Full text of the other 9 scenarios (only new_input_format was detailed).",
+        "Specific authors' names are listed, but specific participants' count by role is not fully detailed."
+      ],
+      "inference_notes": [
+        "Inferred 'Indirect' classification for the sample scenario because the paper lists specific component modifications and additions required.",
+        "Used 'Medium' and 'Low' effort estimates from Tables I and II to populate the scenario evaluation fields."
+      ]
+    }
+  }
+}

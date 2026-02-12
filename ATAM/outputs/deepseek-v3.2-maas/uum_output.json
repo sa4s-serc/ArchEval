@@ -1,0 +1,675 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A Learning Management System (LMS) based on Moodle 1.9 (Open Source) used by Universiti Utara Malaysia. It automates the administration of training events and provides an online environment for content creation, delivery, communication, collaboration, and assessment. It includes modules for assignments, chats, forums, lessons, Turnitin, and web meetings, supporting synchronous and asynchronous e-learning activities.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already a fully implemented, operational web-based system (Moodle version 1.9) at the time of evaluation. The evaluation was retrospective, treating the existing implementation as the architecture to be analyzed.",
+        "evaluator_inquiry_questions": [
+          "How long will the system be available for a virtual meet\u2019s web cam live chat when there is a network failure?",
+          "Can the system authenticate a user if they try to log on with either wrong user id or password?",
+          "Does the architecture process any task with the fastest speed?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system relies on network infrastructure susceptible to congestion during high traffic (virtual meets).",
+          "Web-based system architecture accessed via internet/intranet."
+        ],
+        "runtime_constraints": [
+          "Must support heavy file uploads (Video, audio, PDF, etc.) which was a limitation in the previous system.",
+          "Scalability for Virtual Meet module handles 1-100 persons.",
+          "Must conform to SCORM (Sharable Content Object Reference Model) standards."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "virtual_meet_capacity": "1-100 persons",
+        "voting_calculation": {
+          "formula": "30% x total number of scenarios",
+          "total_scenarios": "8"
+        },
+        "recovery_time": "Minimal amount of time"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Authentication and Virtual Meet",
+          "questions": [
+            "How does the system handle invalid login attempts regarding main page access?",
+            "How does the system recover from network failure due to congestion during live video chats?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Entering a wrong user name and password"
+        },
+        {
+          "id": "RS-02",
+          "description": "Clicking an icon to process information with speed"
+        },
+        {
+          "id": "RS-03",
+          "description": "Sending an encapsulated, secured e-mail"
+        },
+        {
+          "id": "RS-04",
+          "description": "Adding new web pages to my wiki module"
+        },
+        {
+          "id": "RS-05",
+          "description": "Integrating mybox for my file storage"
+        },
+        {
+          "id": "RS-06",
+          "description": "Downloading of lecture slides"
+        },
+        {
+          "id": "RS-07",
+          "description": "When Network fails during virtual meet and later recovered"
+        },
+        {
+          "id": "RS-08",
+          "description": "The system should be able to handle user errors"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Enhancing quality teaching and learning within the university community",
+          "Managing the delivery and administration of programs of learning via the internet",
+          "Provide a cheaper, open-source alternative to the previous system (Learning Care)"
+        ],
+        "technical_constraints": [
+          "Must be based on Moodle (Modular Object-Oriented Dynamic Learning Environment)",
+          "Must be Open Source Software (OSS) under GNU license",
+          "Must support SCORM standards",
+          "Must operate on multiple platforms (Windows, Solaris, Linux, Mac OS, UNIX)"
+        ],
+        "architectural_drivers": [
+          "Availability",
+          "Security",
+          "Performance",
+          "Modifiability",
+          "Reliability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Layered Architecture (3-Tier)",
+          "description": "Standard web application separation into presentation (browser/client), application logic (Moodle PHP server), and data (database) tiers.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Separation of concerns allows changes in one layer (e.g., UI) with minimal impact on others."
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Tiered separation can enforce access controls at the application and database layers."
+            }
+          ]
+        },
+        {
+          "approach_name": "Model-View-Controller (MVC)",
+          "description": "Moodle's core codebase uses an MVC-inspired pattern to separate data models, user interface views, and application control logic.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Facilitates independent development and maintenance of UI components and business logic."
+            }
+          ]
+        },
+        {
+          "approach_name": "Plugin/Module Architecture",
+          "description": "Moodle is fundamentally modular. Core system provides APIs and hooks; features like Assignments, Chat, Forums, Turnitin, and Virtual Meet are implemented as pluggable modules.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "New functionality can be added via modules without modifying the core system."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Fault isolation; a failing module is less likely to crash the entire system."
+            }
+          ]
+        },
+        {
+          "approach_name": "Client-Server",
+          "description": "Web-based architecture where browsers (clients) communicate with a central Moodle application server over HTTP/HTTPS.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Centralized management and deployment of server-side resources."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "System remains accessible during network interruptions",
+                "scenario_id": "A1",
+                "scenario_description": "During a virtual meeting, the network connection fails for a user and later recovers. The system should reconnect the user to the session without requiring a full restart.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Unauthorized access is prevented",
+                "scenario_id": "S1",
+                "scenario_description": "A user enters an incorrect username and password combination. The system must deny access and not reveal whether the username exists.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Data transmission confidentiality and integrity",
+                "scenario_id": "S2",
+                "scenario_description": "A user sends an email containing sensitive grade information through the system. The email must be encapsulated and secured (e.g., encrypted).",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "User interface responsiveness",
+                "scenario_id": "P1",
+                "scenario_description": "A user clicks an icon (e.g., to submit an assignment or load a course page) and expects the information to process and the page to update with speed (e.g., within 2 seconds).",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Resource download latency",
+                "scenario_id": "P2",
+                "scenario_description": "A student downloads a set of lecture slides (e.g., a 50MB PDF file). The download should initiate promptly and complete within an acceptable time given the network bandwidth.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Ease of adding new content features",
+                "scenario_id": "M1",
+                "scenario_description": "A teacher wants to add new web pages to their course's wiki module to include updated learning materials. This should be possible without developer intervention.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              },
+              {
+                "refinement": "Ease of integrating third-party services",
+                "scenario_id": "M2",
+                "scenario_description": "The system administrator needs to integrate 'mybox' (an external cloud storage service) for user file storage. This should be achievable via configuration or a plugin.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Graceful handling of user errors",
+                "scenario_id": "R1",
+                "scenario_description": "A user makes an input error (e.g., submitting an assignment in the wrong format). The system should provide a clear error message and not crash or lose other unsaved data.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During a virtual meeting, the network connection fails for a user and later recovers. The system should reconnect the user to the session without requiring a full restart.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "A user enters an incorrect username and password combination. The system must deny access and not reveal whether the username exists.",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "A user sends an email containing sensitive grade information through the system. The email must be encapsulated and secured (e.g., encrypted).",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "A user clicks an icon (e.g., to submit an assignment or load a course page) and expects the information to process and the page to update with speed (e.g., within 2 seconds).",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A student downloads a set of lecture slides (e.g., a 50MB PDF file). The download should initiate promptly and complete within an acceptable time given the network bandwidth.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A teacher wants to add new web pages to their course's wiki module to include updated learning materials. This should be possible without developer intervention.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The system administrator needs to integrate 'mybox' (an external cloud storage service) for user file storage. This should be achievable via configuration or a plugin.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "A user makes an input error (e.g., submitting an assignment in the wrong format). The system should provide a clear error message and not crash or lose other unsaved data.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "During a virtual meeting, the network connection fails for a user and later recovers. The system should reconnect the user to the session without requiring a full restart.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Network interruption during an active virtual meeting session.",
+          "stimulus": "User's network connection fails and then recovers.",
+          "response_measure": "User reconnects to the session automatically; session state is preserved.",
+          "architectural_decisions": [
+            "Client-Server architecture for central session management.",
+            "Plugin/Module Architecture for the virtual meeting feature."
+          ],
+          "reasoning": "The Client-Server style centralizes session state on the server, which is necessary for reconnection. However, the specific reconnection logic (heartbeats, timeouts, state persistence) is dependent on the implementation of the virtual meeting module (a plugin). Without details on this mechanism, the ability to meet the scenario is uncertain.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "The virtual meeting module may not implement robust session state persistence and automatic reconnection protocols.",
+                "rationale": "The Plugin/Module Architecture allows for variation in quality. If the module treats sessions as stateless or has short timeouts, users may be disconnected and unable to rejoin seamlessly."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "The central server remains available to manage reconnection requests.",
+                "rationale": "The Client-Server approach ensures a stable endpoint for clients to reconnect to after network recovery."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Session timeout duration in the virtual meeting module",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Network bandwidth and latency stability",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Amount of session state persisted server-side",
+                "conflicting_attributes": [
+                  "Availability (positive effect)",
+                  "Performance / Scalability (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "A user enters an incorrect username and password combination. The system must deny access and not reveal whether the username exists.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal login operation.",
+          "stimulus": "User submits invalid credentials.",
+          "response_measure": "Access denied with a generic error message; no information leakage about username existence.",
+          "architectural_decisions": [
+            "Layered Architecture (3-Tier)",
+            "Model-View-Controller (MVC)"
+          ],
+          "reasoning": "The Layered and MVC architectures separate presentation from business logic. This allows the application logic layer to implement a security control that returns a uniform error message regardless of whether the username is valid, preventing information disclosure. This is a standard and low-risk implementation.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Architectural separation enforces a generic error response at the application logic layer.",
+                "rationale": "The tiered separation prevents the view/presentation layer from receiving or displaying detailed authentication failure reasons from the database layer."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Implementation correctness of the authentication logic",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "A user sends an email containing sensitive grade information through the system. The email must be encapsulated and secured (e.g., encrypted).",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operation, email transmission.",
+          "stimulus": "User sends an email with sensitive content.",
+          "response_measure": "Email content is encrypted during transmission.",
+          "architectural_decisions": [
+            "Client-Server architecture over HTTP/HTTPS."
+          ],
+          "reasoning": "The Client-Server style relies on the underlying transport protocol (HTTPS/TLS) to provide channel encryption between client and server. This protects data in transit. However, end-to-end encryption or encryption at rest within the system is not guaranteed by this architecture alone.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-02",
+                "description": "Lack of end-to-end encryption or encryption of data at rest within the server/mail queue.",
+                "rationale": "HTTPS only secures the client-server link. If the email is stored or processed in plaintext on the server or forwarded via an unencrypted channel to the final mail server, confidentiality could be breached."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Transport-layer encryption (TLS/HTTPS) is enforced for client-server communication.",
+                "rationale": "Standard web deployment practice mandates HTTPS, which encrypts all data in transit between the user's browser and the Moodle server."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "TLS configuration and certificate management",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Email routing and storage configuration post-submission",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Level of encryption (transport vs. end-to-end)",
+                "conflicting_attributes": [
+                  "Security (positive effect for end-to-end)",
+                  "Performance / Complexity (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "A user clicks an icon (e.g., to submit an assignment or load a course page) and expects the information to process and the page to update with speed (e.g., within 2 seconds).",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations, typical user load.",
+          "stimulus": "User initiates an action (click).",
+          "response_measure": "Page updates within 2 seconds.",
+          "architectural_decisions": [
+            "Layered Architecture (3-Tier)",
+            "Model-View-Controller (MVC)",
+            "Client-Server"
+          ],
+          "reasoning": "The multi-tier architecture introduces processing latency at each layer (presentation, application logic, database). The 2-second target is achievable under normal load but is sensitive to server performance, database query efficiency, and network latency. Without quantitative data on these parameters, performance is a potential risk area.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Cascading latency through the layered tiers may cause response times to exceed 2 seconds under load or with inefficient queries.",
+                "rationale": "Each layer (web server, PHP application, database) adds processing time. Bottlenecks at any layer (e.g., slow database joins) directly impact end-to-end latency."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-06",
+                "parameter": "Database query optimization and indexing",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-07",
+                "parameter": "Application server (PHP) processing capacity and caching",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Network latency between client and server",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Level of database query caching",
+                "conflicting_attributes": [
+                  "Performance (positive effect)",
+                  "Modifiability / Data Freshness (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "A student downloads a set of lecture slides (e.g., a 50MB PDF file). The download should initiate promptly and complete within an acceptable time given the network bandwidth.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations.",
+          "stimulus": "User requests a large file download.",
+          "response_measure": "Download completes within a time acceptable for the given network bandwidth.",
+          "architectural_decisions": [
+            "Client-Server architecture.",
+            "Layered Architecture (presentation and application tiers)."
+          ],
+          "reasoning": "File downloads are typically served directly by the web server (presentation tier) or via the application tier. Performance is primarily governed by available network bandwidth and server I/O capacity. The architecture does not inherently introduce bottlenecks for static content delivery.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Network bandwidth between the server and the client may be insufficient, causing unacceptable download times.",
+                "rationale": "The architecture does not mitigate fundamental network constraints. If the server is hosted on a low-bandwidth connection or the user has a poor connection, download performance will suffer."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Static file serving can be optimized at the web server layer (presentation tier) without involving heavy application logic.",
+                "rationale": "The Layered Architecture allows large files to be served efficiently by the front-end web server (e.g., Apache, Nginx) using efficient protocols, minimizing load on the application tier."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-09",
+                "parameter": "Available network bandwidth (server uplink, client downlink)",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-10",
+                "parameter": "Web server configuration for static content caching and compression",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A teacher wants to add new web pages to their course's wiki module to include updated learning materials. This should be possible without developer intervention.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Normal course management.",
+          "stimulus": "Teacher requests to add content to an existing wiki.",
+          "response_measure": "Content can be added via the wiki's built-in editing interface.",
+          "architectural_decisions": [
+            "Plugin/Module Architecture",
+            "Model-View-Controller (MVC)"
+          ],
+          "reasoning": "The wiki is implemented as a module. The MVC pattern within the module provides a user interface (View) for editing and a data model for storage. This scenario is a core function of the wiki module and is well-supported by the architecture, posing low risk.",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "The wiki module, as a plugin, provides self-contained content management features accessible to teachers.",
+                "rationale": "The Plugin/Module Architecture is designed precisely for this: extending system functionality in a user-accessible way without touching core code. The MVC separation allows for a dedicated editing interface."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-11",
+                "parameter": "Wiki module's user permission and role configuration",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "The system administrator needs to integrate 'mybox' (an external cloud storage service) for user file storage. This should be achievable via configuration or a plugin.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System administration.",
+          "stimulus": "Administrator needs to integrate a new third-party storage service.",
+          "response_measure": "Integration is possible via configuration or installing/developing a plugin.",
+          "architectural_decisions": [
+            "Plugin/Module Architecture"
+          ],
+          "reasoning": "The Plugin/Module Architecture is the primary approach for this scenario. Moodle's core provides repositories and file system APIs that a 'mybox' plugin would implement. Success depends on the stability of these APIs and the complexity of the external service's integration requirements.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-05",
+                "description": "The external service ('mybox') may have API or authentication requirements that are incompatible or complex to implement within the Moodle plugin framework.",
+                "rationale": "While the architecture supports plugins, the difficulty of integration is determined by the external system's constraints, which may require significant custom development."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "The core system provides defined extension points (APIs, hooks) for file repository plugins.",
+                "rationale": "The Plugin/Module Architecture is explicitly designed to allow such integrations without modifying the core, fulfilling the basic requirement of the scenario."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Stability and documentation of Moodle's file repository plugin API",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Complexity of the external service's authentication protocol (e.g., OAuth flow)",
+                "correlated_attribute": "Security / Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Depth of integration (full feature set vs. basic)",
+                "conflicting_attributes": [
+                  "Modifiability / Functionality (positive effect)",
+                  "Security / Complexity (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "A user makes an input error (e.g., submitting an assignment in the wrong format). The system should provide a clear error message and not crash or lose other unsaved data.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal user interaction, form submission.",
+          "stimulus": "User submits invalid data.",
+          "response_measure": "System provides an error message and preserves other unsaved data; does not crash.",
+          "architectural_decisions": [
+            "Model-View-Controller (MVC)",
+            "Layered Architecture (3-Tier)"
+          ],
+          "reasoning": "MVC separates validation logic (Controller/Model) from the user interface. Invalid input should be caught by the controller or model, with an error message returned to the view. The layered architecture helps contain errors within the application logic tier. Data preservation depends on client-side or server-side session management implementation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "If validation logic is incomplete or the controller does not properly manage transaction state, a submission error could lead to partial data loss or an unstable state.",
+                "rationale": "While the architecture supports clean error handling, its effectiveness depends on the rigorous implementation of validation and state rollback within each module."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "The separation provided by MVC allows invalid input to be rejected before it affects core data models or causes system-level faults.",
+                "rationale": "The controller can validate input and return an error to the view without invoking model operations that could crash, supporting graceful degradation."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Robustness of input validation and sanitization routines",
+                "correlated_attribute": "Reliability / Security"
+              },
+              {
+                "id": "S-15",
+                "parameter": "Client-side form state preservation (e.g., using JavaScript)",
+                "correlated_attribute": "Usability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

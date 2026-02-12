@@ -1,0 +1,403 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-01-28"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "MISOC2000",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Registration of data concerning courses and students."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Layered Architecture",
+          "Client-Server Architecture",
+          "Subsystem-based Monolith"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "MISOC2000",
+            "name": "MISOC2000 Production Architecture",
+            "description": "A centralized, layered system designed for the Dutch army to manage training center operations. It separates concerns into user interface (client), business logic (server), and persistence (database) layers, further organized into functional subsystems.",
+            "architecture_characteristics": "Modularity via functional subsystems, centralized data integrity, and strict adherence to military hardware/software standards (LAN2000).",
+            "key_components": [
+              {
+                "component_id": "Product",
+                "component_name": "Product Subsystem",
+                "responsibilities": "Defines course catalogs and production plans; serves as the foundation for course offerings.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "Sales",
+                "component_name": "Sales Subsystem",
+                "responsibilities": "Manages catalog distribution and records formal customer agreements.",
+                "dependencies": [
+                  "Product"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "Student",
+                "component_name": "Student Subsystem",
+                "responsibilities": "Primary registry for student personal data and academic history.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "Programming",
+                "component_name": "Programming Subsystem",
+                "responsibilities": "Short-term scheduling of courses and resources.",
+                "dependencies": [
+                  "Product",
+                  "Logistics"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "Logistics",
+                "component_name": "Logistics Subsystem",
+                "responsibilities": "Resource management including physical locations and equipment availability.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "Economics",
+                "component_name": "Economics Subsystem",
+                "responsibilities": "Interfaces with external KIO systems for cost center synchronization and financial reporting.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "Personnel",
+                "component_name": "Personnel Subsystem",
+                "responsibilities": "Specialized extension of the P-module for training-specific personnel data.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "Medium"
+              },
+              {
+                "component_id": "General",
+                "component_name": "General/Admin Subsystem",
+                "responsibilities": "Cross-cutting concerns including authorization, configuration, and system maintenance.",
+                "dependencies": [],
+                "change_sensitivity": "High"
+              },
+              {
+                "component_id": "Auth_Client",
+                "component_name": "Authentication Client",
+                "responsibilities": "Gatekeeper for user sessions and database registration/access control.",
+                "dependencies": [
+                  "General"
+                ],
+                "change_sensitivity": "High"
+              }
+            ],
+            "data_flow": "Users interact with the Client layer which communicates requests to the Server layer. Subsystems interact through a shared database schema. The Economics subsystem facilitates bi-directional data exchange with the external KIO system for financial data.",
+            "architectural_constraints": [
+              "Adherence to LAN2000 configuration standards for client and server hardware.",
+              "Modifications to external interfaces (KIO) require cross-organizational coordination.",
+              "Internal training center changes can be made autonomously within subsystem boundaries."
+            ],
+            "notes": "The architecture easily accommodates new training centers and functional modules within the existing subsystem framework. However, it cannot easily accommodate decentralized data storage or non-LAN2000 compliant hardware without significant refactoring."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A training officer at one of the fifteen centers registers a new 'Advanced Logistics' course and successfully enrolls 30 students, with all data correctly persisting in the Student and Product subsystems under 2 seconds.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Product Subsystem",
+            "Student Subsystem",
+            "Authentication Client"
+          ],
+          "feasibility_note": "Directly supported by the current layered architecture and core functional subsystems.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "This represents the primary business function of the MISOC2000 system."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A system administrator adds a 16th training center to the system configuration via the General/Admin Subsystem, ensuring the center has unique access rights to its own student data.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "General/Admin Subsystem",
+            "Authentication Client"
+          ],
+          "feasibility_note": "Indirect; requires the Admin subsystem to have a configuration-driven approach to multi-tenancy or center management rather than hardcoded limits.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Ensures the system can scale as the Dutch army expands or reorganizes its training facilities."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A maintainer updates the Economics Subsystem to accommodate a new army-wide tuition billing format without requiring changes to the Student or Personnel subsystems.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Economics Subsystem",
+            "Personnel Subsystem"
+          ],
+          "feasibility_note": "Directly supported if the separation of concerns between subsystems is strictly enforced through the business logic layer.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Ensures the system can adapt to financial regulatory changes with minimal regression risk."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A developer investigates adding a real-time scheduling conflict check in the Programming Subsystem that queries the Logistics Subsystem for classroom availability during student registration.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Programming Subsystem",
+            "Logistics Subsystem",
+            "Student Subsystem"
+          ],
+          "feasibility_note": "Indirect; requires cross-subsystem communication within the business logic layer which may increase coupling.",
+          "priority": "Low",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Explores the feasibility of enhancing system intelligence and resource management."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Direct",
+          "rationale": "The architecture is explicitly designed for course and student registration using the Product and Student subsystems as core functional modules.",
+          "supporting_components": [
+            "Product",
+            "Student",
+            "Auth_Client"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "While adding a center is supported, the requirement for unique access rights to specific student data per center implies a multi-tenant isolation model that requires configuration or logic changes in the authorization and general subsystems.",
+          "supporting_components": [
+            "General",
+            "Auth_Client"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "Modular separation of concerns allows the Economics subsystem to modify its external interface logic without impacting the data structures or logic of the Student or Personnel subsystems.",
+          "supporting_components": [
+            "Economics"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "Real-time cross-subsystem validation requires new integration logic between Programming and Logistics that may not exist in the current decoupled state, potentially impacting performance during high-concurrency registration.",
+          "supporting_components": [
+            "Programming",
+            "Logistics",
+            "Student"
+          ],
+          "confidence": "Medium"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "MISOC2000",
+          "classification": "Direct",
+          "affected_components": [
+            "Product",
+            "Student"
+          ],
+          "change_description": "None required; use existing transactional logic.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "Not applicable."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "MISOC2000",
+          "classification": "Indirect",
+          "affected_components": [
+            "General",
+            "Auth_Client",
+            "Student"
+          ],
+          "change_description": "Update the authorization schema to support 'Center-ID' based row-level security or filtering in the Student subsystem and modify the Auth_Client to manage center-specific session tokens.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Potential for data leakage if the shared database schema does not strictly enforce center-based filtering in every query."
+          ],
+          "alternative_approaches": "Implement a data-access layer decorator that automatically appends center-based filters to all SQL queries based on the user's session context."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "MISOC2000",
+          "classification": "Direct",
+          "affected_components": [
+            "Economics"
+          ],
+          "change_description": "Modify the billing export module within the Economics subsystem to match the new tuition format.",
+          "change_extent": "Localized",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [],
+          "alternative_approaches": "Use an adapter pattern to transform internal data into the new billing format without changing the internal Economics data model."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "MISOC2000",
+          "classification": "Indirect",
+          "affected_components": [
+            "Programming",
+            "Logistics"
+          ],
+          "change_description": "Introduce a synchronous API or service call from the Programming logic to the Logistics availability service. Requires updating the Logistics subsystem to expose a 'CheckAvailability' method.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Increased coupling between subsystems.",
+            "Potential performance bottlenecks if the logistics query is slow during peak student registration periods."
+          ],
+          "alternative_approaches": "Implement an asynchronous event-based conflict notification or a cached availability view in the Programming subsystem to maintain performance."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "Student",
+          "scenario_count": 2,
+          "scenarios": [
+            "S-01",
+            "S-02"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "Student",
+          "scenario_ids": [
+            "S-01",
+            "S-02"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "System Administrator",
+            "Maintainer"
+          ],
+          "rationale": "The Student component is a primary interaction hotspot where standard transactional operations (S-01) intersect with critical security and multi-tenancy requirements (S-02). The identified risk of data leakage due to potential failures in row-level security implementation makes this the highest priority. From a stakeholder perspective, End-users are at risk of privacy breaches, while Developers and Maintainers must ensure that future queries do not bypass the center-based filtering logic required for S-02."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Resilient Transactional Core: The architecture (MISOC2000) handles standard registration workflows (S-01) without requiring any modifications, demonstrating a robust design for core business operations.",
+          "Subsystem Modularity in Economics: The Economics subsystem exhibits high modifiability, allowing for localized changes to billing formats (S-03) with low effort and minimal risk to the rest of the system.",
+          "Functional Alignment with Business Goals: The architecture is well-aligned with the primary goal of student and course registration, providing direct support for transactional logic in the Student and Product components."
+        ],
+        "architectural_weaknesses": [
+          "Security and Isolation Vulnerabilities: As seen in S-02, the architecture lacks a centralized mechanism for multi-tenancy or row-level security, relying on widespread manual filtering which increases the risk of data leakage.",
+          "Synchronous Coupling Risks: The interaction between Programming and Logistics (S-04) reveals a tendency toward tight coupling and synchronous dependencies, which could lead to performance bottlenecks during high-load registration periods.",
+          "High Impact of Indirect Changes: Scenarios requiring cross-cutting modifications (S-02, S-04) result in widespread changes across multiple components, indicating that the architecture is somewhat rigid regarding shared services and security contexts."
+        ],
+        "modifiability_assessment": "The architecture is moderately modifiable for localized business logic but exhibits rigidity and increased complexity when addressing cross-cutting concerns like security and inter-subsystem communication. While it supports core evolution, the 'Student' component hotspot indicates a need for refactoring to maintain long-term stability."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Implement a centralized Data Access Layer (DAL) decorator for automated row-level security.",
+          "rationale": "Directly addresses the data leakage risk identified in S-02 and the 'Student' component hotspot by ensuring 'Center-ID' filtering is enforced consistently without manual query modification.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Transition inter-subsystem communication between Programming and Logistics to an asynchronous or event-driven model.",
+          "rationale": "Reduces the tight coupling and performance risks identified in S-04, ensuring that the Logistics subsystem does not become a single point of failure during peak registration.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Adopt the Adapter Pattern for external billing and economics integrations.",
+          "rationale": "Based on S-03, this will further decouple the internal Economics data model from external format requirements, ensuring that future external changes remain localized.",
+          "estimated_effort": "Low"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

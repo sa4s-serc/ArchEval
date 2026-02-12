@@ -1,0 +1,856 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "WIN-T is the Army's tactical telecommunications system designed to provide a secure, high-speed, high-capacity, and high-mobility backbone communications network. It enables mobile communications using the Internet Protocol (IP) to provide integrated voice, data, and video. It connects the Global Information Grid (GIG) to the Future Force, extending from the Maneuver Battalion to the Theater Rear boundary.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The documentation was recently consolidated following the merger of two competing contractor teams. As a result, the initial architecture documentation contained inconsistencies, was excessively complex, and diagrams often had mixed heritage, leading to confusion and potential errors.",
+        "evaluator_inquiry_questions": [
+          "How will the system handle the self-organization of nodes when requirements for the algorithms are not fully defined?",
+          "What are the specific interface definitions for the Service-Oriented Architecture given the reliance on emerging standards?",
+          "How does the architecture accommodate the transition from radio firmware to high-level network operations without explicit performance models?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system must support mobile nodes (vehicles) communicating via Line-of-Sight radios and satellite links.",
+          "The topology includes tiered nodes ranging from Maneuver Battalions to Theater Rear boundaries, requiring 'on-the-move' connectivity."
+        ],
+        "runtime_constraints": [
+          "Network bandwidth is severely limited during peak operational traffic, requiring strict QoS throttling.",
+          "The system must support 'on-the-move' throughput while traveling at speeds up to 25-45 mph."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "network_reliability_probability": "0.98 (at the halt), 0.90 (mobile)",
+        "information_dissemination_latency": {
+          "critical_survival_info": "<= 5 seconds",
+          "time_sensitive_info": "< 8 seconds"
+        },
+        "mobile_throughput": "256 Kbps at 25 mph",
+        "information_assurance_protection": "95% of attacks"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Service-Oriented Architecture (SOA) & Message Bus",
+          "questions": [
+            "How does the Enterprise Application Integration Platform handle message latency across low-bandwidth satellite links?",
+            "How is loose coupling maintained between the NetOps management software and the radio transmission subsystems?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-69",
+          "description": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes."
+        },
+        {
+          "id": "RS-49",
+          "description": "A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced."
+        },
+        {
+          "id": "RS-18",
+          "description": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely."
+        },
+        {
+          "id": "RS-57",
+          "description": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Provide a single integrating communications network to function as the Army's tactical portion of the GIG",
+          "Link FCS with higher Army echelons and the GIG",
+          "Provide a reliable and secure network with high speed, high capacity, and high quality of service (QoS)",
+          "Support mobile communications and replace legacy systems (MSE, TRI-TAC, ISYSCON, Trojan Spirit)",
+          "Deploy a user-friendly human machine interface (HMI) for the WIN-T operator",
+          "Minimize the amount of network management the WIN-T operator must perform (automate planning)",
+          "Operable and maintainable within budget and schedule",
+          "Transparent to combat users and operators"
+        ],
+        "technical_constraints": [
+          "Long life cycle (fielding from 2008 through 2020, expected lifetime 20+ years)",
+          "Interoperable with Army Enterprise network, FCS, Joint networks, and Coalition network",
+          "Upgradeable (early spirals, block upgrades, COTS upgrades, security upgrades)"
+        ],
+        "architectural_drivers": [
+          "Interoperability",
+          "Network Reliability",
+          "Network Management",
+          "Information Dissemination",
+          "Information Assurance",
+          "Mobile Throughput",
+          "Modularity",
+          "Adaptability",
+          "Resilience",
+          "Usability",
+          "Security",
+          "Performance",
+          "Scalability",
+          "Flexibility",
+          "Maintainability",
+          "Supportability",
+          "Survivability",
+          "Mobility",
+          "Affordability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Service-Oriented Architecture (SOA)",
+          "description": "The system uses SOA with an Enterprise Application Integration Platform to enable loose coupling between NetOps management software and radio transmission subsystems, supporting interoperability and modularity.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Interoperability",
+              "rationale": "SOA enables integration with Army Enterprise network, FCS, Joint networks, and Coalition networks through standard service interfaces."
+            },
+            {
+              "quality_attribute": "Modularity",
+              "rationale": "Loose coupling allows independent evolution of network management and radio subsystems."
+            },
+            {
+              "quality_attribute": "Flexibility",
+              "rationale": "Service-based architecture supports COTS upgrades and block upgrades over the long lifecycle."
+            }
+          ]
+        },
+        {
+          "approach_name": "Message Bus Pattern",
+          "description": "An Enterprise Application Integration Platform using message bus architecture to handle communication across distributed mobile nodes with varying bandwidth constraints.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Scalability",
+              "rationale": "Message bus supports tiered node topology from Maneuver Battalions to Theater Rear boundaries."
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Enables management of message latency across low-bandwidth satellite links with QoS throttling."
+            }
+          ]
+        },
+        {
+          "approach_name": "Self-Organizing Network",
+          "description": "Nodes can autonomously configure and organize themselves when vehicles collect in operational areas, supporting dynamic topology changes.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Adaptability",
+              "rationale": "Automatic network self-organization handles dynamic battlefield conditions without manual intervention."
+            },
+            {
+              "quality_attribute": "Mobility",
+              "rationale": "Supports on-the-move connectivity at speeds up to 25-45 mph with automatic reconfiguration."
+            },
+            {
+              "quality_attribute": "Usability",
+              "rationale": "Minimizes network management burden on WIN-T operators through automation."
+            }
+          ]
+        },
+        {
+          "approach_name": "Redundancy and Failover",
+          "description": "Multiple nodes can assume duties of corrupted or compromised nodes, ensuring continuous operation even under attack or failure conditions.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Network Reliability",
+              "rationale": "Achieves 0.98 reliability at halt and 0.90 mobile through redundant node architecture."
+            },
+            {
+              "quality_attribute": "Resilience",
+              "rationale": "System continues operating when individual nodes are corrupted or fail."
+            },
+            {
+              "quality_attribute": "Survivability",
+              "rationale": "Supports detection of unauthorized users and remote zeroization in overrun scenarios."
+            }
+          ]
+        },
+        {
+          "approach_name": "Layered Security Architecture",
+          "description": "Multi-layered information assurance approach including intrusion detection, corruption detection, and remote shutdown capabilities.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Information Assurance",
+              "rationale": "Protects against 95% of attacks through comprehensive security measures."
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Provides secure network with detection and response capabilities for intrusions and compromises."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Mobile Throughput: On-the-move connectivity at 25-45 mph",
+                "scenario_id": "P1",
+                "scenario_description": "Vehicles moving at operational speeds (25-45 mph) maintain network connectivity with acceptable throughput for tactical communications.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Message Latency: QoS throttling across low-bandwidth satellite links",
+                "scenario_id": "P2",
+                "scenario_description": "Messages traverse tiered topology from Maneuver Battalion to Theater Rear with managed latency despite bandwidth constraints on satellite links.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Network Reliability",
+            "children": [
+              {
+                "refinement": "Failover capability: 0.98 reliability at halt, 0.90 mobile",
+                "scenario_id": "NR1",
+                "scenario_description": "RS-57: A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Interoperability",
+            "children": [
+              {
+                "refinement": "Cross-network integration: Army Enterprise, FCS, Joint, Coalition networks",
+                "scenario_id": "I1",
+                "scenario_description": "WIN-T system integrates with Army Enterprise network and FCS under normal operations, exchanging tactical data through standard service interfaces.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security/Information Assurance",
+            "children": [
+              {
+                "refinement": "Overrun protection: Detection and remote zeroization",
+                "scenario_id": "S1",
+                "scenario_description": "RS-18: A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Intrusion detection: 95% attack protection",
+                "scenario_id": "S2",
+                "scenario_description": "System detects 95% of network intrusion attempts and triggers appropriate security responses to maintain information assurance.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Adaptability",
+            "children": [
+              {
+                "refinement": "Self-organization: Network configuration within 5 minutes",
+                "scenario_id": "A1",
+                "scenario_description": "RS-69: A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modularity",
+            "children": [
+              {
+                "refinement": "COTS replaceability: Support for product upgrades and evolution",
+                "scenario_id": "M1",
+                "scenario_description": "RS-49: A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Scalability",
+            "children": [
+              {
+                "refinement": "Tiered topology support: Maneuver Battalion to Theater Rear",
+                "scenario_id": "SC1",
+                "scenario_description": "System scales across tiered node topology supporting hundreds of mobile nodes from forward Maneuver Battalions through Theater Rear boundaries.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Usability",
+            "children": [
+              {
+                "refinement": "Automated network management: Minimal operator intervention",
+                "scenario_id": "U1",
+                "scenario_description": "WIN-T operators manage the network with minimal manual intervention due to automated self-organization and configuration capabilities.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Vehicles moving at operational speeds (25-45 mph) maintain network connectivity with acceptable throughput for tactical communications.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Mobility"
+          ]
+        },
+        {
+          "scenario_text": "Messages traverse tiered topology from Maneuver Battalion to Theater Rear with managed latency despite bandwidth constraints on satellite links.",
+          "primary_quality_attribute": [
+            "Performance",
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties.",
+          "primary_quality_attribute": [
+            "Network Reliability",
+            "Resilience"
+          ]
+        },
+        {
+          "scenario_text": "WIN-T system integrates with Army Enterprise network and FCS under normal operations, exchanging tactical data through standard service interfaces.",
+          "primary_quality_attribute": [
+            "Interoperability"
+          ]
+        },
+        {
+          "scenario_text": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely.",
+          "primary_quality_attribute": [
+            "Security",
+            "Survivability"
+          ]
+        },
+        {
+          "scenario_text": "System detects 95% of network intrusion attempts and triggers appropriate security responses to maintain information assurance.",
+          "primary_quality_attribute": [
+            "Information Assurance",
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes.",
+          "primary_quality_attribute": [
+            "Adaptability",
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced.",
+          "primary_quality_attribute": [
+            "Modularity",
+            "Flexibility"
+          ]
+        },
+        {
+          "scenario_text": "System scales across tiered node topology supporting hundreds of mobile nodes from forward Maneuver Battalions through Theater Rear boundaries.",
+          "primary_quality_attribute": [
+            "Scalability"
+          ]
+        },
+        {
+          "scenario_text": "WIN-T operators manage the network with minimal manual intervention due to automated self-organization and configuration capabilities.",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Vehicles moving at operational speeds (25-45 mph) maintain network connectivity with acceptable throughput for tactical communications.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Mobile operations with vehicles moving at 25-45 mph in tactical battlefield conditions",
+          "stimulus": "Vehicles moving at operational speeds require continuous network connectivity",
+          "response_measure": "Maintain acceptable throughput for tactical communications while mobile at 25-45 mph",
+          "architectural_decisions": [
+            "Self-organizing network architecture enables automatic topology reconfiguration as nodes move",
+            "Message bus pattern with QoS management handles variable connectivity",
+            "Redundant node architecture maintains connectivity during handoffs"
+          ],
+          "reasoning": "The self-organizing network approach allows nodes to dynamically reconfigure as vehicles move, maintaining connectivity through automatic handoffs. The message bus with QoS throttling manages bandwidth constraints during mobile operations. Redundancy ensures continuous service during topology changes.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Network reconfiguration latency during high-speed movement may cause temporary connectivity gaps",
+                "rationale": "At 45 mph, vehicles cover significant distance during the 5-minute self-organization window, potentially causing service interruptions during rapid topology changes"
+              },
+              {
+                "id": "R-02",
+                "description": "Insufficient bandwidth on satellite links during mobile operations may degrade throughput below acceptable levels",
+                "rationale": "Mobile nodes rely on satellite links with inherent bandwidth constraints; simultaneous movement of multiple nodes could saturate available bandwidth"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Message loss during handoffs between nodes",
+                "rationale": "Message bus architecture with store-and-forward capabilities and redundant nodes ensures message persistence during topology transitions"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network reconfiguration time",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Satellite link bandwidth allocation",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Frequency of topology updates",
+                "conflicting_attributes": [
+                  "Performance (positive: faster adaptation)",
+                  "Network Reliability (negative: increased reconfiguration overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "Messages traverse tiered topology from Maneuver Battalion to Theater Rear with managed latency despite bandwidth constraints on satellite links.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with tiered network topology spanning Maneuver Battalion to Theater Rear",
+          "stimulus": "Messages need to traverse multiple network tiers across low-bandwidth satellite links",
+          "response_measure": "Latency managed through QoS throttling to meet tactical communication requirements",
+          "architectural_decisions": [
+            "Message bus pattern with QoS throttling prioritizes critical messages",
+            "Tiered topology with hierarchical message routing",
+            "Enterprise Application Integration Platform manages message flow across tiers"
+          ],
+          "reasoning": "The message bus architecture enables priority-based message routing across bandwidth-constrained links. QoS throttling ensures critical tactical messages receive priority over lower-priority traffic. The tiered topology minimizes unnecessary message propagation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Message queue overflow at tier boundaries during high-traffic scenarios",
+                "rationale": "Satellite link bandwidth constraints combined with high message volume could cause queue buildup at tier gateways, leading to increased latency or message drops"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Message routing errors across tiers",
+                "rationale": "SOA with Enterprise Application Integration Platform provides standardized service interfaces and routing logic, ensuring reliable message delivery across network tiers"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Message queue size at tier gateways",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-04",
+                "parameter": "QoS priority thresholds",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "QoS throttling aggressiveness",
+                "conflicting_attributes": [
+                  "Performance (positive: critical messages get priority)",
+                  "Usability (negative: lower-priority messages may be significantly delayed)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "NR1",
+            "text": "A WIN-T gateway node has been corrupted due to a network intrusion. Intrusion and corruption is detected and another node takes over duties.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Network Reliability",
+          "environment": "Operational network under attack with node corruption",
+          "stimulus": "Gateway node becomes corrupted due to network intrusion",
+          "response_measure": "Achieve 0.98 reliability at halt and 0.90 mobile through automatic failover",
+          "architectural_decisions": [
+            "Redundancy and failover architecture with multiple nodes capable of assuming gateway duties",
+            "Layered security architecture with intrusion and corruption detection",
+            "Self-organizing network enables automatic reconfiguration after node failure"
+          ],
+          "reasoning": "The redundant node architecture ensures that when a gateway node is corrupted, other nodes can immediately assume its duties. The layered security architecture detects intrusions and corruption, triggering failover mechanisms. Self-organization capabilities enable automatic network reconfiguration without manual intervention.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Failover transition time may cause temporary service disruption",
+                "rationale": "The time required to detect corruption, trigger failover, and reconfigure the network could result in brief connectivity loss, particularly impacting mobile reliability target of 0.90"
+              },
+              {
+                "id": "R-05",
+                "description": "Cascading failures if multiple nodes are simultaneously compromised",
+                "rationale": "Sophisticated coordinated attacks targeting multiple redundant nodes could overwhelm failover capabilities and degrade reliability below target thresholds"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Complete network failure from single node corruption",
+                "rationale": "Redundant architecture ensures multiple nodes can perform gateway functions, preventing single points of failure"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-05",
+                "parameter": "Intrusion detection threshold sensitivity",
+                "correlated_attribute": "Network Reliability"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Number of redundant gateway nodes",
+                "correlated_attribute": "Network Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Intrusion detection sensitivity",
+                "conflicting_attributes": [
+                  "Security (positive: catches more attacks)",
+                  "Network Reliability (negative: false positives trigger unnecessary failovers)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "I1",
+            "text": "WIN-T system integrates with Army Enterprise network and FCS under normal operations, exchanging tactical data through standard service interfaces.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Interoperability",
+          "environment": "Normal operations requiring integration with multiple external networks",
+          "stimulus": "Need to exchange tactical data with Army Enterprise network, FCS, Joint networks, and Coalition networks",
+          "response_measure": "Seamless data exchange through standard service interfaces",
+          "architectural_decisions": [
+            "Service-Oriented Architecture (SOA) with standardized service interfaces",
+            "Enterprise Application Integration Platform for cross-network communication",
+            "Loose coupling between WIN-T and external network systems"
+          ],
+          "reasoning": "SOA provides standardized service interfaces that enable interoperability across heterogeneous networks. The Enterprise Application Integration Platform acts as a mediation layer, translating between different network protocols and data formats. Loose coupling ensures WIN-T can evolve independently while maintaining integration.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Service interface version incompatibilities with external networks",
+                "rationale": "Different networks may evolve their service interfaces at different rates, potentially causing integration failures if version management is not properly handled"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Inability to integrate with new network types",
+                "rationale": "SOA architecture with Enterprise Application Integration Platform provides extensible framework for adding new network integrations through service interface definitions"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Service interface specification completeness",
+                "correlated_attribute": "Interoperability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Service interface abstraction level",
+                "conflicting_attributes": [
+                  "Interoperability (positive: higher abstraction enables broader compatibility)",
+                  "Performance (negative: abstraction layers add overhead)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "A unit is overrun during operations. The system detects the unauthorized users and generates a security alert; an authorized person can 'zeroize' the system and shut it down remotely.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Hostile conditions with unit being overrun by enemy forces",
+          "stimulus": "Unauthorized users attempt to access overrun system",
+          "response_measure": "Detect unauthorized access, generate alert, and enable remote zeroization",
+          "architectural_decisions": [
+            "Layered security architecture with unauthorized user detection",
+            "Remote management capabilities through SOA service interfaces",
+            "Secure authentication and authorization mechanisms"
+          ],
+          "reasoning": "The layered security architecture continuously monitors for unauthorized access attempts. When detected, the system generates alerts through the SOA-based management interface. Remote zeroization capability, implemented as a secure service, allows authorized personnel to destroy sensitive data and shut down the system from a safe location.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-07",
+                "description": "Communication link to overrun unit may be compromised preventing remote zeroization",
+                "rationale": "If enemy forces control the physical location, they may be able to jam or intercept the remote zeroization command before it executes"
+              },
+              {
+                "id": "R-08",
+                "description": "Delayed detection of unauthorized access allows data exfiltration",
+                "rationale": "Time gap between unit overrun and unauthorized user detection could allow adversaries to extract sensitive tactical information"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-05",
+                "description": "Unauthorized users gaining system access after zeroization",
+                "rationale": "Zeroization process destroys cryptographic keys and sensitive data, rendering the system unusable even if physically captured"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-08",
+                "parameter": "Unauthorized access detection time",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Zeroization command authentication strength",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Automatic vs. manual zeroization trigger",
+                "conflicting_attributes": [
+                  "Security (positive: automatic zeroization prevents data loss)",
+                  "Usability (negative: false triggers could disable operational systems)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "System detects 95% of network intrusion attempts and triggers appropriate security responses to maintain information assurance.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Information Assurance",
+          "environment": "Normal operations with ongoing intrusion attempts",
+          "stimulus": "Network intrusion attempts from various threat vectors",
+          "response_measure": "Detect 95% of attacks and trigger appropriate security responses",
+          "architectural_decisions": [
+            "Layered security architecture with intrusion detection systems",
+            "Automated security response mechanisms",
+            "Multi-level information assurance controls"
+          ],
+          "reasoning": "The layered security architecture implements multiple detection mechanisms to achieve 95% attack detection rate. Automated response systems trigger countermeasures such as isolating compromised nodes, alerting operators, and initiating failover procedures. Multiple security layers provide defense-in-depth.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "5% undetected attacks could compromise critical nodes",
+                "rationale": "The 95% detection rate means 1 in 20 attacks may go undetected, potentially allowing sophisticated adversaries to establish persistent access"
+              },
+              {
+                "id": "R-10",
+                "description": "False positive intrusion detections may trigger unnecessary security responses",
+                "rationale": "Overly sensitive detection mechanisms could misidentify legitimate traffic as attacks, causing operational disruptions through false alarms and automated responses"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "Undetected intrusions spreading across entire network",
+                "rationale": "Layered security with node isolation capabilities prevents lateral movement, containing intrusions even if initial detection fails"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Intrusion detection algorithm sensitivity",
+                "correlated_attribute": "Information Assurance"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Security response automation level",
+                "correlated_attribute": "Information Assurance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-06",
+                "parameter": "Security monitoring depth",
+                "conflicting_attributes": [
+                  "Information Assurance (positive: deeper inspection catches more attacks)",
+                  "Performance (negative: security overhead reduces throughput)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "A collection of vehicles collects in a 'parking lot' during operations. The networks can self-organize and nodes configure themselves within 5 minutes.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Adaptability",
+          "environment": "Operational pause with multiple vehicles collecting in assembly area",
+          "stimulus": "Collection of vehicles in parking lot configuration requires network establishment",
+          "response_measure": "Network self-organizes and nodes configure within 5 minutes",
+          "architectural_decisions": [
+            "Self-organizing network architecture with autonomous configuration",
+            "Distributed coordination algorithms for node discovery and topology formation",
+            "Automated network management reducing operator burden"
+          ],
+          "reasoning": "The self-organizing network architecture enables nodes to automatically discover neighbors, negotiate roles, and establish network topology without manual configuration. Distributed algorithms coordinate the self-organization process to complete within the 5-minute requirement. This minimizes operator workload and enables rapid network establishment.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Self-organization may exceed 5-minute target in large vehicle collections",
+                "rationale": "The complexity of distributed coordination increases with the number of nodes; large parking lot scenarios with many vehicles may require more time for convergence"
+              },
+              {
+                "id": "R-12",
+                "description": "Conflicting node role assignments during self-organization",
+                "rationale": "Distributed algorithms may encounter race conditions or split-brain scenarios where multiple nodes attempt to assume the same role, requiring conflict resolution that extends configuration time"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Manual reconfiguration required after vehicle movement",
+                "rationale": "Self-organizing capability automatically adapts to topology changes, eliminating need for manual intervention when vehicles reposition"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Number of nodes in parking lot",
+                "correlated_attribute": "Adaptability"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Self-organization algorithm convergence time",
+                "correlated_attribute": "Adaptability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Self-organization automation level",
+                "conflicting_attributes": [
+                  "Usability (positive: less operator intervention required)",
+                  "Network Reliability (negative: automated decisions may be suboptimal)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A COTS product is becoming increasingly incompatible with other COTS products being used. The COTS product is replaced.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modularity",
+          "environment": "Long lifecycle operations with evolving COTS product landscape",
+          "stimulus": "COTS product incompatibility with other system components",
+          "response_measure": "COTS product can be replaced without major system disruption",
+          "architectural_decisions": [
+            "Service-Oriented Architecture with loose coupling between components",
+            "Standardized interfaces isolating COTS products from core system",
+            "Enterprise Application Integration Platform mediating COTS interactions"
+          ],
+          "reasoning": "SOA with loose coupling isolates COTS products behind service interfaces, allowing replacement without affecting other components. The Enterprise Application Integration Platform provides an abstraction layer that shields the system from COTS-specific implementation details. This enables COTS evolution and replacement over the long system lifecycle.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-13",
+                "description": "COTS replacement may require extensive integration testing and validation",
+                "rationale": "Even with loose coupling, replacing COTS products requires verification that new components properly implement service interfaces and maintain system-level quality attributes"
+              },
+              {
+                "id": "R-14",
+                "description": "Cascading incompatibilities when multiple COTS products evolve simultaneously",
+                "rationale": "If several COTS vendors update their products concurrently, managing multiple replacements and ensuring compatibility across the integration platform becomes complex"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "Complete system redesign required for COTS replacement",
+                "rationale": "SOA architecture with standardized service interfaces enables component replacement without affecting core system architecture"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-14",
+                "parameter": "Service interface stability and versioning",
+                "correlated_attribute": "Modularity"
+              },
+              {
+                "id": "S-15",
+                "parameter": "COTS product coupling to system internals",
+                "correlated_attribute": "Modularity"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-08",
+                "parameter": "Interface abstraction level",
+                "conflicting_attributes": [
+                  "Modularity (positive: higher abstraction enables easier replacement)",
+                  "Performance (negative: abstraction layers add overhead and latency)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

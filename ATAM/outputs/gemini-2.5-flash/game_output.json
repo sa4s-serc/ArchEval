@@ -1,0 +1,1045 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Break the current tightly coupled practices employed when developing games using game engines",
+      "Make the architecture flexible to accommodate different games"
+    ],
+    "technical_constraints": [
+      "Must support commercial off-the-shelf (COTS) game engines (e.g., Torque)",
+      "Must support bespoke simulation engines",
+      "Distributed environment to offload processing from the game engine machine"
+    ],
+    "architectural_drivers": [
+      "Portability",
+      "Modifiability",
+      "Performance"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The text implies that like traditional system development cycles, the requirements document lacked or weakly articulated quality attributes, requiring the evaluation team to elicit them. Architectural decisions also had to be elicited as they were not fully listed in the documentation.",
+      "evaluator_inquiry_questions": [
+        "Does the game engine require the game state to be put in its own game state?",
+        "Does the game engine require objects to be represented in its own Game Model representation?",
+        "Does the game engine require the behaviour to be specified in the game engine's own language or format?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "Distributed environment where the game space and game engine run on different machines",
+        "Adapters are placed in the same application as the game space to minimize overhead"
+      ],
+      "runtime_constraints": [
+        "Network overhead due to distributed environment",
+        "Processing power limitations of the machine running the game engine",
+        "Mid-game scripting performance overhead (approx. 10x slower than pre-compiled code)"
+      ]
+    },
+    "quantitative_model_parameters": {
+      "target_display_rate": "20 FPS",
+      "response_time_threshold": "< 1 second",
+      "scripting_performance_penalty": "10x slower than pre-compiled"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Model-View-Controller (MVC) / Game-based Architecture",
+        "questions": [
+          "How does the architecture break the direct link between the game space's game state and the game engine's game state?",
+          "How does the architecture break the direct link between the game space's game model and the game engine's game model?",
+          "How does the architecture ensure game behaviour is not formatted in the game engine's proprietary format?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Run two games from the same domain"
+      },
+      {
+        "id": "RS-02",
+        "description": "Run two games from two different domains"
+      },
+      {
+        "id": "RS-03",
+        "description": "Interoperate between two game engines"
+      },
+      {
+        "id": "RS-04",
+        "description": "Run two behaviour engines (internal and external)"
+      },
+      {
+        "id": "RS-05",
+        "description": "Increase the load by increasing the number of NPCs the user can interact with"
+      },
+      {
+        "id": "RS-06",
+        "description": "Increase the load by simulating multiple number of simultaneous players"
+      },
+      {
+        "id": "RS-07",
+        "description": "Run the game space on the same machine as the game engine"
+      },
+      {
+        "id": "RS-08",
+        "description": "Run the behaviour engine and the game space on the same machine as the game engine"
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Service-Oriented Architecture (SOA) / Microservices",
+        "description": "The system is structured as a collection of loosely coupled, independently deployable services (e.g., game logic, data management) that communicate over a network. This enables the distribution of processing and facilitates decoupling from specific game engines, supporting the 'distributed environment' requirement.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Services can be developed, deployed, and updated independently, allowing for flexible evolution of game logic and data components without impacting the entire system."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "Independent services can potentially be deployed on various platforms or replaced, enhancing the system's adaptability to different environments."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Distributing workload across multiple machines offloads processing from the game engine, optimizing resource utilization and potentially improving overall system responsiveness."
+          }
+        ]
+      },
+      {
+        "approach_name": "Adapter Pattern",
+        "description": "An Adapter pattern is employed to integrate diverse COTS and bespoke game engines. It allows components with incompatible interfaces to work together, presenting a unified interface to the core game logic. The client explicitly mentioned 'Adapters are placed in the same application as the game space to minimize overhead,' confirming its use.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Portability",
+            "rationale": "New or different game engines can be integrated by simply developing a new adapter, enhancing the system's ability to support various underlying technologies and game types."
+          },
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Changes to a specific engine's interface are encapsulated within its adapter, preventing widespread impact on the system's core logic."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "By co-locating adapters with the game space, inter-process communication overhead is minimized, directly contributing to better overall system performance."
+          }
+        ]
+      },
+      {
+        "approach_name": "Broker / Message-Oriented Middleware (MOM)",
+        "description": "To manage communication in the distributed environment and facilitate decoupling, a broker or message-oriented middleware likely acts as an intermediary. Components (game logic, data, engines) communicate asynchronously via messages, without direct knowledge of each other's locations or implementations.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "Loose coupling through messaging allows components to evolve independently, as long as message contracts are maintained, reducing dependencies."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "The communication infrastructure is abstracted, making it easier to swap out or integrate new components and potentially port the system to different environments."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "MOM can handle asynchronous communication, queue messages, and manage load, contributing to improved responsiveness and throughput, especially in distributed scenarios where direct synchronous calls might be slow."
+          }
+        ]
+      },
+      {
+        "approach_name": "Plugin Architecture",
+        "description": "The system is designed to support various COTS and bespoke simulation engines as interchangeable 'plugins.' This allows the core system to remain stable while specific engine implementations can be dynamically loaded, configured, or swapped out, directly addressing the goal of supporting diverse engines.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "New engines can be added or existing ones updated/replaced without altering the core framework, significantly enhancing the system's extensibility and maintainability."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "The ability to integrate different engines makes the system more portable across diverse game development contexts and technology stacks, as the core logic is not tied to a single engine."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Response Time under Load",
+              "scenario_id": "P1",
+              "scenario_description": "Under normal load (1000 concurrent users), the system must respond to a game state update request within 100ms, with 99% of requests meeting this target.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Adapter Overhead",
+              "scenario_id": "P2",
+              "scenario_description": "The overhead introduced by engine adapters must not exceed 5% of the total processing time for any game frame.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Throughput",
+              "scenario_id": "P3",
+              "scenario_description": "The system must process 5000 game state updates per second across all active games without degradation in response time.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Integration of New Engine",
+              "scenario_id": "M1",
+              "scenario_description": "A new bespoke game engine (e.g., 'PhysicsEngine X') must be integrated into the system within 2 weeks, requiring changes only to the adapter layer and configuration.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Addition of New Logic Module",
+              "scenario_id": "M2",
+              "scenario_description": "A new game logic module must be added to an existing service, requiring changes only to that specific service and its API contract, without redeploying the entire system.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            },
+            {
+              "refinement": "Defect Resolution & Deployment",
+              "scenario_id": "M3",
+              "scenario_description": "A critical bug in the 'Data Management Service' must be fixed and deployed to production within 4 hours, affecting only the faulty service and not requiring downtime for other services.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Portability",
+          "children": [
+            {
+              "refinement": "Engine Agnostic Deployment",
+              "scenario_id": "PO1",
+              "scenario_description": "The core game logic and data services must be deployable and function correctly with a different underlying game engine (e.g., Unity to Unreal) with minimal code changes (primarily adapter-related).",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "Cloud Platform Migration",
+              "scenario_id": "PO2",
+              "scenario_description": "The system must be deployable from an AWS environment to an Azure environment within 1 month, primarily through configuration changes and container redeployment.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "Service Instance Failure Recovery",
+              "scenario_id": "A1",
+              "scenario_description": "If a single instance of a core service fails, the system must detect the failure and recover/failover to a healthy instance within 5 seconds, with no data loss and minimal impact to active users.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            },
+            {
+              "refinement": "System Uptime",
+              "scenario_id": "A2",
+              "scenario_description": "The system must maintain 99.9% uptime during peak operating hours (e.g., 8 AM - 10 PM daily).",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under normal load (1000 concurrent users), the system must respond to a game state update request within 100ms, with 99% of requests meeting this target.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The overhead introduced by engine adapters must not exceed 5% of the total processing time for any game frame.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "The system must process 5000 game state updates per second across all active games without degradation in response time.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A new bespoke game engine (e.g., 'PhysicsEngine X') must be integrated into the system within 2 weeks, requiring changes only to the adapter layer and configuration.",
+        "primary_quality_attribute": [
+          "Modifiability",
+          "Portability"
+        ]
+      },
+      {
+        "scenario_text": "A new game logic module must be added to an existing service, requiring changes only to that specific service and its API contract, without redeploying the entire system.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "A critical bug in the 'Data Management Service' must be fixed and deployed to production within 4 hours, affecting only the faulty service and not requiring downtime for other services.",
+        "primary_quality_attribute": [
+          "Modifiability",
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "The core game logic and data services must be deployable and function correctly with a different underlying game engine (e.g., Unity to Unreal) with minimal code changes (primarily adapter-related).",
+        "primary_quality_attribute": [
+          "Portability",
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The system must be deployable from an AWS environment to an Azure environment within 1 month, primarily through configuration changes and container redeployment.",
+        "primary_quality_attribute": [
+          "Portability"
+        ]
+      },
+      {
+        "scenario_text": "If a single instance of a core service fails, the system must detect the failure and recover/failover to a healthy instance within 5 seconds, with no data loss and minimal impact to active users.",
+        "primary_quality_attribute": [
+          "Availability",
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "The system must maintain 99.9% uptime during peak operating hours (e.g., 8 AM - 10 PM daily).",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under normal load (1000 concurrent users), the system must respond to a game state update request within 100ms, with 99% of requests meeting this target.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Normal operations, 1000 concurrent users",
+        "stimulus": "Game state update request",
+        "response_measure": "Response within 100ms for 99% of requests",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices for distributed processing and scaling",
+          "Broker / Message-Oriented Middleware (MOM) for asynchronous communication and load distribution"
+        ],
+        "reasoning": "The distributed nature of SOA/Microservices allows for horizontal scaling to handle concurrent users. MOM provides asynchronous communication and message buffering, which can improve responsiveness and handle load peaks. However, network latency and internal bottlenecks are critical factors.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P1-1",
+              "description": "Network latency between services and MOM, or between services themselves, could exceed the 100ms budget, especially under high concurrent load.",
+              "rationale": "Inter-service communication adds latency that must be accounted for within the response time budget. High load can exacerbate network contention."
+            },
+            {
+              "id": "R-P1-2",
+              "description": "Insufficient scaling or bottlenecks in specific core services (e.g., data management, critical game logic) could prevent meeting the response time target.",
+              "rationale": "While services are independently scalable, a single non-scalable or under-scaled component can become a system-wide bottleneck."
+            },
+            {
+              "id": "R-P1-3",
+              "description": "MOM processing overhead or message queue contention under sustained high load could introduce significant delays.",
+              "rationale": "MOM itself consumes resources and can become a bottleneck if not properly sized and configured for the message volume."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P1-1",
+              "description": "The SOA/Microservices architecture inherently supports handling concurrent users by allowing independent and horizontal scaling of components.",
+              "rationale": "This architectural style is chosen for its ability to distribute workload and scale, which directly addresses the concurrent user aspect of the scenario."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P1-1",
+              "parameter": "Network latency between services and MOM",
+              "correlated_attribute": "Performance (response time)"
+            },
+            {
+              "id": "S-P1-2",
+              "parameter": "Number of service instances / horizontal scaling factor for critical services",
+              "correlated_attribute": "Performance (throughput, response time)"
+            },
+            {
+              "id": "S-P1-3",
+              "parameter": "MOM message processing rate and queue depths",
+              "correlated_attribute": "Performance (response time)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P1-1",
+              "parameter": "Granularity of services",
+              "conflicting_attributes": [
+                "Performance (scalability)",
+                "Performance (inter-service communication overhead)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P2",
+          "text": "The overhead introduced by engine adapters must not exceed 5% of the total processing time for any game frame.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Game frame processing",
+        "stimulus": "Game engine interaction through an adapter",
+        "response_measure": "Adapter overhead < 5% of total processing time",
+        "architectural_decisions": [
+          "Adapter Pattern for integrating diverse COTS and bespoke game engines",
+          "Co-location of adapters with the game space to minimize overhead"
+        ],
+        "reasoning": "The Adapter Pattern introduces an abstraction layer, which inherently has some overhead. However, the explicit decision to co-locate adapters with the game space (same application/process) is a strong mitigation to minimize inter-process communication overhead, which would be the primary source of delay. The remaining overhead is primarily due to the abstraction and data transformation logic within the adapter.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P2-1",
+              "description": "Complex adapter logic or inefficient data transformations within the adapter could still exceed the 5% overhead, even with co-location.",
+              "rationale": "While co-location removes IPC overhead, the computational cost of the adapter's internal logic for interface mapping and data conversion can still be significant."
+            },
+            {
+              "id": "R-P2-2",
+              "description": "Performance characteristics of the specific COTS engine interacting with the adapter might limit the adapter's efficiency, pushing it over the threshold.",
+              "rationale": "The adapter's performance is intrinsically linked to the underlying engine's API performance and how efficiently the adapter can utilize it."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P2-1",
+              "description": "Co-locating adapters with the game space significantly reduces communication overhead, directly addressing a major potential performance hit.",
+              "rationale": "This design choice explicitly minimizes one of the largest potential sources of adapter-related latency: inter-process communication."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P2-1",
+              "parameter": "Complexity and efficiency of adapter's internal logic/data transformation",
+              "correlated_attribute": "Performance (adapter overhead)"
+            },
+            {
+              "id": "S-P2-2",
+              "parameter": "Efficiency of underlying game engine's API calls through the adapter",
+              "correlated_attribute": "Performance (adapter overhead)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P2-1",
+              "parameter": "Adapter generality/flexibility",
+              "conflicting_attributes": [
+                "Modifiability (ease of integrating new engines)",
+                "Performance (adapter overhead)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "P3",
+          "text": "The system must process 5000 game state updates per second across all active games without degradation in response time.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "High volume of game state updates",
+        "stimulus": "5000 game state updates per second",
+        "response_measure": "Processing 5000 updates/sec without degradation in response time",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices for distributed processing and horizontal scalability",
+          "Broker / Message-Oriented Middleware (MOM) for asynchronous processing, load balancing, and message queuing"
+        ],
+        "reasoning": "SOA/Microservices allows for distributing the load across multiple service instances, enabling high throughput. MOM facilitates asynchronous processing, preventing bottlenecks by queuing requests and distributing them efficiently. This combination is key for handling high update volumes, but maintaining response time is a challenge.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-P3-1",
+              "description": "Bottlenecks in shared resources, such as the database or persistent storage for game state, could limit overall throughput despite distributed services.",
+              "rationale": "While computation is distributed, shared resources often become the limiting factor for system-wide throughput if not scaled or optimized appropriately."
+            },
+            {
+              "id": "R-P3-2",
+              "description": "MOM capacity (message rate, queue size, processing speed) might become a limiting factor under sustained high load, leading to backlogs and delayed processing.",
+              "rationale": "MOM itself is a component that needs to be scaled and configured to handle the expected message volume and velocity."
+            },
+            {
+              "id": "R-P3-3",
+              "description": "Inefficient serialization/deserialization of game state updates across services could consume significant CPU and network resources, impacting throughput.",
+              "rationale": "Data transfer overhead, especially for complex game state objects, can be a major performance drain in distributed systems."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-P3-1",
+              "description": "The distributed nature of SOA/Microservices is designed for high throughput by allowing parallel execution and scaling of individual services.",
+              "rationale": "This architectural style is fundamentally suited for scaling out to handle increased load and processing capacity."
+            },
+            {
+              "id": "NR-P3-2",
+              "description": "MOM provides mechanisms (e.g., message queues, publish/subscribe) to handle high volumes of messages and decouple producers from consumers, aiding throughput.",
+              "rationale": "MOM's ability to buffer and manage message flow is crucial for maintaining throughput under variable load."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-P3-1",
+              "parameter": "Capacity of shared data stores (e.g., database IOPS, network bandwidth to storage)",
+              "correlated_attribute": "Performance (throughput)"
+            },
+            {
+              "id": "S-P3-2",
+              "parameter": "MOM message processing capacity and configuration",
+              "correlated_attribute": "Performance (throughput, response time)"
+            },
+            {
+              "id": "S-P3-3",
+              "parameter": "Efficiency of data serialization/deserialization mechanisms",
+              "correlated_attribute": "Performance (throughput, CPU utilization)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-P3-1",
+              "parameter": "Data consistency model",
+              "conflicting_attributes": [
+                "Performance (throughput)",
+                "Consistency (strong vs. eventual)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M1",
+          "text": "A new bespoke game engine (e.g., 'PhysicsEngine X') must be integrated into the system within 2 weeks, requiring changes only to the adapter layer and configuration.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "System development/integration phase",
+        "stimulus": "Requirement to integrate a new game engine",
+        "response_measure": "Integration within 2 weeks, limited to adapter layer and configuration changes",
+        "architectural_decisions": [
+          "Adapter Pattern to provide a standardized interface for engines",
+          "Plugin Architecture designed for dynamic loading/swapping of engines"
+        ],
+        "reasoning": "The Adapter Pattern directly supports integrating new engines by providing a dedicated, isolated layer for interface translation. The Plugin Architecture reinforces this by treating engines as swappable components, meaning the core system doesn't need modification. The time constraint depends heavily on the complexity of the new engine's API.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M1-1",
+              "description": "The new engine's API might be significantly different or complex, making adapter development challenging and potentially exceeding the 2-week timeframe or requiring changes beyond the adapter layer.",
+              "rationale": "The effort to create an adapter is directly proportional to the complexity and divergence of the new engine's interface from the system's expected abstraction."
+            },
+            {
+              "id": "R-M1-2",
+              "description": "Unexpected side effects or dependencies of the new engine, not fully abstracted by the adapter, could necessitate changes in core logic.",
+              "rationale": "An imperfect abstraction layer in the adapter could leak engine-specific concerns into the core system, undermining modifiability."
+            },
+            {
+              "id": "R-M1-3",
+              "description": "Lack of clear documentation or examples for the new bespoke engine could significantly delay adapter development.",
+              "rationale": "Understanding a new API without proper documentation increases development time and risk of errors."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M1-1",
+              "description": "The Adapter Pattern is specifically designed to encapsulate engine-specific logic, minimizing impact on the core system when integrating new engines.",
+              "rationale": "This pattern centralizes engine-specific code, making the core system agnostic to engine details."
+            },
+            {
+              "id": "NR-M1-2",
+              "description": "Plugin Architecture facilitates adding new engines without modifying the core framework, aligning with the 'only to adapter layer and configuration' requirement.",
+              "rationale": "This architecture explicitly supports extensibility through interchangeable components."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M1-1",
+              "parameter": "Complexity and divergence of new engine's API from existing abstractions",
+              "correlated_attribute": "Modifiability (integration effort)"
+            },
+            {
+              "id": "S-M1-2",
+              "parameter": "Completeness and clarity of new engine's documentation",
+              "correlated_attribute": "Modifiability (integration effort)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M1-1",
+              "parameter": "Generality of the adapter framework",
+              "conflicting_attributes": [
+                "Modifiability (speed of future integrations)",
+                "Modifiability (initial development time of the framework)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M2",
+          "text": "A new game logic module must be added to an existing service, requiring changes only to that specific service and its API contract, without redeploying the entire system.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "System evolution",
+        "stimulus": "Requirement to add new game logic",
+        "response_measure": "Changes limited to one service and its API contract, no full system redeployment",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices for independent deployability and modifiability of services"
+        ],
+        "reasoning": "The core principle of SOA/Microservices is independent deployability and modifiability of services. Adding a new module to an existing service should only impact that service, provided the module doesn't introduce breaking changes to the service's external API contract.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M2-1",
+              "description": "If the new module requires changes to the service's external API contract, dependent services might need updates, violating the 'only to that specific service' constraint.",
+              "rationale": "Changes to a public API contract necessitate updates to all consumers, potentially leading to cascading changes across the system."
+            },
+            {
+              "id": "R-M2-2",
+              "description": "Hidden dependencies or shared libraries between services could inadvertently cause cascading changes or require broader redeployment.",
+              "rationale": "Tight coupling or undeclared dependencies undermine the independent modifiability promised by microservices."
+            },
+            {
+              "id": "R-M2-3",
+              "description": "Inadequate service boundary definition could lead to a new module requiring logic that spans multiple services, increasing modification effort.",
+              "rationale": "Poor service decomposition can result in 'distributed monoliths' where changes are still complex and wide-ranging."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M2-1",
+              "description": "SOA/Microservices explicitly supports independent development and deployment of services, making this scenario a primary benefit of the architecture.",
+              "rationale": "The fundamental design of microservices is to enable isolated changes and deployments, directly addressing this modifiability goal."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M2-1",
+              "parameter": "Adherence to strict, well-defined API contracts between services",
+              "correlated_attribute": "Modifiability (impact scope)"
+            },
+            {
+              "id": "S-M2-2",
+              "parameter": "Granularity and cohesion of existing services and their boundaries",
+              "correlated_attribute": "Modifiability (scope of change)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M2-1",
+              "parameter": "Service granularity",
+              "conflicting_attributes": [
+                "Modifiability (ease of isolated changes)",
+                "Complexity (number of services to manage, operational overhead)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "M3",
+          "text": "A critical bug in the 'Data Management Service' must be fixed and deployed to production within 4 hours, affecting only the faulty service and not requiring downtime for other services.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Modifiability",
+        "environment": "Production environment, critical bug",
+        "stimulus": "Critical bug detected in Data Management Service",
+        "response_measure": "Fix and deploy within 4 hours, isolated to faulty service, no downtime for others",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices for independent deployability",
+          "Broker / Message-Oriented Middleware (MOM) for decoupling and message buffering"
+        ],
+        "reasoning": "SOA/Microservices allows for isolated deployment of individual services, meaning a fix in one service can be deployed without affecting others. MOM further supports this by buffering requests for the Data Management Service during a brief outage, ensuring other services don't stall. Rapid deployment also relies on robust CI/CD practices.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-M3-1",
+              "description": "The 'Data Management Service' might be a critical dependency for many other services. Even a brief outage during deployment could impact overall system functionality if consumers are not designed with retry/circuit breaker patterns.",
+              "rationale": "Independent deployment doesn't negate the impact of a critical dependency being temporarily unavailable if client services aren't resilient."
+            },
+            {
+              "id": "R-M3-2",
+              "description": "Deployment process complexity or lack of automation could prevent meeting the 4-hour target for fixing and deploying a critical bug.",
+              "rationale": "Manual or slow deployment pipelines undermine the agility promised by microservices for rapid fixes."
+            },
+            {
+              "id": "R-M3-3",
+              "description": "The bug fix itself could introduce new regressions, requiring rollback and further delay, impacting availability beyond the initial 4-hour window.",
+              "rationale": "Rapid deployment can sometimes lead to less thorough testing, increasing the risk of new defects."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-M3-1",
+              "description": "Independent deployability of SOA/Microservices directly addresses the goal of affecting only the faulty service during a fix and deployment.",
+              "rationale": "This is a core tenet of microservices, allowing targeted updates without widespread disruption."
+            },
+            {
+              "id": "NR-M3-2",
+              "description": "MOM's asynchronous nature can help mitigate the impact of a brief service outage by queuing messages, preventing immediate data loss or client errors.",
+              "rationale": "Decoupling clients from services via MOM provides a buffer during service unavailability."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-M3-1",
+              "parameter": "Deployment automation level and speed of CI/CD pipelines",
+              "correlated_attribute": "Modifiability (time to deploy)"
+            },
+            {
+              "id": "S-M3-2",
+              "parameter": "Implementation of fault tolerance patterns (e.g., retry, circuit breaker) in client services depending on the Data Management Service",
+              "correlated_attribute": "Availability (impact of single service downtime)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-M3-1",
+              "parameter": "Speed of deployment",
+              "conflicting_attributes": [
+                "Modifiability (time to fix/deploy)",
+                "Reliability (risk of introducing new bugs due to less testing)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "PO1",
+          "text": "The core game logic and data services must be deployable and function correctly with a different underlying game engine (e.g., Unity to Unreal) with minimal code changes (primarily adapter-related).",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Portability",
+        "environment": "System redeployment, different game engine",
+        "stimulus": "Requirement to switch underlying game engine",
+        "response_measure": "Deployable and functional with minimal adapter-related code changes",
+        "architectural_decisions": [
+          "Adapter Pattern to abstract engine-specific interfaces",
+          "Plugin Architecture to treat engines as swappable components",
+          "Service-Oriented Architecture (SOA) / Microservices to decouple core logic from the engine"
+        ],
+        "reasoning": "The combination of Adapter Pattern and Plugin Architecture is explicitly designed for this scenario. Adapters encapsulate engine-specific details, and the plugin architecture allows swapping out the engine implementation. SOA/Microservices ensures that the core game logic and data services are independent of the engine.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-PO1-1",
+              "description": "'Minimal code changes' is subjective. Significant differences between engine capabilities (e.g., physics, rendering) might necessitate more than just adapter changes, potentially impacting core logic if the abstraction isn't robust enough.",
+              "rationale": "If the abstraction layer is leaky or incomplete, core business logic might still be tied to engine specifics, requiring broader changes."
+            },
+            {
+              "id": "R-PO1-2",
+              "description": "Performance differences or unique features between engines might require re-tuning or optimization efforts beyond simple code changes, affecting the 'function correctly' aspect.",
+              "rationale": "While the system may 'function', achieving equivalent performance or fully leveraging new engine capabilities might require more than just a swap."
+            },
+            {
+              "id": "R-PO1-3",
+              "description": "Undocumented or proprietary aspects of new engines could hinder adapter development or prevent complete abstraction.",
+              "rationale": "Reliance on closed-source or poorly documented APIs increases the difficulty and time for integration."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-PO1-1",
+              "description": "Adapter Pattern and Plugin Architecture are specifically implemented to achieve engine agnosticism and facilitate switching between engines.",
+              "rationale": "These patterns are foundational to the system's ability to support diverse game engines."
+            },
+            {
+              "id": "NR-PO1-2",
+              "description": "SOA/Microservices ensures core game logic and data services are decoupled from engine specifics, promoting their independent portability.",
+              "rationale": "Separating concerns into distinct services reduces direct coupling to the underlying game engine."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-PO1-1",
+              "parameter": "Completeness and robustness of the adapter layer's abstraction",
+              "correlated_attribute": "Portability (code change effort), Modifiability"
+            },
+            {
+              "id": "S-PO1-2",
+              "parameter": "Divergence in fundamental capabilities between source and target engines",
+              "correlated_attribute": "Portability (implementation effort)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-PO1-1",
+              "parameter": "Generality of engine abstraction",
+              "conflicting_attributes": [
+                "Portability (ease of engine switching)",
+                "Performance/Feature Utilization (ability to leverage unique engine features or optimize for a specific engine)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "PO2",
+          "text": "The system must be deployable from an AWS environment to an Azure environment within 1 month, primarily through configuration changes and container redeployment.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Portability",
+        "environment": "Cloud migration",
+        "stimulus": "Requirement to migrate cloud provider",
+        "response_measure": "Migration within 1 month, primarily config changes and container redeployment",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices, implying containerization for portability"
+        ],
+        "reasoning": "SOA/Microservices, combined with containerization (implied by 'container redeployment'), significantly enhances portability across cloud environments. Containers encapsulate the application and its dependencies, making them portable. The challenge lies in cloud-specific services and infrastructure-as-code definitions.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-PO2-1",
+              "description": "Reliance on proprietary cloud services (e.g., AWS Lambda, Azure Cosmos DB) without adequate abstraction could make migration more complex than just configuration changes.",
+              "rationale": "Deep integration with vendor-specific services creates lock-in, hindering portability."
+            },
+            {
+              "id": "R-PO2-2",
+              "description": "Differences in networking, security, or monitoring configurations between AWS and Azure could require significant re-engineering, not just configuration updates.",
+              "rationale": "Underlying infrastructure differences, even for containerized applications, can require substantial effort to bridge."
+            },
+            {
+              "id": "R-PO2-3",
+              "description": "Lack of robust infrastructure-as-code (e.g., Terraform, CloudFormation/ARM templates) could make environment provisioning manual and time-consuming, exceeding the 1-month target.",
+              "rationale": "Manual infrastructure setup is error-prone and slow, especially for complex distributed systems."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-PO2-1",
+              "description": "Containerization (common in SOA/Microservices implementations) makes application deployment largely cloud-agnostic, supporting the 'container redeployment' aspect.",
+              "rationale": "Containers package applications and dependencies, providing a consistent runtime environment across different cloud platforms."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-PO2-1",
+              "parameter": "Degree of reliance on cloud-specific managed services and APIs",
+              "correlated_attribute": "Portability (migration effort)"
+            },
+            {
+              "id": "S-PO2-2",
+              "parameter": "Maturity and completeness of infrastructure-as-code for environment provisioning",
+              "correlated_attribute": "Portability (migration time)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-PO2-1",
+              "parameter": "Leveraging cloud-specific managed services",
+              "conflicting_attributes": [
+                "Performance/Cost-effectiveness (benefits of optimized cloud services)",
+                "Portability (reduced cloud neutrality)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "If a single instance of a core service fails, the system must detect the failure and recover/failover to a healthy instance within 5 seconds, with no data loss and minimal impact to active users.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Production, service instance failure",
+        "stimulus": "Single instance of a core service fails",
+        "response_measure": "Detection and failover within 5 seconds, no data loss, minimal user impact",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices to support multiple instances and redundancy",
+          "Broker / Message-Oriented Middleware (MOM) to buffer requests and ensure message persistence"
+        ],
+        "reasoning": "SOA/Microservices allows for running multiple instances of a service, which is critical for failover. The system needs robust health checks, failure detection, and automatic routing to healthy instances. MOM can help ensure 'no data loss' for messages in transit by queuing them until a healthy instance is available. 'Minimal impact' implies quick detection and recovery.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-A1-1",
+              "description": "Inadequate health checking and failure detection mechanisms might lead to delayed detection, exceeding the 5-second target for recovery.",
+              "rationale": "Slow or inaccurate failure detection directly impacts recovery time."
+            },
+            {
+              "id": "R-A1-2",
+              "description": "Lack of proper load balancing, service discovery, or service mesh mechanisms might fail to route traffic away from the failed instance quickly.",
+              "rationale": "Effective traffic management is essential for rapid failover."
+            },
+            {
+              "id": "R-A1-3",
+              "description": "Single points of failure in the recovery mechanism itself (e.g., a centralized health monitor or service registry) could jeopardize the entire system's availability.",
+              "rationale": "The recovery infrastructure must itself be highly available."
+            },
+            {
+              "id": "R-A1-4",
+              "description": "Data consistency issues or in-flight transaction loss if the failed service instance held uncommitted state and the system lacks robust transaction management or idempotency.",
+              "rationale": "Loss of stateful information during a failure can lead to data integrity problems."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-A1-1",
+              "description": "SOA/Microservices inherently supports redundancy by allowing multiple instances of services, which is a prerequisite for failover.",
+              "rationale": "The ability to run multiple copies of a service is a core benefit for availability."
+            },
+            {
+              "id": "NR-A1-2",
+              "description": "MOM can provide message persistence and delivery guarantees, preventing data loss for messages in transit during a service failure.",
+              "rationale": "Message queues act as a buffer and ensure messages are not lost even if the consuming service is temporarily down."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-A1-1",
+              "parameter": "Frequency and accuracy of health checks and failure detection logic",
+              "correlated_attribute": "Availability (detection time)"
+            },
+            {
+              "id": "S-A1-2",
+              "parameter": "Failover mechanism's re-routing speed (e.g., load balancer, service mesh configuration propagation time)",
+              "correlated_attribute": "Availability (recovery time)"
+            },
+            {
+              "id": "S-A1-3",
+              "parameter": "Statefulness of the service",
+              "correlated_attribute": "Availability (data loss, recovery complexity)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-A1-1",
+              "parameter": "Recovery speed",
+              "conflicting_attributes": [
+                "Availability (faster recovery)",
+                "Resource Utilization (more aggressive health checks, pre-warmed instances)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A2",
+          "text": "The system must maintain 99.9% uptime during peak operating hours (e.g., 8 AM - 10 PM daily).",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Production, peak operating hours",
+        "stimulus": "Continuous operation",
+        "response_measure": "99.9% uptime during peak hours",
+        "architectural_decisions": [
+          "Service-Oriented Architecture (SOA) / Microservices for redundancy and fault isolation",
+          "Broker / Message-Oriented Middleware (MOM) for decoupling, message buffering, and masking transient failures"
+        ],
+        "reasoning": "Achieving 99.9% uptime requires high redundancy, fault tolerance, and automated recovery across all components. SOA/Microservices aids by isolating failures and enabling independent scaling. MOM can further contribute by providing resilience in communication. This is a system-wide attribute, dependent on many factors beyond just the architectural approaches.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-A2-1",
+              "description": "Single points of failure in shared infrastructure (e.g., database clusters, load balancers, network components) could lead to cascading failures impacting overall uptime.",
+              "rationale": "Even with distributed services, critical shared infrastructure must be highly available to prevent system-wide outages."
+            },
+            {
+              "id": "R-A2-2",
+              "description": "Latent bugs or resource leaks in services could cause gradual degradation and eventual failure, leading to unplanned downtime.",
+              "rationale": "Software quality and stability are paramount for sustained uptime, even with robust recovery mechanisms."
+            },
+            {
+              "id": "R-A2-3",
+              "description": "Human error during deployment, configuration changes, or maintenance could lead to outages.",
+              "rationale": "Operational practices and automation are critical to minimize human-induced downtime."
+            },
+            {
+              "id": "R-A2-4",
+              "description": "External dependencies (e.g., third-party APIs, cloud provider outages) could impact uptime beyond the system's direct control.",
+              "rationale": "The system's availability is capped by the availability of its critical external dependencies."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-A2-1",
+              "description": "SOA/Microservices architecture promotes fault isolation, meaning a failure in one service is less likely to bring down the entire system.",
+              "rationale": "Independent services limit the blast radius of failures."
+            },
+            {
+              "id": "NR-A2-2",
+              "description": "MOM provides resilience by decoupling services and managing message flow, which can help maintain operation during transient issues.",
+              "rationale": "Asynchronous communication and message buffering enhance the system's ability to withstand temporary service unavailability."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-A2-1",
+              "parameter": "Redundancy level of all critical components (services, databases, infrastructure)",
+              "correlated_attribute": "Availability (uptime)"
+            },
+            {
+              "id": "S-A2-2",
+              "parameter": "Mean Time To Recovery (MTTR) for any component failure",
+              "correlated_attribute": "Availability (uptime)"
+            },
+            {
+              "id": "S-A2-3",
+              "parameter": "Robustness of monitoring, alerting, and automated recovery systems",
+              "correlated_attribute": "Availability (uptime)"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-A2-1",
+              "parameter": "Uptime target",
+              "conflicting_attributes": [
+                "Availability (higher uptime)",
+                "Cost (infrastructure, operational overhead)"
+              ]
+            },
+            {
+              "id": "T-A2-2",
+              "parameter": "Deployment frequency",
+              "conflicting_attributes": [
+                "Availability (stability for higher uptime)",
+                "Modifiability (agility for faster deployments)"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

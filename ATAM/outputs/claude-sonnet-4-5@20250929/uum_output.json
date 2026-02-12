@@ -1,0 +1,877 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A Learning Management System (LMS) based on Moodle 1.9 (Open Source) used by Universiti Utara Malaysia. It automates the administration of training events and provides an online environment for content creation, delivery, communication, collaboration, and assessment. It includes modules for assignments, chats, forums, lessons, Turnitin, and web meetings, supporting synchronous and asynchronous e-learning activities.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The system was already a fully implemented, operational web-based system (Moodle version 1.9) at the time of evaluation. The evaluation was retrospective, treating the existing implementation as the architecture to be analyzed.",
+        "evaluator_inquiry_questions": [
+          "How long will the system be available for a virtual meet\u2019s web cam live chat when there is a network failure?",
+          "Can the system authenticate a user if they try to log on with either wrong user id or password?",
+          "Does the architecture process any task with the fastest speed?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "The system relies on network infrastructure susceptible to congestion during high traffic (virtual meets).",
+          "Web-based system architecture accessed via internet/intranet."
+        ],
+        "runtime_constraints": [
+          "Must support heavy file uploads (Video, audio, PDF, etc.) which was a limitation in the previous system.",
+          "Scalability for Virtual Meet module handles 1-100 persons.",
+          "Must conform to SCORM (Sharable Content Object Reference Model) standards."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "virtual_meet_capacity": "1-100 persons",
+        "voting_calculation": {
+          "formula": "30% x total number of scenarios",
+          "total_scenarios": "8"
+        },
+        "recovery_time": "Minimal amount of time"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Authentication and Virtual Meet",
+          "questions": [
+            "How does the system handle invalid login attempts regarding main page access?",
+            "How does the system recover from network failure due to congestion during live video chats?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Entering a wrong user name and password"
+        },
+        {
+          "id": "RS-02",
+          "description": "Clicking an icon to process information with speed"
+        },
+        {
+          "id": "RS-03",
+          "description": "Sending an encapsulated, secured e-mail"
+        },
+        {
+          "id": "RS-04",
+          "description": "Adding new web pages to my wiki module"
+        },
+        {
+          "id": "RS-05",
+          "description": "Integrating mybox for my file storage"
+        },
+        {
+          "id": "RS-06",
+          "description": "Downloading of lecture slides"
+        },
+        {
+          "id": "RS-07",
+          "description": "When Network fails during virtual meet and later recovered"
+        },
+        {
+          "id": "RS-08",
+          "description": "The system should be able to handle user errors"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Enhancing quality teaching and learning within the university community",
+          "Managing the delivery and administration of programs of learning via the internet",
+          "Provide a cheaper, open-source alternative to the previous system (Learning Care)"
+        ],
+        "technical_constraints": [
+          "Must be based on Moodle (Modular Object-Oriented Dynamic Learning Environment)",
+          "Must be Open Source Software (OSS) under GNU license",
+          "Must support SCORM standards",
+          "Must operate on multiple platforms (Windows, Solaris, Linux, Mac OS, UNIX)"
+        ],
+        "architectural_drivers": [
+          "Availability",
+          "Security",
+          "Performance",
+          "Modifiability",
+          "Reliability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Modular Architecture (Plugin-based)",
+          "description": "Moodle's Modular Object-Oriented Dynamic Learning Environment supports pluggable modules (assignments, chats, forums, lessons, Turnitin, web meetings, wiki) enabling extensibility and modifiability",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Modular design allows adding/removing features without affecting core system"
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Module isolation prevents cascading failures"
+            }
+          ]
+        },
+        {
+          "approach_name": "Web-based Client-Server Architecture",
+          "description": "Internet/intranet accessible system with centralized server handling requests from distributed clients",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Centralized deployment enables consistent access across platforms"
+            },
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Server-side processing handles heavy file uploads and concurrent users"
+            }
+          ]
+        },
+        {
+          "approach_name": "Authentication and Authorization Framework",
+          "description": "User authentication system controlling access to main pages and resources based on credentials",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Security",
+              "rationale": "Validates user credentials before granting access to system resources"
+            }
+          ]
+        },
+        {
+          "approach_name": "SCORM-Compliant Content Management",
+          "description": "Adherence to SCORM standards for content packaging and delivery",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Standards compliance enables interoperability and content reuse"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Response time for file uploads under concurrent load",
+                "scenario_id": "P1",
+                "scenario_description": "Under normal operations with 500 concurrent users, when multiple large file uploads (up to 100MB) occur simultaneously, the system processes each upload with response time < 5 seconds for 95% of requests",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Page load time for course content delivery",
+                "scenario_id": "P2",
+                "scenario_description": "When authenticated users access SCORM-compliant course content during peak hours, page load time remains < 2 seconds for 90% of requests",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "System uptime for distributed client access",
+                "scenario_id": "A1",
+                "scenario_description": "The centralized server maintains 99.5% uptime over a 30-day period, ensuring consistent internet/intranet access for distributed clients across multiple platforms",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Authentication enforcement for resource access",
+                "scenario_id": "S1",
+                "scenario_description": "When unauthenticated users attempt to access protected main pages or resources, the authentication framework blocks access 100% of the time and redirects to login within 1 second",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Authorization validation for role-based access",
+                "scenario_id": "S2",
+                "scenario_description": "When authenticated users with insufficient privileges attempt to access restricted modules (assignments, forums, Turnitin), the authorization system denies access and logs the attempt within 500ms",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Plugin module addition without core system impact",
+                "scenario_id": "M1",
+                "scenario_description": "A developer adds a new plugin module (e.g., video conferencing) to the modular architecture, completing integration and testing without modifying core system code within 40 developer-hours",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "SCORM-compliant content integration",
+                "scenario_id": "M2",
+                "scenario_description": "When instructors upload new SCORM-compliant content packages from external authoring tools, the system integrates and deploys the content without code changes, completing the process within 15 minutes",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "Module isolation preventing cascading failures",
+                "scenario_id": "R1",
+                "scenario_description": "When a single plugin module (e.g., Turnitin integration) experiences a failure or crashes, the module isolation architecture contains the failure, allowing other modules (forums, assignments, wiki) and core system to continue operating without degradation",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Under normal operations with 500 concurrent users, when multiple large file uploads (up to 100MB) occur simultaneously, the system processes each upload with response time < 5 seconds for 95% of requests",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When authenticated users access SCORM-compliant course content during peak hours, page load time remains < 2 seconds for 90% of requests",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "The centralized server maintains 99.5% uptime over a 30-day period, ensuring consistent internet/intranet access for distributed clients across multiple platforms",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "When unauthenticated users attempt to access protected main pages or resources, the authentication framework blocks access 100% of the time and redirects to login within 1 second",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "When authenticated users with insufficient privileges attempt to access restricted modules (assignments, forums, Turnitin), the authorization system denies access and logs the attempt within 500ms",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "A developer adds a new plugin module (e.g., video conferencing) to the modular architecture, completing integration and testing without modifying core system code within 40 developer-hours",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When instructors upload new SCORM-compliant content packages from external authoring tools, the system integrates and deploys the content without code changes, completing the process within 15 minutes",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "When a single plugin module (e.g., Turnitin integration) experiences a failure or crashes, the module isolation architecture contains the failure, allowing other modules (forums, assignments, wiki) and core system to continue operating without degradation",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "Under normal operations with 500 concurrent users, when multiple large file uploads (up to 100MB) occur simultaneously, the system processes each upload with response time < 5 seconds for 95% of requests",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations with 500 concurrent users",
+          "stimulus": "Multiple simultaneous large file uploads (up to 100MB)",
+          "response_measure": "Response time < 5 seconds for 95% of requests",
+          "architectural_decisions": [
+            "Web-based Client-Server Architecture with centralized server-side processing",
+            "Server handles heavy file upload processing",
+            "Modular architecture isolates upload functionality"
+          ],
+          "reasoning": "The centralized server must handle concurrent file uploads efficiently. Without explicit load balancing, caching, or asynchronous processing mechanisms documented, the server becomes a bottleneck. Network bandwidth between clients and server, disk I/O capacity, and database connection pool size directly impact upload performance. The 5-second target for 100MB files requires minimum 20MB/s throughput per upload, which multiplied by concurrent users creates significant resource demands.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Centralized server may become bottleneck under concurrent large file uploads without documented load balancing or horizontal scaling",
+                "rationale": "500 concurrent users uploading 100MB files simultaneously could exceed server I/O capacity, network bandwidth, and memory resources, causing response times to exceed 5-second threshold"
+              },
+              {
+                "id": "R-02",
+                "description": "Database connection pool exhaustion during concurrent upload metadata storage",
+                "rationale": "Each upload requires database transactions for metadata storage; insufficient connection pool size could cause queuing delays"
+              },
+              {
+                "id": "R-03",
+                "description": "Network bandwidth saturation between distributed clients and centralized server",
+                "rationale": "100MB uploads from 500 concurrent users require substantial bandwidth; internet/intranet capacity constraints not documented"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Module isolation prevents upload failures from affecting other system components",
+                "rationale": "Modular architecture ensures upload processing failures remain contained within the upload module"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Network bandwidth capacity",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-02",
+                "parameter": "Server disk I/O throughput",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-03",
+                "parameter": "Database connection pool size",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "File upload buffer size",
+                "conflicting_attributes": [
+                  "Performance (larger buffers improve throughput)",
+                  "Availability (larger buffers consume more memory, risking OOM failures)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P2",
+            "text": "When authenticated users access SCORM-compliant course content during peak hours, page load time remains < 2 seconds for 90% of requests",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak hours with authenticated users accessing course content",
+          "stimulus": "User requests for SCORM-compliant course content",
+          "response_measure": "Page load time < 2 seconds for 90% of requests",
+          "architectural_decisions": [
+            "SCORM-Compliant Content Management for standardized content delivery",
+            "Web-based Client-Server Architecture for content serving",
+            "Authentication framework validates users before content access"
+          ],
+          "reasoning": "SCORM content delivery involves retrieving course packages, rendering interactive elements, and tracking user progress. The 2-second target requires efficient content caching, database query optimization, and minimal authentication overhead. Peak hours amplify concurrent request load. Without documented caching strategy or CDN usage, repeated content requests could overload the server.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Lack of documented caching strategy for SCORM content may cause repeated server-side processing",
+                "rationale": "Without content caching, each request requires full SCORM package retrieval and processing, increasing latency during peak hours"
+              },
+              {
+                "id": "R-05",
+                "description": "Authentication overhead on every content request may degrade performance",
+                "rationale": "If authentication validation occurs on each SCORM content request without session caching, cumulative overhead could exceed 2-second threshold"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "SCORM standards compliance ensures predictable content structure and processing",
+                "rationale": "Standardized SCORM packaging allows optimized parsing and delivery mechanisms"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Content cache hit ratio",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-05",
+                "parameter": "Database query response time for content metadata",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-06",
+                "parameter": "Authentication token expiration time",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Content cache size",
+                "conflicting_attributes": [
+                  "Performance (larger cache improves hit ratio and reduces latency)",
+                  "Modifiability (cached content requires invalidation when updated)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "The centralized server maintains 99.5% uptime over a 30-day period, ensuring consistent internet/intranet access for distributed clients across multiple platforms",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "30-day operational period with distributed clients",
+          "stimulus": "Continuous client access requests across internet/intranet",
+          "response_measure": "99.5% uptime (approximately 3.6 hours downtime per month)",
+          "architectural_decisions": [
+            "Centralized server deployment for consistent access",
+            "Web-based architecture supporting multiple client platforms",
+            "Modular architecture for component isolation"
+          ],
+          "reasoning": "99.5% uptime allows only 3.6 hours of downtime per month. The centralized architecture creates a single point of failure. Without documented redundancy, failover mechanisms, or high-availability clustering, hardware failures, network outages, or maintenance windows could exceed the downtime budget. Module isolation helps contain failures but doesn't address server-level availability.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-06",
+                "description": "Centralized server represents single point of failure without documented redundancy",
+                "rationale": "Hardware failure, network outage, or datacenter issues could cause complete system unavailability exceeding 3.6-hour monthly budget"
+              },
+              {
+                "id": "R-07",
+                "description": "Planned maintenance windows may consume entire downtime budget",
+                "rationale": "Software updates, security patches, and database maintenance require downtime; without hot-swap or rolling update capability, maintenance could exceed 99.5% target"
+              },
+              {
+                "id": "R-08",
+                "description": "Internet/intranet network dependency creates external failure points",
+                "rationale": "ISP outages or network infrastructure failures outside system control could impact availability"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Module isolation prevents individual plugin failures from causing total system unavailability",
+                "rationale": "Modular architecture ensures core system remains available even if specific modules fail"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-07",
+                "parameter": "Server hardware MTBF (Mean Time Between Failures)",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-08",
+                "parameter": "Network infrastructure redundancy level",
+                "correlated_attribute": "Availability"
+              },
+              {
+                "id": "S-09",
+                "parameter": "Maintenance window frequency and duration",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Server redundancy level",
+                "conflicting_attributes": [
+                  "Availability (higher redundancy improves uptime)",
+                  "Modifiability (distributed redundant systems complicate updates and synchronization)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "When unauthenticated users attempt to access protected main pages or resources, the authentication framework blocks access 100% of the time and redirects to login within 1 second",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with unauthenticated access attempts",
+          "stimulus": "Unauthenticated user attempts to access protected resources",
+          "response_measure": "100% access blocking with redirect to login within 1 second",
+          "architectural_decisions": [
+            "Authentication and Authorization Framework controlling resource access",
+            "Credential validation before granting access to main pages",
+            "Web-based architecture enforcing server-side authentication checks"
+          ],
+          "reasoning": "The authentication framework must intercept all requests to protected resources and validate credentials before allowing access. The 100% blocking requirement demands fail-secure design with no bypass vulnerabilities. The 1-second redirect constraint requires efficient authentication checks without complex cryptographic operations that could introduce latency.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-09",
+                "description": "Authentication bypass vulnerabilities if framework not applied consistently across all protected endpoints",
+                "rationale": "Incomplete coverage of authentication checks could allow direct URL access to protected resources, violating 100% blocking requirement"
+              },
+              {
+                "id": "R-10",
+                "description": "Session fixation or hijacking attacks if session management not properly implemented",
+                "rationale": "Weak session token generation or insecure transmission could allow attackers to impersonate authenticated users"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Server-side authentication enforcement prevents client-side bypass",
+                "rationale": "Web-based client-server architecture ensures authentication logic executes on trusted server, not manipulable client"
+              },
+              {
+                "id": "NR-05",
+                "description": "1-second redirect constraint is achievable with standard authentication mechanisms",
+                "rationale": "Session token validation and redirect operations typically complete in milliseconds, well within 1-second budget"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-10",
+                "parameter": "Authentication check execution time",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-11",
+                "parameter": "Session token validation complexity",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-04",
+                "parameter": "Authentication token cryptographic strength",
+                "conflicting_attributes": [
+                  "Security (stronger cryptography improves resistance to attacks)",
+                  "Performance (complex cryptographic operations increase validation latency)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S2",
+            "text": "When authenticated users with insufficient privileges attempt to access restricted modules (assignments, forums, Turnitin), the authorization system denies access and logs the attempt within 500ms",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Normal operations with authenticated users attempting unauthorized access",
+          "stimulus": "Authenticated user with insufficient privileges attempts module access",
+          "response_measure": "Access denial and logging within 500ms",
+          "architectural_decisions": [
+            "Authentication and Authorization Framework with role-based access control",
+            "Modular architecture with per-module authorization checks",
+            "Logging mechanism for security audit trails"
+          ],
+          "reasoning": "Authorization requires mapping user roles to module permissions and enforcing access control. The 500ms constraint demands efficient permission lookups, likely requiring cached role-permission mappings. Logging adds overhead but is critical for security auditing. The modular architecture requires consistent authorization enforcement across all plugin modules.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-11",
+                "description": "Inconsistent authorization enforcement across plugin modules",
+                "rationale": "Plugin-based architecture may allow third-party modules to implement custom authorization logic, creating potential for privilege escalation vulnerabilities"
+              },
+              {
+                "id": "R-12",
+                "description": "Authorization decision caching may serve stale permissions after role changes",
+                "rationale": "To meet 500ms constraint, permission lookups likely use caching; insufficient cache invalidation could allow access after privilege revocation"
+              },
+              {
+                "id": "R-13",
+                "description": "Logging mechanism failure could prevent security audit trails",
+                "rationale": "If logging is synchronous and fails, it could either block the authorization decision or silently fail to record unauthorized access attempts"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-06",
+                "description": "500ms response time is sufficient for role-based authorization checks",
+                "rationale": "Database lookups for user roles and permission mappings typically complete in tens of milliseconds, leaving margin for logging"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-12",
+                "parameter": "Role-permission cache TTL (Time To Live)",
+                "correlated_attribute": "Security"
+              },
+              {
+                "id": "S-13",
+                "parameter": "Authorization database query response time",
+                "correlated_attribute": "Performance"
+              },
+              {
+                "id": "S-14",
+                "parameter": "Logging system throughput capacity",
+                "correlated_attribute": "Security"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-05",
+                "parameter": "Authorization cache duration",
+                "conflicting_attributes": [
+                  "Performance (longer cache duration reduces database queries)",
+                  "Security (shorter cache duration ensures timely permission revocation)"
+                ]
+              },
+              {
+                "id": "T-06",
+                "parameter": "Logging detail level",
+                "conflicting_attributes": [
+                  "Security (detailed logs improve forensic analysis)",
+                  "Performance (verbose logging increases I/O overhead and storage requirements)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A developer adds a new plugin module (e.g., video conferencing) to the modular architecture, completing integration and testing without modifying core system code within 40 developer-hours",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Development environment with existing modular architecture",
+          "stimulus": "Developer adds new plugin module",
+          "response_measure": "Integration and testing completed within 40 developer-hours without core code modification",
+          "architectural_decisions": [
+            "Modular Object-Oriented Dynamic Learning Environment with plugin support",
+            "Well-defined plugin interfaces and extension points",
+            "Module isolation preventing core system dependencies"
+          ],
+          "reasoning": "The 40-hour budget requires clear plugin APIs, comprehensive documentation, and minimal integration complexity. The modular architecture must provide stable interfaces that don't require core code changes. Testing overhead depends on the quality of plugin isolation and available testing frameworks.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-14",
+                "description": "Insufficient plugin API documentation could exceed 40-hour development budget",
+                "rationale": "Developers may spend excessive time reverse-engineering plugin interfaces or discovering undocumented dependencies"
+              },
+              {
+                "id": "R-15",
+                "description": "Plugin interface instability across system versions may require core code modifications",
+                "rationale": "If plugin APIs change frequently between versions, maintaining backward compatibility could necessitate core system changes"
+              },
+              {
+                "id": "R-16",
+                "description": "Complex inter-module dependencies may require modifications beyond plugin boundaries",
+                "rationale": "If new plugin requires interaction with existing modules through non-standard interfaces, integration may require core system changes"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-07",
+                "description": "Modular architecture design explicitly supports plugin addition without core changes",
+                "rationale": "Plugin-based architecture with defined extension points enables independent module development"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-15",
+                "parameter": "Plugin API complexity and stability",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-16",
+                "parameter": "Developer familiarity with plugin framework",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-17",
+                "parameter": "Availability of plugin development tools and testing frameworks",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-07",
+                "parameter": "Plugin API abstraction level",
+                "conflicting_attributes": [
+                  "Modifiability (higher abstraction simplifies plugin development)",
+                  "Performance (abstraction layers introduce overhead in plugin execution)"
+                ]
+              },
+              {
+                "id": "T-08",
+                "parameter": "Plugin isolation strictness",
+                "conflicting_attributes": [
+                  "Reliability (strict isolation prevents cascading failures)",
+                  "Modifiability (strict isolation limits inter-plugin communication and feature richness)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "When instructors upload new SCORM-compliant content packages from external authoring tools, the system integrates and deploys the content without code changes, completing the process within 15 minutes",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Production environment with instructors uploading SCORM content",
+          "stimulus": "Instructor uploads SCORM-compliant content package",
+          "response_measure": "Content integration and deployment within 15 minutes without code changes",
+          "architectural_decisions": [
+            "SCORM-Compliant Content Management with standardized packaging",
+            "Content deployment automation without manual code modifications",
+            "Web-based architecture for content upload and processing"
+          ],
+          "reasoning": "SCORM standards compliance ensures predictable content structure, enabling automated processing. The 15-minute constraint requires efficient package validation, metadata extraction, and content indexing. The 'without code changes' requirement confirms that SCORM compliance eliminates custom integration work for each content package.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-17",
+                "description": "SCORM version incompatibilities may require manual intervention",
+                "rationale": "If system supports only specific SCORM versions (1.2, 2004) and content uses unsupported versions, automated processing may fail"
+              },
+              {
+                "id": "R-18",
+                "description": "Malformed SCORM packages may cause processing failures exceeding 15-minute window",
+                "rationale": "Invalid manifest files or corrupted content could trigger error handling and retry logic that extends processing time"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-08",
+                "description": "SCORM standards compliance eliminates need for custom content integration code",
+                "rationale": "Standardized packaging format allows generic processing pipeline for all compliant content"
+              },
+              {
+                "id": "NR-09",
+                "description": "15-minute processing window is sufficient for typical SCORM package sizes",
+                "rationale": "SCORM packages typically contain HTML, JavaScript, and media files that can be extracted and indexed within minutes"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-18",
+                "parameter": "SCORM package size and complexity",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-19",
+                "parameter": "Content validation strictness",
+                "correlated_attribute": "Modifiability"
+              },
+              {
+                "id": "S-20",
+                "parameter": "Server processing capacity during content upload",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-09",
+                "parameter": "SCORM validation strictness",
+                "conflicting_attributes": [
+                  "Reliability (strict validation prevents deployment of malformed content)",
+                  "Modifiability (lenient validation allows broader content compatibility)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "When a single plugin module (e.g., Turnitin integration) experiences a failure or crashes, the module isolation architecture contains the failure, allowing other modules (forums, assignments, wiki) and core system to continue operating without degradation",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with active plugin modules",
+          "stimulus": "Single plugin module failure or crash",
+          "response_measure": "Failure containment with no degradation to other modules or core system",
+          "architectural_decisions": [
+            "Modular architecture with plugin isolation",
+            "Independent module execution contexts preventing cascading failures",
+            "Core system resilience to plugin failures"
+          ],
+          "reasoning": "Module isolation requires process-level separation, exception handling boundaries, or resource quotas to prevent failure propagation. The 'no degradation' requirement means other modules must maintain full functionality and performance despite the failed module. This demands careful design of inter-module communication and shared resource management.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-19",
+                "description": "Shared database connections or resources may propagate failures across modules",
+                "rationale": "If failed module holds database locks or exhausts connection pools, other modules could experience degradation despite isolation"
+              },
+              {
+                "id": "R-20",
+                "description": "Insufficient error handling in inter-module communication could cause cascading failures",
+                "rationale": "If modules communicate synchronously without timeout or circuit breaker patterns, a hung module could block dependent modules"
+              },
+              {
+                "id": "R-21",
+                "description": "Memory leaks in failed module may degrade overall system performance",
+                "rationale": "If module isolation doesn't include resource cleanup, crashed modules could leave allocated memory unreleased, eventually impacting system-wide performance"
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-10",
+                "description": "Modular architecture design explicitly supports failure isolation",
+                "rationale": "Plugin-based architecture with module boundaries enables independent failure domains"
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-21",
+                "parameter": "Module isolation mechanism strength (process vs. thread vs. logical)",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-22",
+                "parameter": "Shared resource management strategy",
+                "correlated_attribute": "Reliability"
+              },
+              {
+                "id": "S-23",
+                "parameter": "Inter-module communication timeout values",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-10",
+                "parameter": "Module isolation strength",
+                "conflicting_attributes": [
+                  "Reliability (stronger isolation improves failure containment)",
+                  "Performance (process-level isolation introduces IPC overhead vs. in-process modules)"
+                ]
+              },
+              {
+                "id": "T-11",
+                "parameter": "Inter-module communication coupling",
+                "conflicting_attributes": [
+                  "Reliability (loose coupling prevents cascading failures)",
+                  "Modifiability (tight coupling enables richer feature integration between modules)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

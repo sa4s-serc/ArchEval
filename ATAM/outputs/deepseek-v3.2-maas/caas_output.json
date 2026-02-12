@@ -1,0 +1,403 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "The CAAS is a common avionics system designed for a family of U.S. Army Special Operations helicopters (A/MH-6, MH-47, and MH-60). It aims to provide a single, open, scalable architecture to modernize avionics, replacing proprietary legacy systems. The system manages cockpit workload, enhances situational awareness ('aviate, navigate, and communicate'), and is built on a foundation of commercial standards to facilitate portability and third-party upgrades.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "The CAAS was already well into development at the time of evaluation. Evaluators performed a pre-exercise review of architecture documentation to capture approaches.",
+        "evaluator_inquiry_questions": [
+          "How does the cyclic executive ensure real-time performance? ",
+          "How is the system partitioned to ensure availability and safety? "
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Hardware is portable between platforms ('plug and play' architecture).",
+          "Applications are location-transparent and can migrate to other hardware for load balancing.",
+          "Every application is resident on every box."
+        ],
+        "runtime_constraints": [
+          "Inviolable timing and memory walls between applications (POSIX partitioning).",
+          "Applications must not overrun processing time limits or memory allotments."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "boot_time_limit": "2 seconds (warm boot) ",
+        "power_interruption_limit": "1.9 seconds ",
+        "guaranteed_resources": {
+          "sockets": "Number of sockets is known and guaranteed "
+        }
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Layered and Partitioned Style",
+          "questions": [
+            "Does the partitioning strategy successfully isolate failures? ",
+            "Do layers effectively isolate high-level graphics services? ",
+            "Does the client-server approach effectively decouple system parts? "
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Invalid data is entered by the pilot, and the system does not crash."
+        },
+        {
+          "id": "RS-02",
+          "description": "Invalid data comes from an actor on any bus, and the system does not crash."
+        },
+        {
+          "id": "RS-03",
+          "description": "When a 1.9-second power interruption occurs, the system will execute a warm boot and be fully operational in 2 seconds."
+        },
+        {
+          "id": "RS-04",
+          "description": "A loss of Doppler occurs, the pilot is notified, and the Doppler timer begins a countdown."
+        },
+        {
+          "id": "RS-05",
+          "description": "A partition fails, the rest of the processor continues working, and the system continues to function."
+        },
+        {
+          "id": "RS-06",
+          "description": "The data concentrator suffers battle damage, and all flight-critical information is still available."
+        },
+        {
+          "id": "RS-07",
+          "description": "The mission processor in the outboard MFD fails, and that display and the rest of the system continue to operate normally."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Minimize systems acquisition and sustainment costs ",
+          "Reduce the total ownership cost over the life of the avionics system ",
+          "Modernize the system with minimal impact to Army Special Operations readiness ",
+          "Ensure that new CAASs work well with other programs "
+        ],
+        "technical_constraints": [
+          "Large set of applicable standards (ARINC 661, POSIX, CORBA, IEEE P1386/P1386.1, OpenGL, DO 178B) ",
+          "Must support multiple helicopter platforms (A/MH-6, MH-47, MH-60) "
+        ],
+        "architectural_drivers": [
+          "Availability ",
+          "Performance ",
+          "Modifiability ",
+          "Affordability ",
+          "Reliability "
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Layered and Partitioned Style",
+          "description": "Uses POSIX partitioning to create inviolable timing and memory walls between applications, ensuring isolation. A layered approach isolates high-level graphics services.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Availability",
+              "rationale": "Partitioning isolates failures, preventing a single fault from crashing the entire system."
+            },
+            {
+              "quality_attribute": "Reliability",
+              "rationale": "Strict resource walls prevent applications from overrunning and causing system-wide failures."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Layers and a client-server approach decouple system parts, facilitating upgrades and third-party integration."
+            }
+          ]
+        },
+        {
+          "approach_name": "Client-Server",
+          "description": "Implied by the investigative prompt questioning if it effectively decouples system parts. Supports location-transparent applications and migration for load balancing.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Location transparency and migration enable load balancing to meet real-time processing constraints."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decouples components, allowing for independent updates and integration of new applications."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "System remains operational with 99.9% uptime despite partition failures",
+                "scenario_id": "A1",
+                "scenario_description": "A critical application partition fails; the system isolates the failure and continues operating other partitions without downtime.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability",
+            "children": [
+              {
+                "refinement": "No single application fault causes system-wide failure",
+                "scenario_id": "R1",
+                "scenario_description": "An application attempts to overrun its allocated memory; the partitioning enforces strict walls, preventing a crash of the entire system.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Integrate a new third-party application within one development cycle",
+                "scenario_id": "M1",
+                "scenario_description": "A new third-party graphics application needs to be added; the layered client-server architecture allows integration without modifying core system layers.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Process real-time sensor data with latency < 100ms under peak load",
+                "scenario_id": "P1",
+                "scenario_description": "During peak operational load, the system must process incoming sensor data and update displays within 100 milliseconds; client-server migration balances load to meet timing constraints.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A critical application partition fails; the system isolates the failure and continues operating other partitions without downtime.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "An application attempts to overrun its allocated memory; the partitioning enforces strict walls, preventing a crash of the entire system.",
+          "primary_quality_attribute": [
+            "Reliability"
+          ]
+        },
+        {
+          "scenario_text": "A new third-party graphics application needs to be added; the layered client-server architecture allows integration without modifying core system layers.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "During peak operational load, the system must process incoming sensor data and update displays within 100 milliseconds; client-server migration balances load to meet timing constraints.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "A critical application partition fails; the system isolates the failure and continues operating other partitions without downtime.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Normal operations with a partition failure",
+          "stimulus": "Critical application partition fails",
+          "response_measure": "System continues operating other partitions without downtime (99.9% uptime)",
+          "architectural_decisions": [
+            "Use POSIX partitioning to create inviolable timing and memory walls",
+            "Implement a layered approach isolating high-level graphics services"
+          ],
+          "reasoning": "The partitioning style enforces strict isolation between applications. If a partition fails, the fault is contained within its wall, preventing propagation to other partitions. The layered design further isolates services, ensuring failure in one layer (e.g., application) does not crash core system layers (e.g., OS kernel). This supports the 99.9% uptime goal by localizing failures.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-01",
+                "description": "Partition management overhead (scheduling, communication) could degrade system performance under normal load, indirectly affecting availability if the system becomes unresponsive.",
+                "rationale": "Strict partitioning requires inter-partition communication mechanisms and resource management, adding computational overhead."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Isolation of a failing partition prevents system-wide crash.",
+                "rationale": "The architectural approach explicitly uses walls to contain faults, making a single partition failure non-critical to overall system operation."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-01",
+                "parameter": "Number of partitions",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-01",
+                "parameter": "Partition isolation strictness",
+                "conflicting_attributes": [
+                  "Availability (positive effect)",
+                  "Performance (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "R1",
+            "text": "An application attempts to overrun its allocated memory; the partitioning enforces strict walls, preventing a crash of the entire system.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Reliability",
+          "environment": "Normal operations with a faulty application",
+          "stimulus": "Application attempts to overrun its allocated memory",
+          "response_measure": "No system-wide failure; fault is contained within the application's partition",
+          "architectural_decisions": [
+            "Use POSIX partitioning to create inviolable memory walls",
+            "Enforce strict resource allocation per partition"
+          ],
+          "reasoning": "Memory walls provided by partitioning prevent an application from accessing memory outside its allocated region. This containment ensures that a memory overrun fault (e.g., buffer overflow) is trapped within the partition, protecting other applications and system components from corruption or crash. This directly satisfies the 'no single application fault causes system-wide failure' refinement.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-02",
+                "description": "Incorrectly configured partition memory limits could either be too restrictive (causing application failures) or too permissive (reducing containment effectiveness).",
+                "rationale": "Reliability depends on accurate resource allocation; misconfiguration undermines the wall's protection."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Memory wall enforcement prevents fault propagation.",
+                "rationale": "The partitioning style's core mechanism is to isolate memory spaces, making containment of memory faults a built-in feature."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-02",
+                "parameter": "Memory allocation per partition",
+                "correlated_attribute": "Reliability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "A new third-party graphics application needs to be added; the layered client-server architecture allows integration without modifying core system layers.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "System maintenance/upgrade phase",
+          "stimulus": "Requirement to integrate a new third-party graphics application",
+          "response_measure": "Integration completed within one development cycle without modifying core system layers",
+          "architectural_decisions": [
+            "Adopt a layered architecture isolating high-level graphics services",
+            "Use client-server style for location transparency and decoupling"
+          ],
+          "reasoning": "Layers separate concerns (e.g., application, service, OS kernel), allowing new applications to be added at the higher layers without changes to lower, core layers. The client-server approach decouples components via well-defined interfaces, enabling the third-party application to interact with system services (e.g., graphics rendering) without tight coupling. This supports modifiability by localizing changes to the application layer.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-03",
+                "description": "Third-party application may have incompatible interfaces or resource demands that require adjustments to the service layer, violating the 'no core modification' goal.",
+                "rationale": "While layers decouple, integration still depends on interface compatibility and service contracts."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-03",
+                "description": "Layered structure localizes changes to the application layer.",
+                "rationale": "The architecture explicitly separates layers, making application additions a modification at the highest layer, not the core."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-03",
+                "parameter": "Stability of inter-layer interfaces",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-02",
+                "parameter": "Layer abstraction level",
+                "conflicting_attributes": [
+                  "Modifiability (positive effect)",
+                  "Performance (negative effect)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During peak operational load, the system must process incoming sensor data and update displays within 100 milliseconds; client-server migration balances load to meet timing constraints.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Peak operational load",
+          "stimulus": "High volume of incoming sensor data requiring processing and display update",
+          "response_measure": "End-to-end latency < 100ms",
+          "architectural_decisions": [
+            "Use client-server style with location transparency",
+            "Implement server migration capability for load balancing"
+          ],
+          "reasoning": "Client-server decoupling allows servers (e.g., data processors) to be migrated across hardware nodes. Under peak load, migration can redistribute processing tasks to underutilized nodes, preventing bottlenecks. Location transparency ensures clients (e.g., display components) can seamlessly connect to migrated servers. This dynamic load balancing helps maintain latency below 100ms by avoiding overload on any single server.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-04",
+                "description": "Migration latency and overhead during server transfer could temporarily increase response time, risking violation of the 100ms constraint during the migration event.",
+                "rationale": "Moving a server state between nodes involves network transfer and reconnection time, which may cause spikes in latency."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-04",
+                "description": "Load balancing via migration prevents single-node overload.",
+                "rationale": "The ability to migrate servers distributes processing load, directly addressing performance degradation under peak conditions."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-04",
+                "parameter": "Migration decision threshold (load level triggering migration)",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-03",
+                "parameter": "Migration frequency",
+                "conflicting_attributes": [
+                  "Performance (positive effect via load balancing)",
+                  "Availability (negative effect due to migration disruption risk)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

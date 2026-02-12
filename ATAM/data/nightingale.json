@@ -1,0 +1,436 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Nightingale",
+      "date": "2025-10-12",
+      "ref": "https://people.ece.ubc.ca/matei/EECE417/BASS/ch11lev1sec4.html",
+      "evaluator_organization": "ATAM Evaluation Team",
+      "phase_1_attendees": [
+        "Evaluation Team",
+        "Project Manager",
+        "Lead Architect",
+        "Customer Project Manager",
+        "Lead Designer"
+      ],
+      "phase_2_attendees": [
+        "Evaluation Team",
+        "Project Manager",
+        "Lead Architect",
+        "Customer Project Manager",
+        "Developer",
+        "Maintainer",
+        "Customer Representative",
+        "End User"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "A large-scale health care system (millions of lines of code) designed to serve as an information backbone for hospitals, clinics, and HMOs. It consists of two major subsystems: the OnLine Transaction Manager (OLTM) for interactive tasks and the Decision Support and Report Generation Manager (DSRGM) for batch processing. The system handles patient treatment history, insurance tracking, and data warehousing. It is built to be highly configurable to support a product line approach for various regulatory environments and customer needs.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Incomplete and unclear; whole sections were missing, and the architecture was largely presented as inadequately defined box-and-line diagrams.",
+        "evaluator_inquiry_questions": [
+          "Can you verbally fill in the blanks regarding missing architectural sections?",
+          "Can you explain the inconsistencies between the layered view and the runtime view (e.g., missing transaction manager and CORBA components)?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Different customer offices run different hardware configurations.",
+          "The DSRGM subsystem is deployed on UNIX platforms.",
+          "The database is hosted on Sun platforms."
+        ],
+        "runtime_constraints": [
+          "Must respond faster than the legacy system's 5-second transaction time.",
+          "Must support high availability during normal business hours.",
+          "Must accommodate high user turnover with ease of learning."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "peak_transaction_response_time": "0.75 seconds",
+        "peak_throughput": "150 transactions per second",
+        "hardware_replacement_cycle": "26 weeks",
+        "double_peak_load_response_time": "4 seconds"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "COTS-based Layered Architecture",
+          "questions": [
+            "How difficult is it to replace the commercial database with one from another vendor?",
+            "How difficult is it to replace the rules engine with compiled C++ code?",
+            "How are operating system dependencies encapsulated to allow for OS replacement?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "Previously public data is made private, and access is adjusted accordingly."
+        },
+        {
+          "id": "RS-02",
+          "description": "Data in the information hub is replicated to a branch clinic, and performance is degraded."
+        },
+        {
+          "id": "RS-03",
+          "description": "A rule in the rule engine fires, and data access is too slow."
+        },
+        {
+          "id": "RS-29",
+          "description": "A fire in the data center forces the information hub to be moved to a new location."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Support the kickoff customer's diverse uses (treatment tracking, payments, trend spotting)",
+          "Serve as a basis for an entire product family of health care management systems",
+          "Replace multiple legacy systems that are old, difficult to maintain, and unresponsive",
+          "Support diverse cultural, regional, language, and currency differences"
+        ],
+        "technical_constraints": [
+          "Buy rather than build (use off-the-shelf software components)",
+          "Two-year implementation time frame",
+          "No lost jobs via retraining of existing employees"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Usability",
+          "Maintainability",
+          "Modifiability",
+          "Security",
+          "Scalability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Layering",
+          "description": "The OLTM subsystem is strongly layered to separate concerns.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Localizes changes and insulates higher layers from lower-level details like the OS."
+            }
+          ]
+        },
+        {
+          "approach_name": "Data-Centric / Repository-Based",
+          "description": "A large commercial database lies at the heart of the system.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Centralizes data management."
+            }
+          ]
+        },
+        {
+          "approach_name": "Object Orientation",
+          "description": "Relies heavily on object frameworks.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Configurability",
+              "rationale": "Allows for high configurability through object inheritance and polymorphism."
+            }
+          ]
+        },
+        {
+          "approach_name": "Configuration Files",
+          "description": "Use of configuration files to control system behavior.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Allows changes without recoding or recompiling."
+            }
+          ]
+        },
+        {
+          "approach_name": "COTS Integration",
+          "description": "Extensive use of commercial off-the-shelf software (database, rules engine, workflow engine, CORBA).",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Reduces development risk and time, adhering to 'buy rather than build'."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Transaction response time",
+                "scenario_id": "P1",
+                "scenario_description": "A user updates a patient's account in response to a change-of-address notification while the system is under peak load, and the transaction completes in less than 0.75 second.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Throughput",
+                "scenario_id": "P3",
+                "scenario_description": "At peak load, the system is able to complete 150 normalized transactions per second.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Replace COTS products",
+                "scenario_id": "M1",
+                "scenario_description": "Replace the commercial database with one by another vendor.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Replace COTS products",
+                "scenario_id": "M2",
+                "scenario_description": "Replace the rules engine.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Usability",
+            "children": [
+              {
+                "refinement": "Proficiency training",
+                "scenario_id": "U1",
+                "scenario_description": "A new hire with two or more years experience in the business becomes proficient in Nightingale's core functions in less than 1 week.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "Hot-swapping",
+                "scenario_id": "A1",
+                "scenario_description": "The database vendor releases new software, which is hot-swapped into place.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Confidentiality",
+                "scenario_id": "S1",
+                "scenario_description": "A physical therapist is allowed to see the part of a patient's record dealing with orthopedic treatment, but not other parts nor any financial information.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "Previously public data is made private, and access is adjusted accordingly.",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "Data in the information hub is replicated to a branch clinic, and performance is degraded.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A rule in the rule engine fires, and data access is too slow.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A user posts a patient's payment at a busy time, and response is slow (in a testing environment).",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "A user in one business unit needs to perform actions on behalf of other business units.",
+          "primary_quality_attribute": [
+            "Usability"
+          ]
+        },
+        {
+          "scenario_text": "Decide to support German.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Add an epidemiologist role and supporting functionality.",
+          "primary_quality_attribute": [
+            "Extensibility"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "Replace the commercial database with one by another vendor.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance/Evolution",
+          "stimulus": "Decision to switch database vendor",
+          "response_measure": "Cost and effort to switch",
+          "architectural_decisions": [
+            "Use of vendor-specific SQL dialect",
+            "Use of vendor-specific tools and components"
+          ],
+          "reasoning": "The architecture uses a dialect of SQL and tools specific to the current vendor, making replacement extremely difficult.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R1",
+                "description": "Replacing the database would be extremely difficult and expensive, requiring several staff-years of effort.",
+                "rationale": "Incompatibility of vendor-specific SQL and tools with other vendors."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S1",
+                "parameter": "Database vendor dependency",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "Replace the rules engine.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance/Evolution",
+          "stimulus": "Decision to remove/replace rules engine",
+          "response_measure": "Effort to remove and impact on performance",
+          "architectural_decisions": [
+            "Use of Rules Engine vs C++ code",
+            "Disallow forward chaining (procedural rules)"
+          ],
+          "reasoning": "Removing the rules engine requires writing a rule-to-C++ code generator or manual rewrite. However, current rules are procedural (no forward chaining), simplifying compilation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R2",
+                "description": "Major effort needed to remove the rules engine.",
+                "rationale": "Requires development of a code generator or significant manual recoding."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "T1",
+                "parameter": "Use of Rules Engine",
+                "conflicting_attributes": [
+                  "Modifiability (Easier to change rules)",
+                  "Performance (Slower execution)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "OS_Replace",
+            "text": "Replace the operating system.",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Maintenance/Evolution",
+          "stimulus": "Decision to switch OS",
+          "response_measure": "Effort to switch",
+          "architectural_decisions": [
+            "Operating system insulation layer",
+            "Localized OS dependencies"
+          ],
+          "reasoning": "OS dependencies are insulated by a layer or already eliminated (proven by cross-platform development/deployment).",
+          "findings": {
+            "risks": [],
+            "non_risks": [
+              {
+                "id": "NR1",
+                "description": "Replacing the operating system would require only a small modification.",
+                "rationale": "Dependencies are localized or eliminated from OLTM and DSRGM."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S2",
+                "parameter": "OS Encapsulation Layer",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "Scenario_15",
+            "text": "Nightingale is installed in a hospital, and the hospital's existing database must be converted.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Supportability",
+          "environment": "Installation/Migration",
+          "stimulus": "New installation at customer site",
+          "response_measure": "Successful data migration",
+          "architectural_decisions": [
+            "Data conversion and migration facility",
+            "Undocumented migration procedure"
+          ],
+          "reasoning": "A well-thought-out procedure existed and was explained on a whiteboard, but was not documented in the package.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R3",
+                "description": "The data conversion and migration procedure is not documented.",
+                "rationale": "Jeopardizes support for the customer's enterprise and maintainability."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR2",
+                "description": "The architecture supports a straightforward and effective data conversion and migration facility.",
+                "rationale": "The process is technically sound despite lack of documentation."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

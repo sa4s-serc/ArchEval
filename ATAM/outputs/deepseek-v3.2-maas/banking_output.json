@@ -1,0 +1,362 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "An Event framework where the application logic and framework are highly inter-dependent. The Main module is part of the framework, and the Event Manager interacts directly with application handlers. It features an Event Queue and a base Handler component extended by standard and application-specific handlers.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Fully developed architecture with class diagrams, component descriptions, and defined component interactions.",
+        "evaluator_inquiry_questions": [
+          "Can the components of the architecture be reused for future projects?",
+          "Can the framework be expanded in the future to accommodate a new application or new components?",
+          "Will the system handle any input given by the user and handle invalid input?",
+          "Is the architecture consistent in behavior?",
+          "Can any new application-specific functionality be added to the architecture?",
+          "Can the system be modified in short time and cost-effective manner?",
+          "Do the components interact properly?",
+          "Does the architecture perform its event-processing task properly?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "System accepts input via Command Line Interface (CLI)",
+          "Single processor execution implied (sequential event processing)"
+        ],
+        "runtime_constraints": [
+          "Events must be dispatched in a First-Come-First-Served (FIFO) pattern",
+          "System must maintain an 'idle wait' state until input is received",
+          "Application logic is embedded within framework components"
+        ]
+      },
+      "quantitative_model_parameters": {
+        "performance_proxy": "Number of components involved in a transaction",
+        "transaction_speed": "Qualitative (Slow due to high number of components involved)",
+        "architecture_limits": {
+          "event_managers": "1",
+          "event_queues": "1"
+        }
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Event-Driven Architecture",
+          "questions": [
+            "Does the system allow unauthorized access?",
+            "Does the architecture portray data confidentiality?",
+            "Does the architecture process any task in the fastest possible speed?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-1",
+          "description": "No unauthorized access to the system"
+        },
+        {
+          "id": "RS-2",
+          "description": "All operations are processed in fastest possible speed"
+        },
+        {
+          "id": "RS-3",
+          "description": "Any failure should be followed by immediate recovery"
+        },
+        {
+          "id": "RS-4",
+          "description": "User errors in using system should be handled"
+        },
+        {
+          "id": "RS-5",
+          "description": "New demands on system functionality should be accommodated"
+        },
+        {
+          "id": "RS-6",
+          "description": "Major parts of the framework should be re-usable for future architectures"
+        },
+        {
+          "id": "RS-7",
+          "description": "Framework modification is cost-effective, fast and in minimal time"
+        },
+        {
+          "id": "RS-8",
+          "description": "Components in framework interact in a coordinated manner"
+        },
+        {
+          "id": "RS-9",
+          "description": "Framework expansion is possible to allow for more sophisticated options"
+        },
+        {
+          "id": "RS-10",
+          "description": "Implementation allows for execution in different environments"
+        },
+        {
+          "id": "RS-11",
+          "description": "Proper data encapsulation and secure data structures"
+        },
+        {
+          "id": "RS-12",
+          "description": "Flexible implementation using other programming languages"
+        },
+        {
+          "id": "RS-13",
+          "description": "Overall consistent behavior expected from the architecture"
+        },
+        {
+          "id": "RS-14",
+          "description": "Framework should be complete, clear and perform exactly as required"
+        },
+        {
+          "id": "RS-15",
+          "description": "Hook up multiple applications to the framework at same time"
+        },
+        {
+          "id": "RS-16",
+          "description": "Change interface from command-driven to window-based"
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Provide an Event framework to be used by an application",
+          "Handle and process events through component interaction",
+          "Allow application components to utilize the framework services"
+        ],
+        "technical_constraints": [
+          "Must handle system termination via STOP handler",
+          "Must maintain system in idle state until input is received"
+        ],
+        "architectural_drivers": [
+          "Variability",
+          "Reliability",
+          "Conceptual Integrity",
+          "Functionality",
+          "Modifiability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Event-Driven Architecture",
+          "description": "The system uses an Event Queue and Event Manager to process events in a FIFO pattern, with handlers for application-specific logic.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Variability",
+              "rationale": "Event-driven style allows flexible addition of new event types and handlers."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Decoupling of event producers and consumers via queue facilitates changes."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Variability",
+            "children": [
+              {
+                "refinement": "Ability to add new event types within 2 person-days",
+                "scenario_id": "V1",
+                "scenario_description": "A new business requirement emerges, requiring the system to process a new type of event (e.g., 'FraudAlert'). The development team must implement and deploy the necessary event handler without modifying existing core event processing logic.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Ability to change event handler logic with zero downtime",
+                "scenario_id": "M1",
+                "scenario_description": "The business logic for processing 'PaymentReceived' events needs to be updated. The new handler version must be deployed and replace the old one without stopping the event queue or affecting other event types.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Ability to scale event processing capacity by adding consumers",
+                "scenario_id": "M2",
+                "scenario_description": "Event volume is expected to double during peak sales. The system must allow the operations team to add more consumer instances to the event queue to maintain processing latency.",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "A new business requirement emerges, requiring the system to process a new type of event (e.g., 'FraudAlert'). The development team must implement and deploy the necessary event handler without modifying existing core event processing logic.",
+          "primary_quality_attribute": [
+            "Variability"
+          ]
+        },
+        {
+          "scenario_text": "The business logic for processing 'PaymentReceived' events needs to be updated. The new handler version must be deployed and replace the old one without stopping the event queue or affecting other event types.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Event volume is expected to double during peak sales. The system must allow the operations team to add more consumer instances to the event queue to maintain processing latency.",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "V1",
+            "text": "A new business requirement emerges, requiring the system to process a new type of event (e.g., 'FraudAlert'). The development team must implement and deploy the necessary event handler without modifying existing core event processing logic.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Variability",
+          "environment": "Normal operations",
+          "stimulus": "New event type requirement",
+          "response_measure": "New event type added within 2 person-days",
+          "architectural_decisions": [
+            "Use of Event-Driven Architecture with an Event Queue",
+            "Decoupled event producers and consumers via handlers"
+          ],
+          "reasoning": "The event-driven style inherently supports variability by allowing new event types to be published to the queue. New handlers can be added independently. The 2-day target depends on handler complexity and deployment automation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-V1",
+                "description": "New event type may require schema changes in the queue, impacting existing producers/consumers.",
+                "rationale": "If the queue uses a rigid schema, adding a new event type could force modifications to core serialization/deserialization logic, violating the 'without modifying existing core' goal."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-V1",
+                "description": "Decoupling allows new handler deployment without stopping the queue.",
+                "rationale": "Event-driven architecture separates concerns; a new handler can subscribe to the queue without affecting existing event flow."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-V1",
+                "parameter": "Event schema flexibility",
+                "correlated_attribute": "Variability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-V1",
+                "parameter": "Event schema design (strict vs. flexible)",
+                "conflicting_attributes": [
+                  "Variability (positive)",
+                  "Performance (negative if schema is too flexible)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M1",
+            "text": "The business logic for processing 'PaymentReceived' events needs to be updated. The new handler version must be deployed and replace the old one without stopping the event queue or affecting other event types.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Normal operations",
+          "stimulus": "Handler logic update required",
+          "response_measure": "Zero downtime deployment",
+          "architectural_decisions": [
+            "Event handlers are independently deployable components",
+            "Queue supports multiple consumers for the same event type"
+          ],
+          "reasoning": "Event-driven architecture enables blue-green or canary deployments of handlers. New handler instances can be spun up, subscribe to the queue, and old instances drained. Risk exists if state is not managed.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-M1",
+                "description": "Stateful event processing may cause inconsistencies during handler swap.",
+                "rationale": "If the handler maintains local state (e.g., processing counters), switching instances mid-stream could lead to lost or duplicate processing."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-M1",
+                "description": "Queue acts as a buffer, allowing old and new handlers to coexist temporarily.",
+                "rationale": "Events are persisted in the queue; consumers can be updated without stopping event ingestion."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-M1",
+                "parameter": "Handler statelessness",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-M1",
+                "parameter": "Event processing semantics (at-least-once vs. exactly-once)",
+                "conflicting_attributes": [
+                  "Modifiability (easier with at-least-once)",
+                  "Correctness (better with exactly-once)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "M2",
+            "text": "Event volume is expected to double during peak sales. The system must allow the operations team to add more consumer instances to the event queue to maintain processing latency.",
+            "type": "Growth"
+          },
+          "quality_attribute": "Modifiability",
+          "environment": "Peak load",
+          "stimulus": "Event volume doubles",
+          "response_measure": "Maintain processing latency by adding consumers",
+          "architectural_decisions": [
+            "Horizontal scaling of event consumers",
+            "Queue supports competing consumers pattern"
+          ],
+          "reasoning": "Event-driven architecture with a queue allows dynamic addition of consumer instances to share the load. Latency maintenance depends on queue throughput and consumer scaling speed.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-M2",
+                "description": "Queue may become a bottleneck if its throughput cannot handle doubled volume.",
+                "rationale": "Adding consumers helps, but if the queue itself (broker) cannot sustain the increased message rate, latency will degrade."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-M2",
+                "description": "Adding consumers is a standard scaling operation in event-driven systems.",
+                "rationale": "The architecture is designed for this; new instances can subscribe and start processing immediately."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-M2",
+                "parameter": "Queue throughput capacity",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-M2",
+                "parameter": "Number of concurrent consumers",
+                "conflicting_attributes": [
+                  "Performance (positive via parallelism)",
+                  "Complexity (negative due to coordination overhead)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

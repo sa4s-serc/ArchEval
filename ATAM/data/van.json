@@ -1,0 +1,361 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "VAN-Core system",
+      "date": "2009",
+      "ref": "https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5286643",
+      "evaluator_organization": "KAIST and Crossent",
+      "phase_1_attendees": [
+        "Evaluation Leader",
+        "Project Manager",
+        "System Customer",
+        "Software Architect",
+        "Stakeholders (Credit Card Transaction Experts)"
+      ],
+      "phase_2_attendees": [
+        "Evaluation Leader",
+        "Project Manager",
+        "System Customer",
+        "Software Architect",
+        "Stakeholders"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "An online credit-card transaction system that receives credit information from terminals, delivers transaction requests to credit-card companies, and transmits responses back to terminals. It requires continuous 24/7 operation and real-time synchronization with backup systems and external databases.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Non-functional requirements were not defined, and stakeholders lacked sufficient knowledge and experience in the system's specific technologies to generate a utility tree via standard brainstorming.",
+        "evaluator_inquiry_questions": [
+          "Do the standard non-functional requirements derived from financial system experience apply to this system?",
+          "Can we confirm these prioritized requirements: Performance, Operability, Security, and Usability?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Uses TANDEM receiving interface.",
+          "Interacts with credit-card terminals and credit-card companies.",
+          "Connects to a backup system.",
+          "Connects to the NIBS database."
+        ],
+        "runtime_constraints": [
+          "Must operate 24 hours a day, 365 days a year.",
+          "Must complete all internal processing within one second.",
+          "Must synchronize in real-time with the backup system."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "internal_processing_deadline": "1 second",
+        "availability_target": "24 hours/day, 365 days/year",
+        "risk_probability_high": "> 70%",
+        "risk_management_mid_term": "within 4 months"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Financial System Architectural Style Pool",
+          "questions": [
+            "How does hard-coding message transformations affect maintainability versus performance?",
+            "How does the common component definition affect system availability during updates?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "System should be operational 24 hours a day and 365 days a year."
+        },
+        {
+          "id": "RS-02",
+          "description": "Credit-card terminal is supposed to request transaction processing at any time including peak-time and system should proceed all internal processing within one second besides external transaction processing with credit-card company."
+        },
+        {
+          "id": "RS-03",
+          "description": "System should ensure the information integrity with credit-card company."
+        },
+        {
+          "id": "RS-04",
+          "description": "System should be synchronized in real-time with backup system and database of NIBS."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Run 24 hours a day, 365 days a year",
+          "Provide online credit card transaction services",
+          "Establish risk mitigation strategies for identified risks",
+          "Suggest and evaluate new architectural alternatives"
+        ],
+        "technical_constraints": [
+          "System should be operational 24 hours a day and 365 days a year",
+          "System should be synchronized in real-time with backup system and database of NIBS"
+        ],
+        "architectural_drivers": [
+          "Performance",
+          "Operability",
+          "Security and Safety",
+          "Usability",
+          "Reliability",
+          "Availability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "AA-OL-01 Defining commonalities for the whole system and applications",
+          "description": "Decomposing system's application units and defining interfaces and components among application units to minimize development and maintenance efforts.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Reusability / Maintainability",
+              "rationale": "Minimizing efforts necessary for developing new, maintenance, and education because of reducing LOC by raising reusability level."
+            }
+          ]
+        },
+        {
+          "approach_name": "AA-OL-02 Defining redundantly similar transaction flow and business logic for each service",
+          "description": "Developing and deploying independently for a specific work.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability / Isolation",
+              "rationale": "Minimizing impacts to other works."
+            }
+          ]
+        },
+        {
+          "approach_name": "AA-OL-03 Transforming messages and inputs/outputs by hard coding",
+          "description": "Hard coding the message transformation logic to achieve high speed.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Achieving high speed through transforming messages and inputs/outputs by hard coding."
+            }
+          ]
+        },
+        {
+          "approach_name": "AA-OL-03-Alt-01 Parameter based message transformation using database",
+          "description": "Using a database to store message parameters instead of hard coding them.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Maintainability / Availability",
+              "rationale": "No need to change relevant components or redeploy whenever a message is changed; only new values are added to the database."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Internal processing within one second",
+                "scenario_id": "NFR-2",
+                "scenario_description": "Credit-card terminal is supposed to request transaction processing at any time including peak-time and system should proceed all internal processing within one second besides external transaction processing with credit-card company.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "<Placeholder>"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Reliability and Availability",
+            "children": [
+              {
+                "refinement": "Operational 24/7/365",
+                "scenario_id": "NFR-1",
+                "scenario_description": "System should be operational 24 hours a day and 365 days a year.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "<Placeholder>"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security and Safety",
+            "children": [
+              {
+                "refinement": "Information Integrity",
+                "scenario_id": "NFR-3",
+                "scenario_description": "System should ensure the information integrity with credit-card company.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "<Placeholder>"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Operability",
+            "children": [
+              {
+                "refinement": "Real-time synchronization",
+                "scenario_id": "NFR-4",
+                "scenario_description": "System should be synchronized in real-time with backup system and database of NIBS.",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "<Placeholder>"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "System should be operational 24 hours a day and 365 days a year.",
+          "primary_quality_attribute": [
+            "Reliability",
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "Credit-card terminal is supposed to request transaction processing at any time including peak-time and system should proceed all internal processing within one second besides external transaction processing with credit-card company.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "System should ensure the information integrity with credit-card company.",
+          "primary_quality_attribute": [
+            "Security",
+            "Safety"
+          ]
+        },
+        {
+          "scenario_text": "System should be synchronized in real-time with backup system and database of NIBS.",
+          "primary_quality_attribute": [
+            "Operability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "NFR-1",
+            "text": "System should be operational 24 hours a day and 365 days a year",
+            "type": "Growth"
+          },
+          "quality_attribute": "Reliability and Availability",
+          "environment": "Maintenance / Change",
+          "stimulus": "Changing common components",
+          "response_measure": "System deactivation required",
+          "architectural_decisions": [
+            "AA-OL-01 Defining commonalities for the whole system"
+          ],
+          "reasoning": "In case of changing common components, this causes system deactivation and re-operation.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R001",
+                "description": "In case of changing common components, this causes system deactivation and re-operation.",
+                "rationale": "Risk factor as for reliability and availability."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-01",
+                "description": "Reduced LOC and high reusability.",
+                "rationale": "Non-risk factor as for maintenance."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "T001",
+                "parameter": "Level of Commonalities/Reusability",
+                "conflicting_attributes": [
+                  "Maintainability (positive)",
+                  "Availability/Reliability (negative during change)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "NFR-1",
+            "text": "System should be operational 24 hours a day and 365 days a year",
+            "type": "Growth"
+          },
+          "quality_attribute": "Reliability and Availability",
+          "environment": "Maintenance / Change",
+          "stimulus": "Changing message of credit-card company",
+          "response_measure": "System deactivation required",
+          "architectural_decisions": [
+            "AA-OL-03 Transforming messages and inputs/outputs by hard coding"
+          ],
+          "reasoning": "In case of changing a message of credit-card company, this causes system deactivation and re-operations for re-deploying relevant component.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R002",
+                "description": "In case of changing message of credit-card company, this causes system deactivation and re-operations for re-deploying relevant component.",
+                "rationale": "Risk factor as for reliability, availability, and maintainability (Probability: High/Very Likely; Risk Level: Medium/Critical)."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-02",
+                "description": "Hard coding transformation execution.",
+                "rationale": "Non-risk as for processing time and delay."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "T003",
+                "parameter": "Hard-coding vs Dynamic Loading",
+                "conflicting_attributes": [
+                  "Performance (positive)",
+                  "Reliability/Availability/Maintainability (negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "NFR-2",
+            "text": "Internal processing within one second",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal Operation",
+          "stimulus": "Transaction Request",
+          "response_measure": "Processing Time",
+          "architectural_decisions": [
+            "AA-OL-03-Alt-01 Parameter based message transformation using database"
+          ],
+          "reasoning": "Improving message transformation by hard coding into parameter based transformation alternative has performance degradation risk.",
+          "findings": {
+            "risks": [
+              {
+                "id": "Alt-R001",
+                "description": "Performance degradation is possible by using database.",
+                "rationale": "Database IO vs Hard coded memory operations."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "Alt-N001",
+                "description": "Parameter based design minimized the source code changes and thereby hot deploy of component may be reduced.",
+                "rationale": "Non-risk for reliability, availability, and maintainability."
+              }
+            ],
+            "sensitivity_points": [],
+            "tradeoff_points": [
+              {
+                "id": "Alt-T001",
+                "parameter": "Database usage for parameters",
+                "conflicting_attributes": [
+                  "Reliability/Availability/Maintainability (positive)",
+                  "Processing time and delay (negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

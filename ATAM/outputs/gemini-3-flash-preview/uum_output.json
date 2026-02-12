@@ -1,0 +1,380 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Enhancing quality teaching and learning within the university community",
+      "Managing the delivery and administration of programs of learning via the internet",
+      "Provide a cheaper, open-source alternative to the previous system (Learning Care)"
+    ],
+    "technical_constraints": [
+      "Must be based on Moodle (Modular Object-Oriented Dynamic Learning Environment)",
+      "Must be Open Source Software (OSS) under GNU license",
+      "Must support SCORM standards",
+      "Must operate on multiple platforms (Windows, Solaris, Linux, Mac OS, UNIX)"
+    ],
+    "architectural_drivers": [
+      "Availability",
+      "Security",
+      "Performance",
+      "Modifiability",
+      "Reliability"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The system was already a fully implemented, operational web-based system (Moodle version 1.9) at the time of evaluation. The evaluation was retrospective, treating the existing implementation as the architecture to be analyzed.",
+      "evaluator_inquiry_questions": [
+        "How long will the system be available for a virtual meet\u2019s web cam live chat when there is a network failure?",
+        "Can the system authenticate a user if they try to log on with either wrong user id or password?",
+        "Does the architecture process any task with the fastest speed?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "The system relies on network infrastructure susceptible to congestion during high traffic (virtual meets).",
+        "Web-based system architecture accessed via internet/intranet."
+      ],
+      "runtime_constraints": [
+        "Must support heavy file uploads (Video, audio, PDF, etc.) which was a limitation in the previous system.",
+        "Scalability for Virtual Meet module handles 1-100 persons.",
+        "Must conform to SCORM (Sharable Content Object Reference Model) standards."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "virtual_meet_capacity": "1-100 persons",
+      "voting_calculation": {
+        "formula": "30% x total number of scenarios",
+        "total_scenarios": "8"
+      },
+      "recovery_time": "Minimal amount of time"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Authentication and Virtual Meet",
+        "questions": [
+          "How does the system handle invalid login attempts regarding main page access?",
+          "How does the system recover from network failure due to congestion during live video chats?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "RS-01",
+        "description": "Entering a wrong user name and password"
+      },
+      {
+        "id": "RS-02",
+        "description": "Clicking an icon to process information with speed"
+      },
+      {
+        "id": "RS-03",
+        "description": "Sending an encapsulated, secured e-mail"
+      },
+      {
+        "id": "RS-04",
+        "description": "Adding new web pages to my wiki module"
+      },
+      {
+        "id": "RS-05",
+        "description": "Integrating mybox for my file storage"
+      },
+      {
+        "id": "RS-06",
+        "description": "Downloading of lecture slides"
+      },
+      {
+        "id": "RS-07",
+        "description": "When Network fails during virtual meet and later recovered"
+      },
+      {
+        "id": "RS-08",
+        "description": "The system should be able to handle user errors"
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Modular Object-Oriented Dynamic Learning Environment (Moodle) Pattern",
+        "description": "A plugin-centric architecture where the core system is extended through independent modules (e.g., Wikis, Virtual Meets) and blocks.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Modifiability",
+            "rationale": "The modular nature allows for the addition of new features without core system disruption, supporting the goal of a flexible open-source alternative."
+          },
+          {
+            "quality_attribute": "Portability",
+            "rationale": "Object-oriented design and modularity facilitate operation across Windows, Solaris, Linux, Mac OS, and UNIX."
+          }
+        ]
+      },
+      {
+        "approach_name": "Three-Tier Web Architecture",
+        "description": "A standard architectural style separating the system into a presentation layer (client browser), application logic (PHP/Moodle Core), and a data persistence layer (SQL Database).",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Separating the database from the application logic allows for tier-specific recovery and maintenance."
+          },
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Provides the foundation for scaling the web/application tier independently to handle university-wide traffic."
+          }
+        ]
+      },
+      {
+        "approach_name": "Role-Based Access Control (RBAC)",
+        "description": "A security pattern where system access is governed by roles (Student, Teacher, Administrator) that define specific permissions within the LMS.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Security",
+            "rationale": "Ensures that sensitive student data and administrative functions are protected from unauthorized access."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Response time under heavy load",
+              "scenario_id": "P1",
+              "scenario_description": "During peak 'Virtual Meet' usage (500+ concurrent users), system response time for UI interactions remains < 2 seconds.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Security",
+          "children": [
+            {
+              "refinement": "Data protection at rest",
+              "scenario_id": "S1",
+              "scenario_description": "Student records and grades are protected via RBAC and AES-256 encryption at rest.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Availability",
+          "children": [
+            {
+              "refinement": "System failover and uptime",
+              "scenario_id": "A1",
+              "scenario_description": "The system achieves 99.9% uptime; in the event of a database failure, the system fails over to a redundant node within 60 seconds.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Modifiability",
+          "children": [
+            {
+              "refinement": "Ease of functional expansion",
+              "scenario_id": "M1",
+              "scenario_description": "A new functional module can be integrated using the Moodle plugin architecture within 5 business days without core code modification.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Portability",
+          "children": [
+            {
+              "refinement": "Cross-platform migration",
+              "scenario_id": "Po1",
+              "scenario_description": "The LMS core and database can be migrated from a Linux/MySQL environment to a Windows/SQL Server environment within 48 hours of effort.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "During peak 'Virtual Meet' usage (500+ concurrent users), system response time for UI interactions remains < 2 seconds.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "Student records and grades are protected via RBAC and AES-256 encryption at rest.",
+        "primary_quality_attribute": [
+          "Security"
+        ]
+      },
+      {
+        "scenario_text": "The system achieves 99.9% uptime; in the event of a database failure, the system fails over to a redundant node within 60 seconds.",
+        "primary_quality_attribute": [
+          "Availability"
+        ]
+      },
+      {
+        "scenario_text": "A new functional module can be integrated using the Moodle plugin architecture within 5 business days without core code modification.",
+        "primary_quality_attribute": [
+          "Modifiability"
+        ]
+      },
+      {
+        "scenario_text": "The LMS core and database can be migrated from a Linux/MySQL environment to a Windows/SQL Server environment within 48 hours of effort.",
+        "primary_quality_attribute": [
+          "Portability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "During peak 'Virtual Meet' usage (500+ concurrent users), system response time for UI interactions remains < 2 seconds.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Peak traffic / Overload",
+        "stimulus": "500+ concurrent users accessing 'Virtual Meet' and UI",
+        "response_measure": "Response time < 2 seconds",
+        "architectural_decisions": [
+          "Three-Tier Web Architecture",
+          "PHP-based Moodle Core"
+        ],
+        "reasoning": "A three-tier architecture allows for horizontal scaling of the web tier. However, PHP's synchronous execution model per request means the number of concurrent users is strictly limited by the available worker pool (PHP-FPM) and the database connection limit.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Worker Pool Exhaustion",
+              "rationale": "If 500+ users perform long-running tasks (like file uploads or video streaming metadata calls), the PHP-FPM pool may saturate, leading to 504 Gateway Timeouts."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Static Asset Delivery",
+              "rationale": "Using a standard web server (Nginx/Apache) as the first tier ensures that CSS/JS/Images do not consume application logic resources."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Database Connection Pool Size",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Session Storage Location (Files vs. Redis)",
+              "conflicting_attributes": [
+                "Performance",
+                "Reliability"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "A1",
+          "text": "The system achieves 99.9% uptime; in the event of a database failure, the system fails over to a redundant node within 60 seconds.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Availability",
+        "environment": "Database node failure",
+        "stimulus": "Primary SQL database instance becomes unresponsive",
+        "response_measure": "Failover to redundant node within 60 seconds",
+        "architectural_decisions": [
+          "Database Redundancy",
+          "Three-Tier Web Architecture"
+        ],
+        "reasoning": "Achieving a 60-second recovery time objective (RTO) requires automated health checks and automated DNS or Virtual IP (VIP) reassignment.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Data Inconsistency (Split-Brain)",
+              "rationale": "In a rapid 60s failover, there is a risk that the secondary node is promoted before all transactions from the failed primary are replicated."
+            }
+          ],
+          "non_risks": [],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Heartbeat/Health-check interval",
+              "correlated_attribute": "Availability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Synchronous vs Asynchronous Replication",
+              "conflicting_attributes": [
+                "Reliability (Data Integrity)",
+                "Performance (Write Latency)"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "S1",
+          "text": "Student records and grades are protected via RBAC and AES-256 encryption at rest.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Security",
+        "environment": "Normal operations",
+        "stimulus": "Unauthorized access attempt or physical storage breach",
+        "response_measure": "Data remains encrypted and access is denied based on role",
+        "architectural_decisions": [
+          "Role-Based Access Control (RBAC)",
+          "AES-256 Encryption at Rest"
+        ],
+        "reasoning": "RBAC is native to Moodle, providing granular control. AES-256 at the database or storage level protects against physical theft but requires robust key management.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-03",
+              "description": "Key Management Complexity",
+              "rationale": "If encryption keys are stored on the same server as the application, a full system compromise bypasses the 'at rest' protection."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Native RBAC implementation",
+              "rationale": "Moodle's built-in RBAC is mature and well-tested for standard educational workflows."
+            }
+          ],
+          "sensitivity_points": [],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Encryption Level (Field-level vs Disk-level)",
+              "conflicting_attributes": [
+                "Security",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

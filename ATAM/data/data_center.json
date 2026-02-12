@@ -1,0 +1,471 @@
+{
+  "ATAM_Evaluation": {
+    "metadata": {
+      "system_name": "Data Center (DC) System",
+      "date": "2017",
+      "ref": "https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8090982",
+      "evaluator_organization": "Universitas Pendidikan Ganesha (Undiksha)",
+      "phase_1_attendees": [
+        "IT Team (UPT-TIK Undiksha)",
+        "System Stakeholders"
+      ],
+      "phase_2_attendees": [
+        "IT Team (UPT-TIK Undiksha)",
+        "System Stakeholders"
+      ]
+    },
+    "evaluation_inputs": {
+      "system_description": "A centralized Data Center system designed to integrate dozens of existing, disparate academic information systems at Universitas Pendidikan Ganesha. The system functions as a backbone Data Warehouse (DWH) to synchronize data across the university, reduce redundancy, and support institutional accreditation. It aggregates data from various web-based applications (mostly PHP/MySQL) and was evaluated across three architectural options (Direct Connection, Web Services, ESB) before settling on a Spring Framework-based solution to accommodate legacy constraints.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Low maturity; the system was based on an initial prototype with no standard architectural evaluation practice previously applied. Design decisions were initially driven by immediate needs under tight schedules without thorough analysis.",
+        "evaluator_inquiry_questions": [
+          "How can existing systems be integrated to minimize data duplication?",
+          "What are the available architectural options considering the low-cost and open-source constraints?",
+          "How can binary data (images, audio, video) be handled if existing databases only store file paths?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Dozens of existing information systems operating on separate servers with separate databases.",
+          "Most existing applications are web-based, coded in PHP, using MySQL instances.",
+          "Binary files (images/audio) are stored physically on server hard drives, not in the databases."
+        ],
+        "runtime_constraints": [
+          "Strict reliance on low-cost, open-source software.",
+          "Limited human resources and developer expertise (mostly fresh graduates).",
+          "Legacy systems cannot accept major behavioral changes or new adapter installations."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "system_count": "Dozens of information systems",
+        "data_types": "Text, Binary (Image, Audio, Video)",
+        "network_protocol": "HTTP/REST (for Web Services option), JDBC (for Direct Connection)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Enterprise Service Bus (ESB)",
+          "questions": [
+            "Does the ESB support binary data transfer natively?",
+            "Can legacy systems connect to the ESB without installing new adapters?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy among them."
+        },
+        {
+          "id": "RS-02",
+          "description": "Each of the other connected applications must be able to connect to a centralized data-warehouse and pull data upon request as needed."
+        },
+        {
+          "id": "RS-03",
+          "description": "The DC system must be able to sync any duplicated master data from different applications."
+        },
+        {
+          "id": "RS-04",
+          "description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed."
+        },
+        {
+          "id": "RS-05",
+          "description": "The source system should not experience overload when another system is connected to get data."
+        },
+        {
+          "id": "RS-06",
+          "description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse."
+        },
+        {
+          "id": "RS-07",
+          "description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files."
+        },
+        {
+          "id": "RS-08",
+          "description": "Small to no change should be needed in any of the connected applications in order to implement the solution."
+        },
+        {
+          "id": "RS-09",
+          "description": "The cost in term of the required software development has to be minimum and preferably using open-source software."
+        },
+        {
+          "id": "RS-10",
+          "description": "The developed system has to be developer-friendly for enhancement purposes."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Accommodate needs of institutional accreditation",
+          "Organize and synchronize information from existing systems",
+          "Reduce duplication issues and problems from various data structures",
+          "Facilitate processes previously done manually",
+          "Create a centralized source for overall academic activity"
+        ],
+        "technical_constraints": [
+          "Low-cost",
+          "Open-source software",
+          "Tight development schedule",
+          "Limited human resources/developer experience",
+          "Existing systems use PHP and MySQL",
+          "Existing systems are disparate and separate"
+        ],
+        "architectural_drivers": [
+          "Security",
+          "Performance",
+          "Compliance",
+          "Modifiability"
+        ]
+      }
+    },
+    "ground_truth_outputs": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Direct Connection Architecture (Option 1)",
+          "description": "The Data Warehouse (DWH) connects to each of the source systems to exchange data respectively through a direct-wired connection.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Deemed the fastest because it uses a direct connection."
+            },
+            {
+              "quality_attribute": "Security",
+              "rationale": "Negative impact: requires exposing database credentials to the DC, vulnerable to attacks."
+            }
+          ]
+        },
+        {
+          "approach_name": "Web Services Based Architecture (Option 2)",
+          "description": "Each source system publishes its data through web services to be consumed by the DWH in need.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Security",
+              "rationale": "More secured than Option 1."
+            },
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Requires less changes in the DC system when sources change compared to Option 1."
+            }
+          ]
+        },
+        {
+          "approach_name": "Enterprise Service Bus (ESB) Based Architecture (Option 3)",
+          "description": "Each source system shares their data through an ESB (ServiceMix) which connects to the DWH using publish/subscribe mechanisms.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Performance",
+              "rationale": "Less impact on performance due to publish/subscribe messaging mechanism."
+            },
+            {
+              "quality_attribute": "Compliance",
+              "rationale": "Best option for binary data transfer (built-in FTP and blob messaging)."
+            }
+          ]
+        },
+        {
+          "approach_name": "Spring Framework / MOTS (Refined Architecture)",
+          "description": "Replaces the ESB product with an alternative open-source framework (Spring Batch, Spring Rest Service) to address complexity and legacy support.",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Modifiability",
+              "rationale": "Addresses risks associated with legacy systems that cannot install adapters."
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Data Access",
+                "scenario_id": "S_Sec_1",
+                "scenario_description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Data Connectedness",
+                "scenario_id": "S_Sec_2",
+                "scenario_description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Source Load",
+                "scenario_id": "S_Perf_1",
+                "scenario_description": "The source system should not experience overload when another system is connected to get data",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Compliance",
+            "children": [
+              {
+                "refinement": "Changed Data Type",
+                "scenario_id": "S_Comp_1",
+                "scenario_description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "High"
+                }
+              },
+              {
+                "refinement": "Standard Data Format",
+                "scenario_id": "S_Comp_2",
+                "scenario_description": "Any connector required for the connected systems such as connection with different protocol has to be easily accommodated",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Low"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Modifiability",
+            "children": [
+              {
+                "refinement": "Structure Change",
+                "scenario_id": "S_Mod_1",
+                "scenario_description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse",
+                "priority_tuple": {
+                  "importance": "High",
+                  "difficulty": "Medium"
+                }
+              },
+              {
+                "refinement": "Small Changes",
+                "scenario_id": "S_Mod_2",
+                "scenario_description": "Small to no change should be needed in any of the connected applications in order to implement the solution",
+                "priority_tuple": {
+                  "importance": "Medium",
+                  "difficulty": "High"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "The data from the connected applications are sync overtime",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "The DC system must support transferring data in text as well as binary formats such as image, audio, video files between the data-warehouse and the connected application",
+          "primary_quality_attribute": [
+            "Compliance"
+          ]
+        },
+        {
+          "scenario_text": "The connected application need to install an adapter in order to connect to the DC system",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "Batch job to transfer data from the source applications to the DC system is restart-able",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "Data from the source applications are merged and remain unique in the data-warehouse",
+          "primary_quality_attribute": [
+            "Integrity"
+          ]
+        },
+        {
+          "scenario_text": "Data structure of the source applications changes can be accommodated and reflected easily in the data-warehouse",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The cost of the used of S/W is minimum",
+          "primary_quality_attribute": [
+            "Cost"
+          ]
+        },
+        {
+          "scenario_text": "The web service implementation has to be accessible overtime and restart-able easily when down",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "The connection of the applications to the DC system is authorized before any request",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "The data from each of the source applications has to be identifiable",
+          "primary_quality_attribute": [
+            "Traceability"
+          ]
+        },
+        {
+          "scenario_text": "The community support for the S/W is largely available",
+          "primary_quality_attribute": [
+            "Supportability"
+          ]
+        },
+        {
+          "scenario_text": "There should be small changes required for an enhancement",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        },
+        {
+          "scenario_text": "The DC system should log critical information such as batch job id, source application id and so on upon the job failure",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        },
+        {
+          "scenario_text": "The DC system should access the source application in secure way and its services has to be securely accessible",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "The developed system has to be developer-friendly for enhancement purposes",
+          "primary_quality_attribute": [
+            "Modifiability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "Evaluation_Iter1",
+            "text": "General comparison of architectural options against key attributes",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Multiple",
+          "environment": "Design Selection",
+          "stimulus": "Architecture Selection",
+          "response_measure": "Fit for purpose",
+          "architectural_decisions": [
+            "Rejection of Direct Connection (Option 1) due to Security and Modifiability issues",
+            "Selection of Web Services (Option 2) or ESB (Option 3) for further analysis"
+          ],
+          "reasoning": "Option 1 exposes database credentials (Security risk) and requires DC code changes when source schemas change (Modifiability risk). Options 2 and 3 are more resistant to source changes.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-1",
+                "description": "Option 1 (Direct Connection) is vulnerable to malicious attacks.",
+                "rationale": "Database credentials are exposed to the DC; direct access is granted."
+              },
+              {
+                "id": "R-2",
+                "description": "Option 2 (Web Services) may degrade source system performance.",
+                "rationale": "DC must fire requests to source systems, potentially overloading them."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S_Comp_1",
+            "text": "The DC system must support transferring data in text as well as binary formats such as image, audio, video files",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Compliance",
+          "environment": "Normal operations",
+          "stimulus": "Transfer of binary data",
+          "response_measure": "Successful transfer",
+          "architectural_decisions": [
+            "Selection of ESB (Option 3) or Web Services (Option 2)"
+          ],
+          "reasoning": "Option 3 has built-in FTP/blob messaging. Option 2 would require separate services/development because existing apps do not save binary data in the database (only file paths).",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-3",
+                "description": "Option 2 requires more changes/development to handle binary data.",
+                "rationale": "Existing systems only store paths; a separate service is needed to transfer the actual files."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-1",
+                "parameter": "Accommodation of additional services (FTP/Binary)",
+                "correlated_attribute": "Compliance"
+              },
+              {
+                "id": "S-2",
+                "parameter": "Accommodation of additional services (FTP/Binary)",
+                "correlated_attribute": "Modifiability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-1",
+                "parameter": "Adding new services (e.g., FTP for binary)",
+                "conflicting_attributes": [
+                  "Compliance (Positive effect - meets binary requirement)",
+                  "Modifiability (Negative effect - requires changes to system)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "Refined_Eval",
+            "text": "Evaluation of the Refined Architecture (Spring Framework) to replace ESB",
+            "type": "Exploratory"
+          },
+          "quality_attribute": "Security",
+          "environment": "Implementation",
+          "stimulus": "Adoption of Open-Source Framework",
+          "response_measure": "Secure and Maintainable System",
+          "architectural_decisions": [
+            "Replace ESB with Spring Framework",
+            "Develop custom security module"
+          ],
+          "reasoning": "The ESB option was risky for legacy systems that couldn't install adapters. The Spring option solves this but introduces new risks regarding security configuration and developer skills.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-4",
+                "description": "Security module must be developed from scratch.",
+                "rationale": "The chosen Open-source framework does not come with a built-in security module configured out-of-the-box."
+              },
+              {
+                "id": "R-5",
+                "description": "Framework has a wide learning curve.",
+                "rationale": "The IT team consists mostly of fresh graduates; the framework is not considered developer-friendly for them."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [],
+            "tradeoff_points": []
+          }
+        }
+      ]
+    }
+  }
+}

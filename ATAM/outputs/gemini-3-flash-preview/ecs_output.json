@@ -1,0 +1,416 @@
+{
+  "business_context": {
+    "business_goals": [
+      "Support for interdisciplinary earth science",
+      "Concurrent ingest, production, and distribution of high data volumes",
+      "One-stop shopping (location transparency of system components and data)",
+      "Support for externally developed science algorithms/applications",
+      "Science data reprocessing (lineage, version management, processing)",
+      "Assurance of data integrity for archive",
+      "Automated operations to minimize operational costs"
+    ],
+    "technical_constraints": [
+      "Must use specific COTS products (~50 used)",
+      "Must interoperate with other systems",
+      "Must reuse legacy code where applicable",
+      "Distributed deployment across four specific data centers"
+    ],
+    "architectural_drivers": [
+      "Maintainability",
+      "Operability",
+      "Reliability",
+      "Scalability",
+      "Performance"
+    ]
+  },
+  "evaluation_inputs": {
+    "phase_1_discovery": {
+      "initial_documentation_status": "The system was already fielded and supported by volumes of documentation, including architecture documents provided by the client. The evaluation team reviewed these materials beforehand to understand the system's broad details and concept of operations.",
+      "evaluator_inquiry_questions": [
+        "What are the driving architectural constraints, and where are they documented?",
+        "How do components communicate and synchronize? (Mechanisms used, Restrictions on use)",
+        "What are the system partitions? (Composition, Restrictions on use and visibility)",
+        "What constitutes the system infrastructure? (Supplied functionality, Resource management)",
+        "What are the system interfaces? (Identification, Participants, Coordination mechanisms)",
+        "What is the process/thread model of the architecture?",
+        "What is the deployment model of the system?",
+        "What are the system states and modes?",
+        "What variability mechanisms and variation points are included in the architecture?"
+      ]
+    },
+    "phase_2_architectural_context": {
+      "hardware_view_description": [
+        "The system is distributed at four data centers across the United States.",
+        "Deployed on about 20 Unix servers from multiple vendors at each site.",
+        "Supported by a communications infrastructure pictured as a ring connecting the subsystems."
+      ],
+      "runtime_constraints": [
+        "Must support concurrent ingest, production, and distribution of high data volumes.",
+        "Must operate 24 hours a day, 7 days a week, 365 days a year.",
+        "Must process data from 24 sensors on ten spacecraft.",
+        "Must compute about 250 standard data products."
+      ]
+    },
+    "quantitative_model_parameters": {
+      "data_volume": "Ingest ~1.5 TB/day; Distribute ~2 TB/day",
+      "system_scale": {
+        "custom_code": "1.2 million lines",
+        "cots_products": "~50 products",
+        "external_interfaces": "34 systems"
+      },
+      "distribution_targets": "2,000 sites (Scenario Sc4)"
+    },
+    "investigative_prompts": {
+      "style_probes": {
+        "target_style": "Distributed Object / Client-Server",
+        "questions": [
+          "How does the system ensure backward compatibility of interfaces?",
+          "What are the impacts of static linkage of client stubs on deployment?",
+          "How does the distribution of data type information affect modifiability?",
+          "What are the performance costs of location independence via name servers?"
+        ]
+      }
+    },
+    "raw_candidate_scenarios": [
+      {
+        "id": "13 (O15.1)",
+        "description": "Create a report for the execution of the results of a specific run of a scientific algorithm. Operator must create report within 2 hours of request."
+      },
+      {
+        "id": "Brainstorm_Generic_1",
+        "description": "Scenarios addressing reuse, interoperability, and data integrity (as seen in voting lists)."
+      }
+    ]
+  },
+  "ATAM_Evaluation": {
+    "architectural_approaches": [
+      {
+        "approach_name": "Distributed Object / Client-Server",
+        "description": "The system utilizes a Distributed Object / Client-Server style to manage communication across distributed Unix servers and provide location independence (one-stop shopping) via name servers.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Scalability",
+            "rationale": "Supports distribution of high data volumes and processing loads across multiple sites and servers."
+          },
+          {
+            "quality_attribute": "Operability",
+            "rationale": "Enables location transparency for users and system components, simplifying data access."
+          }
+        ]
+      },
+      {
+        "approach_name": "Pipe-and-Filter",
+        "description": "A processing pipeline is employed to handle the concurrent ingest, production, and distribution of earth science data, allowing for incremental processing of high-volume streams.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Performance",
+            "rationale": "Optimizes throughput for the 1.5 TB/day ingest and 2 TB/day distribution requirements."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Allows for the insertion or replacement of specific science algorithms as independent filters."
+          }
+        ]
+      },
+      {
+        "approach_name": "Shared Repository",
+        "description": "A centralized metadata and data archive repository manages data lineage, versioning, and integrity across the four data centers.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Reliability",
+            "rationale": "Ensures the assurance of data integrity for long-term archives and consistency during reprocessing."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Facilitates data lineage tracking and version management for science data reprocessing."
+          }
+        ]
+      },
+      {
+        "approach_name": "Layered Architecture",
+        "description": "A layered approach separates the 50 COTS products and infrastructure services from the 1.2 million lines of custom code and externally developed science algorithms.",
+        "addressed_attributes": [
+          {
+            "quality_attribute": "Interoperability",
+            "rationale": "Provides abstraction layers to manage the integration of diverse COTS products and legacy code."
+          },
+          {
+            "quality_attribute": "Maintainability",
+            "rationale": "Isolates changes in science algorithms or COTS versions from the rest of the system."
+          }
+        ]
+      }
+    ],
+    "utility_tree": {
+      "root": "Utility",
+      "quality_attribute_nodes": [
+        {
+          "attribute_name": "Performance",
+          "children": [
+            {
+              "refinement": "Data Throughput",
+              "scenario_id": "P1",
+              "scenario_description": "System must ingest 1.5 TB/day and distribute 2 TB/day under normal operating conditions.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Maintainability",
+          "children": [
+            {
+              "refinement": "Algorithm Integration",
+              "scenario_id": "M1",
+              "scenario_description": "Integrate a new science algorithm into the processing pipeline within 2 staff-weeks without affecting existing filters.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Scalability",
+          "children": [
+            {
+              "refinement": "Horizontal Expansion",
+              "scenario_id": "S1",
+              "scenario_description": "Scale processing capacity by 50% to handle peak reprocessing loads by adding new Unix server nodes without system downtime.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Reliability",
+          "children": [
+            {
+              "refinement": "Fault Tolerance",
+              "scenario_id": "R1",
+              "scenario_description": "Ensure 100% data integrity and lineage tracking during a single-site server failure and subsequent recovery.",
+              "priority_tuple": {
+                "importance": "High",
+                "difficulty": "High"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Interoperability",
+          "children": [
+            {
+              "refinement": "COTS Isolation",
+              "scenario_id": "I1",
+              "scenario_description": "Upgrade a COTS infrastructure component (e.g., DBMS) to a new major version without requiring changes to the custom science application code.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Medium"
+              }
+            }
+          ]
+        },
+        {
+          "attribute_name": "Operability",
+          "children": [
+            {
+              "refinement": "Location Transparency",
+              "scenario_id": "O1",
+              "scenario_description": "Provide location-transparent access to data across four distributed sites for end-users.",
+              "priority_tuple": {
+                "importance": "Medium",
+                "difficulty": "Low"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "scenarios": [
+      {
+        "scenario_text": "Under normal operating conditions, the system must ingest 1.5 TB of earth science data per day and distribute 2 TB of data to end-users.",
+        "primary_quality_attribute": [
+          "Performance"
+        ]
+      },
+      {
+        "scenario_text": "A developer integrates a new science algorithm into the processing pipeline; this must be completed within 2 staff-weeks and not require modifications to existing processing filters.",
+        "primary_quality_attribute": [
+          "Maintainability"
+        ]
+      },
+      {
+        "scenario_text": "During peak reprocessing periods, the system administrator adds new Unix server nodes to increase capacity by 50% without causing any system downtime.",
+        "primary_quality_attribute": [
+          "Scalability"
+        ]
+      },
+      {
+        "scenario_text": "When a server at one of the four sites fails, the system maintains 100% data integrity and continues tracking data lineage during the failure and subsequent recovery.",
+        "primary_quality_attribute": [
+          "Reliability"
+        ]
+      },
+      {
+        "scenario_text": "The database administrator upgrades a major COTS DBMS version; the upgrade must not necessitate changes to the 1.2 million lines of custom science application code.",
+        "primary_quality_attribute": [
+          "Interoperability",
+          "Maintainability"
+        ]
+      },
+      {
+        "scenario_text": "An end-user requests data residing at a remote site; the system provides access to the data without the user needing to specify the physical location of the archive.",
+        "primary_quality_attribute": [
+          "Operability"
+        ]
+      }
+    ],
+    "analysis_records": [
+      {
+        "scenario_reference": {
+          "id": "P1",
+          "text": "Under normal operating conditions, the system must ingest 1.5 TB of earth science data per day and distribute 2 TB of data to end-users.",
+          "type": "Use Case"
+        },
+        "quality_attribute": "Performance",
+        "environment": "Normal operations",
+        "stimulus": "1.5 TB/day ingest and 2 TB/day distribution load",
+        "response_measure": "Throughput maintained without backlog accumulation",
+        "architectural_decisions": [
+          "Pipe-and-Filter for incremental processing",
+          "Distributed processing across four Unix-based sites"
+        ],
+        "reasoning": "The pipe-and-filter approach allows for concurrent processing of data streams. Distributing this across four sites parallelizes the load, reducing the per-site requirement to roughly 375GB ingest/day.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-01",
+              "description": "Network congestion between distributed sites",
+              "rationale": "Transferring large datasets (TB scale) between sites for processing or distribution may saturate available WAN bandwidth, causing ingest delays."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-01",
+              "description": "Filter-level processing capacity",
+              "rationale": "Unix-based servers using incremental pipes can handle high local throughput without significant overhead compared to monolithic batch processing."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-01",
+              "parameter": "Filter processing latency",
+              "correlated_attribute": "Performance"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-01",
+              "parameter": "Number of filter stages",
+              "conflicting_attributes": [
+                "Maintainability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "R1",
+          "text": "When a server at one of the four sites fails, the system maintains 100% data integrity and continues tracking data lineage during the failure and subsequent recovery.",
+          "type": "Exploratory"
+        },
+        "quality_attribute": "Reliability",
+        "environment": "Single-site failure",
+        "stimulus": "Unix server crash at one data center",
+        "response_measure": "Zero data loss and accurate lineage records",
+        "architectural_decisions": [
+          "Shared Repository for metadata and lineage",
+          "Distributed Object naming service for location independence"
+        ],
+        "reasoning": "A centralized or globally synchronized repository ensures that even if a processing node fails, the state of the data and its lineage are preserved. Distributed objects allow other sites to take over tasks.",
+        "findings": {
+          "risks": [
+            {
+              "id": "R-02",
+              "description": "Metadata synchronization latency",
+              "rationale": "If the shared repository uses asynchronous replication across sites, a failure might occur before lineage data is fully committed to secondary sites."
+            }
+          ],
+          "non_risks": [
+            {
+              "id": "NR-02",
+              "description": "Location independence",
+              "rationale": "The use of name servers ensures that clients do not need to hardcode site-specific paths, simplifying failover."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-02",
+              "parameter": "Database commit frequency for lineage",
+              "correlated_attribute": "Reliability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-02",
+              "parameter": "Consistency protocol (Strict vs. Eventual)",
+              "conflicting_attributes": [
+                "Reliability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "scenario_reference": {
+          "id": "I1",
+          "text": "The database administrator upgrades a major COTS DBMS version; the upgrade must not necessitate changes to the 1.2 million lines of custom science application code.",
+          "type": "Growth"
+        },
+        "quality_attribute": "Interoperability",
+        "environment": "Maintenance window",
+        "stimulus": "COTS DBMS upgrade",
+        "response_measure": "Zero changes to 1.2M lines of custom code",
+        "architectural_decisions": [
+          "Layered Architecture with COTS isolation",
+          "Standardized API wrappers for data access"
+        ],
+        "reasoning": "By isolating COTS products in a specific infrastructure layer and using wrappers, the custom science logic is decoupled from specific vendor implementations.",
+        "findings": {
+          "risks": [],
+          "non_risks": [
+            {
+              "id": "NR-03",
+              "description": "Science code stability",
+              "rationale": "The 1.2M lines of code are protected by the abstraction layer, making the system resilient to COTS version churn."
+            }
+          ],
+          "sensitivity_points": [
+            {
+              "id": "S-03",
+              "parameter": "Completeness of the abstraction layer API",
+              "correlated_attribute": "Maintainability"
+            }
+          ],
+          "tradeoff_points": [
+            {
+              "id": "T-03",
+              "parameter": "Abstraction layer depth",
+              "conflicting_attributes": [
+                "Interoperability",
+                "Performance"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

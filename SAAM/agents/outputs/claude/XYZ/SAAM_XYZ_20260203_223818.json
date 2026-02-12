@@ -1,0 +1,935 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "",
+      "paper_title": "",
+      "authors": [
+        "AI ArchEval Team"
+      ],
+      "year": "2026",
+      "venue": "Internal Evaluation",
+      "doi_or_url": "N/A",
+      "extraction_date": "2026-02-03"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "XYZ",
+        "domain": "Unspecified",
+        "system_description": null,
+        "system_maturity": "Development",
+        "business_goals": "Improve maintainability, reduce the time to close the change requests, and have a more agile IT system that can be adapted to change faster."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "Assess Modifiability and Functionality",
+        "evaluation_type": "",
+        "architectures_evaluated": ""
+      },
+      "participants": [
+        {
+          "role": "AI Architect",
+          "count": 1
+        },
+        {
+          "role": "AI Manager",
+          "count": 1
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Pipe-and-Filter",
+          "Process-Based",
+          "Monolithic"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A-01",
+            "name": "Current Production Architecture (Legacy System)",
+            "description": "A sequential, process-based architecture where electronic mail batches flow through a series of transformation stages. The system uses a Front End for file acquisition, a Server that spawns individual SubServer processes for each batch, and a series of tightly-coupled processing components (Normalizer, Checker & Cleaner, Pre-Generator & Generator) that transform data inch-by-inch before dispatching to printing centers. The architecture follows a rigid pipeline pattern with database-stored procedures handling dispatch logic.",
+            "architecture_characteristics": "Low modularity, tight coupling between processing stages, limited reusability, sequential processing within each batch, parallel batch handling at Server level, database-centric dispatch logic, difficult to modify individual stages without affecting the entire pipeline",
+            "key_components": [
+              {
+                "component_id": "C-01",
+                "component_name": "Front End",
+                "responsibilities": "Acquires electronic files (batches) submitted by customers via various channels and forwards them to the Server for processing",
+                "dependencies": [
+                  "C-02"
+                ],
+                "change_sensitivity": "Medium - Changes to file acquisition methods or customer interfaces require modifications here, but component is relatively isolated from core processing logic"
+              },
+              {
+                "component_id": "C-02",
+                "component_name": "Server",
+                "responsibilities": "Receives batches from Front End, manages parallel execution by creating and coordinating individual SubServer processes for each batch, monitors overall system throughput",
+                "dependencies": [
+                  "C-01",
+                  "C-03",
+                  "C-07"
+                ],
+                "change_sensitivity": "High - Central orchestration point; changes to batch handling, process management, or parallelization strategy require modifications here"
+              },
+              {
+                "component_id": "C-03",
+                "component_name": "SubServer",
+                "responsibilities": "Manages the sequential transformation pipeline for a single batch, coordinating the flow through Normalizer, Checker & Cleaner, and Pre-Generator & Generator components in a fixed sequence",
+                "dependencies": [
+                  "C-04",
+                  "C-05",
+                  "C-06",
+                  "C-07"
+                ],
+                "change_sensitivity": "High - Any change to processing sequence, addition of new transformation steps, or modification of pipeline logic requires changes here; tightly coupled to all processing components"
+              },
+              {
+                "component_id": "C-04",
+                "component_name": "Normalizer",
+                "responsibilities": "First stage of data transformation; converts incoming data from various customer formats into a standardized internal format for downstream processing",
+                "dependencies": [
+                  "C-07"
+                ],
+                "change_sensitivity": "High - New customer data formats, changes to internal data standards, or transformation rules require modifications; changes may impact all downstream components"
+              },
+              {
+                "component_id": "C-05",
+                "component_name": "Checker & Cleaner",
+                "responsibilities": "Second stage; validates normalized data against business rules, identifies errors or inconsistencies, cleanses data by correcting or removing invalid entries, may interact with DB for validation rules",
+                "dependencies": [
+                  "C-04",
+                  "C-07"
+                ],
+                "change_sensitivity": "High - New validation rules, quality standards, or cleansing logic require modifications; tightly coupled to Normalizer output format"
+              },
+              {
+                "component_id": "C-06",
+                "component_name": "Pre-Generator & Generator",
+                "responsibilities": "Final transformation stage; prepares data for printing (pre-generation) and generates final output files formatted for specific printing centers, may include layout, formatting, and print-specific optimizations",
+                "dependencies": [
+                  "C-05",
+                  "C-07"
+                ],
+                "change_sensitivity": "High - Changes to output formats, new printing center requirements, or layout modifications require changes here; tightly coupled to upstream data format"
+              },
+              {
+                "component_id": "C-07",
+                "component_name": "Database (DB)",
+                "responsibilities": "Stores configuration data, batch metadata, processing status, and business rules; contains Dispatcher Stored Procedures that implement batch splitting and routing logic to determine which printing centers receive which portions of batches",
+                "dependencies": [],
+                "change_sensitivity": "High - Contains critical business logic in stored procedures; changes to dispatch rules, routing logic, or data schemas affect multiple components; database schema changes are particularly risky in legacy systems"
+              }
+            ],
+            "data_flow": "1) Customers submit electronic files to Front End \u2192 2) Front End forwards batches to Server \u2192 3) Server creates one SubServer process per batch for parallel processing \u2192 4) Within each SubServer, data flows sequentially: Normalizer transforms raw data \u2192 Checker & Cleaner validates and cleanses \u2192 Pre-Generator & Generator creates print-ready output \u2192 5) Database Dispatcher Stored Procedures split and route batches to appropriate Printing Centers \u2192 6) Final output sent to Printing Centers. Data transformation is 'inch-by-inch' (incremental/record-by-record) within each stage. Database is accessed throughout for configuration, validation rules, and dispatch logic.",
+            "architectural_constraints": [
+              "Non-object-oriented design limits encapsulation and reusability of business logic",
+              "Tight coupling between processing stages (Normalizer, Checker & Cleaner, Pre-Generator & Generator) makes isolated changes difficult",
+              "Fixed sequential pipeline within SubServer prevents flexible reordering or conditional execution of stages",
+              "Business logic embedded in database stored procedures (Dispatcher) creates maintenance challenges and limits portability",
+              "Process-based parallelization (SubServer per batch) may have scalability limitations and resource overhead",
+              "Lack of clear service boundaries makes it difficult to modify, test, or replace individual components independently",
+              "Inch-by-inch processing model may limit opportunities for batch-level optimizations",
+              "Legacy codebase likely has accumulated technical debt, making changes risky and time-consuming"
+            ],
+            "what_it_can_accommodate": [
+              "Parallel processing of multiple independent batches",
+              "High-volume throughput of standard mail processing workflows",
+              "Established customer file formats and existing printing center integrations",
+              "Incremental data transformation through well-defined stages"
+            ],
+            "what_it_cannot_easily_accommodate": [
+              "Adding new processing steps or reordering existing transformation stages without significant SubServer modifications",
+              "Implementing new customer-specific workflows that deviate from the standard Normalize\u2192Check\u2192Clean\u2192Generate pipeline",
+              "Reusing individual processing components (Normalizer, Checker, etc.) in different contexts or systems",
+              "Rapid adaptation to new business requirements due to tight coupling and embedded logic",
+              "Independent scaling of individual processing stages based on different resource needs",
+              "A/B testing or gradual rollout of new processing logic without affecting the entire pipeline",
+              "Integration with modern cloud services or microservices architectures",
+              "Automated testing of individual components in isolation",
+              "Quick turnaround on change requests due to ripple effects across tightly coupled components"
+            ],
+            "notes": "This architecture directly conflicts with the stated business goals of improved maintainability, faster change request closure, and agility. The tight coupling, embedded business logic, and rigid pipeline structure make changes expensive and risky. Any modification to processing logic typically requires changes across multiple components (SubServer coordination + specific processing component + potentially DB stored procedures). The non-object-oriented design limits code reuse and makes it difficult to apply modern development practices. The monolithic nature means that even small changes require testing and deploying large portions of the system, increasing time-to-market and risk of regression."
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "AI-Driven Brainstorming based on System Context",
+        "scenario_sources": [
+          "Future Needs",
+          "Change Requests"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)",
+          "Change (Exploratory)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Functionality"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "Ranking"
+      }
+    },
+    "outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "A maintainer receives a change request to modify the address validation rules in the Checker & Cleaner component. The change must be implemented, tested, and deployed to production within 5 business days without requiring changes to other components.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Checker & Cleaner",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Indirect support. The tightly-coupled sequential architecture means changes to Checker & Cleaner may require regression testing of downstream components (Pre-Generator & Generator). The non-object-oriented design likely lacks modularity and encapsulation, making isolated changes difficult.",
+          "priority": "High",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Directly addresses the stakeholder concern about reducing time to close change requests and improving maintainability. This scenario tests the system's ability to accommodate localized changes quickly."
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "A developer needs to add support for a new customer service type (e.g., certified mail tracking) that requires modifications to data normalization rules, validation logic, and generation templates. The implementation should be completed within 2 weeks with minimal impact on existing service types.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Normalizer",
+            "Checker & Cleaner",
+            "Pre-Generator & Generator",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Poor architectural fit. The rigid pipeline pattern and tightly-coupled components mean adding new service types likely requires changes across multiple stages. Lack of object-oriented design suggests no polymorphism or strategy patterns to handle service type variations elegantly.",
+          "priority": "High",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Tests the system's agility to adapt to new business requirements. Postal organizations need to offer competitive services, and the ability to add new service types quickly is critical for business growth."
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "An end-user submits an electronic data file containing 100,000 mail records at 2:00 PM. The system must process the batch through all stages (normalization, checking, cleaning, generation) and confirm dispatch readiness to the printing center within 4 hours during peak business hours.",
+          "scenario_type": "Use Case",
+          "involved_components": [
+            "Front End",
+            "Server",
+            "SubServer",
+            "Normalizer",
+            "Checker & Cleaner",
+            "Pre-Generator & Generator",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Direct support. This represents the core sequential processing workflow the current architecture was designed to handle. The Server spawning SubServer processes per batch and the sequential pipeline are built for this use case.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Represents the fundamental value proposition of the system. End-users (postal customers) depend on timely processing of their mail batches to meet delivery commitments to their own customers."
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A system administrator needs to diagnose why a specific batch failed during the Checker & Cleaner stage. The administrator must be able to identify the failure point, view relevant logs, and restart processing from the failed stage within 30 minutes without reprocessing earlier stages.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Server",
+            "SubServer",
+            "Checker & Cleaner",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Indirect support. The sequential pipeline likely processes batches end-to-end without built-in checkpointing or stage-level restart capabilities. Database-stored procedures may log errors, but the architecture doesn't suggest modular restart points. This would require architectural enhancement.",
+          "priority": "Medium",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Operational efficiency and system reliability are critical. The ability to quickly diagnose and recover from failures reduces downtime and improves customer satisfaction, supporting the need for a more agile IT system."
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "A maintainer needs to refactor the Normalizer component to improve code readability and reduce technical debt by introducing modular functions, without changing its external behavior or interfaces. The refactoring should be completed in 3 days with confidence that no regression issues will occur.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Normalizer"
+          ],
+          "feasibility_note": "Poor architectural fit. The non-object-oriented legacy codebase likely lacks automated testing, clear interfaces, and separation of concerns. Without comprehensive test coverage, refactoring carries high risk. The tightly-coupled nature means 'external interfaces' may not be well-defined.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Addresses long-term maintainability concerns. Reducing technical debt enables faster future changes and supports the stakeholder goal of having a more agile, adaptable IT system."
+        },
+        {
+          "scenario_id": "S-06",
+          "scenario_text": "A developer needs to implement a new API endpoint in the Front End that allows customers to query the real-time processing status of their submitted batches (which stage the batch is currently in). This feature must be delivered within 10 business days.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Front End",
+            "Server",
+            "SubServer",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Indirect support. The current architecture description doesn't mention real-time status tracking or event-driven updates. The sequential pipeline may not expose intermediate state information. This would require adding state management and query capabilities, possibly requiring database schema changes and new communication patterns.",
+          "priority": "Medium",
+          "stakeholder_role": "Developer",
+          "stakeholder_rationale": "Enhances customer experience and transparency. End-users want visibility into their batch processing, which is a competitive differentiator for postal organizations and supports business agility."
+        },
+        {
+          "scenario_id": "S-07",
+          "scenario_text": "An end-user needs to submit a rush batch of 5,000 records that must be prioritized over standard batches currently in the queue. The system should process the rush batch and complete dispatch within 1 hour, even when 10 standard batches are already queued.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Front End",
+            "Server",
+            "SubServer",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Poor architectural fit. The Server spawning SubServer processes per batch suggests a simple queue-based approach without priority handling. Implementing priority queuing would require changes to the Server's batch scheduling logic and potentially the database dispatch procedures.",
+          "priority": "Low",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Supports premium service offerings and customer flexibility. While not critical, priority processing can be a revenue-generating feature for postal organizations serving time-sensitive business customers."
+        },
+        {
+          "scenario_id": "S-08",
+          "scenario_text": "A system administrator needs to perform a rolling upgrade of the Checker & Cleaner component during business hours (9 AM - 5 PM) without causing system downtime or batch processing failures. The upgrade window should not exceed 15 minutes of reduced capacity.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Server",
+            "SubServer",
+            "Checker & Cleaner"
+          ],
+          "feasibility_note": "Not supported. The tightly-coupled sequential architecture and SubServer process model suggest no built-in support for component-level hot-swapping or graceful degradation. The rigid pipeline means upgrading one stage likely requires stopping the entire processing flow.",
+          "priority": "Low",
+          "stakeholder_role": "System Administrator",
+          "stakeholder_rationale": "Supports high availability and operational flexibility. While exploratory, zero-downtime deployments are increasingly expected in modern systems and would support the goal of a more agile IT infrastructure."
+        },
+        {
+          "scenario_id": "S-09",
+          "scenario_text": "A maintainer needs to replace the database-stored procedures handling dispatch logic with application-level code in the Pre-Generator & Generator components to improve testability and version control. This migration should be completed incrementally over 4 weeks without disrupting production operations.",
+          "scenario_type": "Change (Exploratory)",
+          "involved_components": [
+            "Pre-Generator & Generator",
+            "Database (DB)"
+          ],
+          "feasibility_note": "Indirect support. While technically feasible, the architecture's reliance on database-stored procedures suggests deep coupling between data and logic. Migrating to application-level code requires careful extraction, comprehensive testing, and potentially dual-running both implementations during transition.",
+          "priority": "Medium",
+          "stakeholder_role": "Maintainer",
+          "stakeholder_rationale": "Improves long-term maintainability and developer productivity. Stored procedures are harder to test, version, and debug compared to application code. This change supports the goal of reducing time to close change requests."
+        },
+        {
+          "scenario_id": "S-10",
+          "scenario_text": "An end-user submits a batch file in a new format (e.g., XML instead of CSV). The system should detect the format, apply appropriate parsing logic, and process the batch through the normal pipeline without requiring manual intervention or system reconfiguration.",
+          "scenario_type": "Change (Growth)",
+          "involved_components": [
+            "Front End",
+            "Normalizer"
+          ],
+          "feasibility_note": "Poor architectural fit. The non-object-oriented design likely hardcodes file format parsing in the Front End or Normalizer. Supporting multiple formats would require adding format detection, parser selection logic, and potentially a plugin architecture\u2014all of which are difficult in a legacy, tightly-coupled system.",
+          "priority": "High",
+          "stakeholder_role": "End-user",
+          "stakeholder_rationale": "Customers use diverse systems and data formats. Supporting multiple input formats reduces integration friction and makes the postal service more accessible, directly supporting the need for a more adaptable system."
+        }
+      ],
+      "scenario_classification": [
+        {
+          "scenario_id": "S-01",
+          "classification": "Indirect",
+          "rationale": "While the change is conceptually localized to Checker & Cleaner and Database validation rules, the tightly-coupled sequential architecture requires extensive regression testing of downstream components. The non-object-oriented design likely lacks clear interfaces and automated tests, making the 5-day timeline unrealistic. Changes to validation rules may also affect data flow assumptions in Pre-Generator & Generator.",
+          "supporting_components": [
+            "C-05",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-02",
+          "classification": "Indirect",
+          "rationale": "Adding a new service type requires changes across the entire pipeline (Normalizer for new data formats, Checker & Cleaner for service-specific validation, Pre-Generator & Generator for service-specific output). The rigid pipeline pattern and lack of polymorphism/strategy patterns mean no elegant way to handle service type variations. The 2-week timeline is unrealistic given the widespread changes and testing required.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-03",
+          "classification": "Direct",
+          "rationale": "This is the core use case the architecture was designed for. The Server spawns SubServer processes for parallel batch handling, and the sequential pipeline (Normalizer \u2192 Checker & Cleaner \u2192 Pre-Generator & Generator) processes batches through all stages. The Database Dispatcher Stored Procedures handle routing to printing centers. The 4-hour processing window for 100,000 records is achievable assuming adequate hardware resources.",
+          "supporting_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-06",
+            "C-07"
+          ],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-04",
+          "classification": "Indirect",
+          "rationale": "The sequential pipeline architecture lacks built-in checkpointing or stage-level restart capabilities. The SubServer manages the entire pipeline as a single unit, meaning failures likely require full batch reprocessing. While the Database may log errors, the architecture doesn't support resuming from arbitrary stages. Implementing this requires adding state persistence, checkpoint mechanisms, and restart logic across SubServer and individual processing components.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-05",
+          "classification": "Indirect",
+          "rationale": "The non-object-oriented legacy codebase likely lacks automated test coverage, clear interface definitions, and separation of concerns. Without comprehensive tests, refactoring carries high regression risk. The tight coupling means 'external interfaces' may be implicit rather than explicit contracts. The 3-day timeline with confidence of no regression is unrealistic without significant investment in test infrastructure first.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-06",
+          "classification": "Indirect",
+          "rationale": "The architecture description doesn't mention real-time status tracking, event-driven updates, or intermediate state exposure. The sequential pipeline processes batches without publishing state changes. Implementing this requires adding state management (tracking which stage each batch is in), database schema changes to store status, communication mechanisms between SubServer/processing components and Front End, and new API endpoints. The 10-day timeline is challenging given these widespread changes.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-07",
+          "classification": "Indirect",
+          "rationale": "The Server's batch handling mechanism appears to be simple queue-based processing without priority support. The SubServer-per-batch model doesn't inherently support priority queuing. Implementing this requires changes to Server's scheduling logic, potentially Database schema to store priority metadata, and queue management to preempt or reorder batches. The architecture's process-based parallelization may make dynamic priority handling complex.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-08",
+          "classification": "Indirect",
+          "rationale": "The tightly-coupled sequential architecture and process-based SubServer model provide no support for component-level hot-swapping, blue-green deployments, or graceful degradation. The rigid pipeline means all stages must be operational for any batch to complete. Upgrading Checker & Cleaner requires stopping SubServer processes, which halts all batch processing. The architecture lacks service boundaries, load balancing, or versioning mechanisms needed for rolling upgrades.",
+          "supporting_components": [],
+          "confidence": "High"
+        },
+        {
+          "scenario_id": "S-09",
+          "classification": "Indirect",
+          "rationale": "While technically feasible, the Database-stored procedures are deeply embedded in the architecture's dispatch logic. The high change sensitivity of the Database component indicates tight coupling between data and logic. Migrating to application-level code requires extracting business rules, creating equivalent logic in Pre-Generator & Generator, comprehensive testing, and potentially running both implementations in parallel during transition. The 4-week incremental migration is feasible but requires careful planning and dual-running infrastructure.",
+          "supporting_components": [
+            "C-06",
+            "C-07"
+          ],
+          "confidence": "Medium"
+        },
+        {
+          "scenario_id": "S-10",
+          "classification": "Indirect",
+          "rationale": "The non-object-oriented design likely hardcodes file format parsing in Front End or Normalizer without abstraction. Supporting multiple formats requires format detection logic, parser selection mechanisms, and potentially a plugin/strategy architecture for different parsers. The tight coupling means adding new format support affects both Front End (format detection) and Normalizer (parsing logic). Without polymorphism or dependency injection, this becomes a widespread code change rather than a localized extension.",
+          "supporting_components": [],
+          "confidence": "High"
+        }
+      ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-01",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-05",
+            "C-07",
+            "C-03",
+            "C-06"
+          ],
+          "change_description": "Modify validation rules in Checker & Cleaner component and potentially update Database validation rule tables. Due to tight coupling, must perform extensive regression testing of Pre-Generator & Generator to ensure validation changes don't break downstream assumptions. SubServer coordination logic may need updates if validation changes affect batch flow control. Lack of automated tests means manual testing across entire pipeline.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "No clear interface contracts between Checker & Cleaner and downstream components",
+            "Likely absence of automated test suite for validation logic",
+            "Validation rules may be scattered across component code and database stored procedures",
+            "Changes to validation may affect data quality assumptions in generation stage",
+            "5-day timeline unrealistic given testing requirements and deployment risk"
+          ],
+          "alternative_approaches": "Implement validation rule changes as additive (new rules alongside old) with feature flags to enable gradual rollout and testing. Use database configuration tables for validation rules to avoid code changes, though this doesn't address testing challenges. Consider hotfix deployment process for urgent validation changes, accepting higher risk for critical business needs."
+        },
+        {
+          "scenario_id": "S-02",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-04",
+            "C-05",
+            "C-06",
+            "C-07",
+            "C-03"
+          ],
+          "change_description": "Add new normalization rules in Normalizer for certified mail data format. Implement service-specific validation logic in Checker & Cleaner (e.g., tracking number validation). Create new generation templates in Pre-Generator & Generator for certified mail output. Update Database schema to store service type metadata and dispatch rules. Modify SubServer to handle service type routing through pipeline. All changes must coexist with existing service types without breaking them.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "No polymorphism or strategy pattern to handle service type variations elegantly",
+            "Likely requires conditional logic (if/else) scattered across all processing components",
+            "Each component must be modified to recognize and handle new service type",
+            "High risk of regression in existing service types due to shared code paths",
+            "Database schema changes affect all components and require careful migration",
+            "2-week timeline severely underestimates complexity and testing requirements",
+            "No clear extension points for adding new service types"
+          ],
+          "alternative_approaches": "Create a parallel processing pipeline specifically for certified mail, duplicating components but isolating risk. Use configuration-driven approach where service type behavior is defined in database tables rather than code (limited by non-OO design). Implement as a phased rollout: first add data capture without processing, then add processing logic incrementally. Consider this scenario as justification for architectural refactoring toward service-oriented or plugin-based design."
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A-01",
+          "classification": "Direct",
+          "affected_components": [],
+          "change_description": "No changes required. This is the primary use case the architecture supports.",
+          "change_extent": "None",
+          "estimated_effort": "Low",
+          "risk_level": "Low",
+          "issues_identified": [
+            "Performance depends on adequate hardware resources and database capacity",
+            "4-hour processing window assumes no competing batches or system bottlenecks",
+            "Inch-by-inch processing model may not be optimally efficient for large batches"
+          ],
+          "alternative_approaches": "N/A - Architecture directly supports this scenario. Performance optimization could be achieved through hardware scaling, database tuning, or batch processing optimizations within existing components."
+        },
+        {
+          "scenario_id": "S-04",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-03",
+            "C-05",
+            "C-07",
+            "C-02"
+          ],
+          "change_description": "Implement checkpointing mechanism in SubServer to persist batch state after each processing stage. Add state management in Database to track current stage and intermediate data for each batch. Modify Checker & Cleaner and all processing components to support resumption from saved state. Implement restart logic in SubServer to detect failed batches and resume from checkpoint. Add comprehensive logging and error tracking to Database. Create administrative interface in Server for triggering restarts.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Sequential pipeline not designed with checkpoint/restart in mind",
+            "Intermediate data storage requirements may be substantial",
+            "State management adds complexity to SubServer coordination logic",
+            "Each processing component must be modified to support stateful resumption",
+            "Database schema changes required for state persistence",
+            "30-minute diagnostic and restart timeline unrealistic without pre-built tooling",
+            "Risk of data inconsistency if checkpoint/restart logic has bugs"
+          ],
+          "alternative_approaches": "Implement comprehensive logging to enable post-mortem diagnosis, then reprocess failed batches from the beginning (simpler but less efficient). Use database transactions to make each stage atomic, allowing restart from stage boundaries. Create a manual restart process where administrators can resubmit batches with stage-specific entry points. Consider this as a requirement for future architecture that supports workflow orchestration with built-in retry/resume capabilities."
+        },
+        {
+          "scenario_id": "S-05",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-04"
+          ],
+          "change_description": "Refactor Normalizer internal code structure to introduce modular functions, improve naming, add code comments, and reduce complexity. This requires first creating comprehensive test suite to ensure no behavioral changes. Establish clear internal interfaces within Normalizer. Document external interface contracts with Checker & Cleaner. Use version control branching strategy to isolate refactoring work.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Likely absence of automated test coverage for Normalizer",
+            "External interfaces may be implicit rather than explicitly defined",
+            "Legacy code may have undocumented dependencies or side effects",
+            "3-day timeline unrealistic without existing test infrastructure",
+            "Confidence of no regression requires comprehensive testing, which may not exist",
+            "Tight coupling means 'external behavior' may be difficult to define precisely",
+            "Refactoring without tests is high-risk in legacy systems"
+          ],
+          "alternative_approaches": "Adopt a test-first approach: spend initial time creating characterization tests that document current behavior, then refactor with confidence. Use incremental refactoring over longer timeframe (weeks) with continuous integration. Apply strangler fig pattern: create new modular implementation alongside old code, gradually migrate functionality. Accept higher timeline (1-2 weeks) to include proper testing. Consider refactoring as part of feature work rather than standalone effort."
+        },
+        {
+          "scenario_id": "S-06",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-03",
+            "C-04",
+            "C-05",
+            "C-06",
+            "C-07"
+          ],
+          "change_description": "Add state tracking mechanism where SubServer and each processing component publish status updates to Database. Create new database schema to store batch processing status (current stage, timestamps, progress percentage). Implement event publishing in Normalizer, Checker & Cleaner, and Pre-Generator & Generator when stage transitions occur. Add new API endpoint in Front End to query Database for batch status. Implement polling or push notification mechanism for real-time updates. Add authentication/authorization for customer access to batch status.",
+          "change_extent": "Widespread",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Architecture not designed for real-time status visibility",
+            "No existing event-driven or pub/sub infrastructure",
+            "Each processing component must be modified to publish status",
+            "Database becomes bottleneck if status updates are too frequent",
+            "Front End may not have API infrastructure for customer queries",
+            "Real-time updates require either polling (inefficient) or push mechanisms (complex)",
+            "10-day timeline challenging given widespread component changes",
+            "Performance impact of status tracking on core processing pipeline"
+          ],
+          "alternative_approaches": "Implement batch-level status only (start/end times) rather than stage-level granularity, reducing complexity. Use database triggers on batch metadata tables to track status changes without modifying processing components. Provide status via email notifications rather than real-time API (simpler). Implement status tracking for new batches only, leaving existing pipeline unchanged. Use log file parsing as interim solution while building proper status infrastructure."
+        },
+        {
+          "scenario_id": "S-07",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-02",
+            "C-07"
+          ],
+          "change_description": "Add priority metadata to batch submissions in Front End. Modify Server's batch scheduling logic to implement priority queue instead of simple FIFO queue. Update Database schema to store batch priority levels. Implement preemption or queue reordering logic in Server to process high-priority batches before standard batches. Add resource allocation logic to ensure rush batches get preferential SubServer process allocation. Create administrative interface for setting/overriding batch priorities.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Server's batch scheduling mechanism likely simple FIFO without priority support",
+            "Process-based parallelization may make dynamic priority handling complex",
+            "Preempting in-progress batches requires checkpoint/restart capability (see S-04)",
+            "Priority queue implementation may affect overall system throughput",
+            "Database schema changes for priority metadata",
+            "Need business rules for priority levels and access control",
+            "Risk of priority inversion or starvation of standard batches"
+          ],
+          "alternative_approaches": "Implement priority as separate processing pools (rush lane vs. standard lane) rather than dynamic queue reordering. Use time-based scheduling windows where rush batches are processed during dedicated time slots. Provide rush service by allocating dedicated SubServer processes rather than queue prioritization. Implement priority via manual administrator intervention rather than automated system. Accept that rush processing requires submitting during low-load periods rather than true priority handling."
+        },
+        {
+          "scenario_id": "S-08",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-02",
+            "C-03",
+            "C-05"
+          ],
+          "change_description": "Implement blue-green deployment infrastructure where two versions of Checker & Cleaner can run simultaneously. Add load balancing in SubServer to route batches to available Checker & Cleaner instances. Implement health checking and graceful shutdown for Checker & Cleaner. Add version management to track which component version processed which batch. Create deployment orchestration to gradually shift traffic from old to new version. Implement rollback mechanism if new version has issues.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Tightly-coupled architecture provides no component-level isolation",
+            "SubServer directly invokes processing components without abstraction layer",
+            "No service boundaries or versioning mechanisms",
+            "Process-based architecture makes hot-swapping extremely difficult",
+            "15-minute upgrade window unrealistic for any significant changes",
+            "Requires fundamental architectural changes to support rolling upgrades",
+            "High risk of batch processing failures during transition",
+            "May require duplicate infrastructure (2x resources) during upgrade window"
+          ],
+          "alternative_approaches": "Accept scheduled downtime windows for upgrades rather than attempting zero-downtime deployments. Implement upgrades during off-peak hours (overnight) when batch volume is low. Use canary deployment where new version processes small percentage of batches first. Create parallel environment for testing, then cut over all traffic at once (big-bang deployment). Consider this scenario as justification for service-oriented architecture refactoring. Use feature flags to enable new functionality without code deployment."
+        },
+        {
+          "scenario_id": "S-09",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-06",
+            "C-07"
+          ],
+          "change_description": "Extract dispatch business logic from Database stored procedures into application code within Pre-Generator & Generator. Create equivalent routing logic in application layer using modern programming language. Implement comprehensive test suite for extracted logic. Run both stored procedures and application code in parallel (dual-write) to verify equivalence. Gradually shift dispatch decisions from database to application code. Update Database schema to support application-level dispatch. Remove stored procedures once migration is complete and validated.",
+          "change_extent": "Localized",
+          "estimated_effort": "Medium",
+          "risk_level": "Medium",
+          "issues_identified": [
+            "Deep coupling between Database stored procedures and dispatch logic",
+            "Stored procedures may contain undocumented business rules or edge cases",
+            "Dual-running requires infrastructure to compare results and handle discrepancies",
+            "Database schema changes may affect other components",
+            "4-week timeline feasible but requires disciplined incremental approach",
+            "Risk of subtle behavioral differences between stored procedure and application code",
+            "Testing complexity to ensure functional equivalence",
+            "Rollback strategy needed if migration encounters issues"
+          ],
+          "alternative_approaches": "Use strangler fig pattern: route new batches to application code while old batches use stored procedures. Implement application code as wrapper around stored procedures initially, then gradually replace internals. Create comprehensive test suite by capturing stored procedure inputs/outputs, then use as regression tests for application code. Accept longer timeline (8-12 weeks) for thorough testing and validation. Migrate one dispatch rule at a time rather than all logic simultaneously. Use feature flags to control which dispatch mechanism is active."
+        },
+        {
+          "scenario_id": "S-10",
+          "architecture_id": "A-01",
+          "classification": "Indirect",
+          "affected_components": [
+            "C-01",
+            "C-04",
+            "C-07"
+          ],
+          "change_description": "Implement format detection logic in Front End to identify file type (CSV, XML, JSON, etc.). Create parser abstraction layer in Normalizer with format-specific parser implementations. Add parser registry/factory pattern to select appropriate parser based on detected format. Update Database schema to store format metadata with batches. Modify Normalizer to use pluggable parsers instead of hardcoded parsing logic. Implement configuration mechanism for adding new format parsers without code changes.",
+          "change_extent": "Widespread",
+          "estimated_effort": "High",
+          "risk_level": "High",
+          "issues_identified": [
+            "Non-object-oriented design lacks abstraction mechanisms for parser selection",
+            "File format parsing likely hardcoded in Front End or Normalizer",
+            "No plugin architecture or dependency injection framework",
+            "Adding parser abstraction layer is significant architectural change",
+            "Each new format requires parser implementation and testing",
+            "Format detection logic may be complex for ambiguous file types",
+            "Database schema changes for format metadata",
+            "High risk of breaking existing CSV processing during refactoring",
+            "Requires fundamental design changes to support extensibility"
+          ],
+          "alternative_approaches": "Support limited set of formats with explicit customer declaration (customer specifies format in submission metadata) rather than auto-detection. Implement format conversion as preprocessing step before Front End (external tool or service). Create separate submission endpoints for each format rather than unified endpoint. Use configuration files to map format types to parser implementations without code changes. Accept that new format support requires code changes but standardize the process. Consider this as requirement for future architecture with proper abstraction and extensibility."
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "component": "C-05",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-08"
+          ]
+        },
+        {
+          "component": "C-07",
+          "scenario_count": 7,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-03",
+          "scenario_count": 5,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-08"
+          ]
+        },
+        {
+          "component": "C-06",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-01",
+            "S-02",
+            "S-06",
+            "S-09"
+          ]
+        },
+        {
+          "component": "C-04",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-02",
+            "S-05",
+            "S-06",
+            "S-10"
+          ]
+        },
+        {
+          "component": "C-02",
+          "scenario_count": 4,
+          "scenarios": [
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08"
+          ]
+        },
+        {
+          "component": "C-01",
+          "scenario_count": 3,
+          "scenarios": [
+            "S-06",
+            "S-07",
+            "S-10"
+          ]
+        }
+      ],
+      "scenario_interaction_weights": [
+        {
+          "component": "C-07",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-09",
+            "S-10"
+          ],
+          "priority": "High",
+          "rank": 1,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Pre-Generator & Generator is the most critical hotspot, impacted by 7 scenarios spanning all stakeholder concerns. Business-critical scenarios include S-02 (new service types - revenue opportunity), S-04 (failure recovery - operational continuity), S-06 (customer visibility - service quality), and S-08 (zero-downtime upgrades - SLA compliance). The component contains dispatch business logic currently embedded in database stored procedures (S-09), making it difficult to maintain and extend. All changes carry high risk due to tight coupling and lack of automated testing. Not addressing this hotspot blocks revenue growth (new services), increases operational costs (manual failure recovery), and creates customer dissatisfaction (lack of visibility, extended downtimes)."
+        },
+        {
+          "component": "C-05",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-08"
+          ],
+          "priority": "High",
+          "rank": 2,
+          "impacted_roles": [
+            "End-user",
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "Checker & Cleaner is a critical quality gate impacted by 5 high-risk scenarios. S-01 (validation rule changes) is a frequent business need with unrealistic 5-day timeline due to lack of interface contracts and automated tests. S-02 (new service types) requires service-specific validation logic scattered across components. S-08 (zero-downtime upgrades) has 15-minute requirement that is impossible with current architecture. S-04 (failure recovery) requires stateful resumption capabilities not designed into the component. Validation logic changes directly impact data quality and downstream processing assumptions. Not addressing this creates: frequent production incidents from validation changes, inability to launch new services competitively, extended maintenance windows affecting SLAs, and expensive manual testing cycles."
+        },
+        {
+          "component": "C-03",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-04",
+            "S-06",
+            "S-08"
+          ],
+          "priority": "High",
+          "rank": 3,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer",
+            "System Administrator"
+          ],
+          "rationale": "SubServer orchestrates the entire processing pipeline and is impacted by 5 scenarios requiring coordination logic changes. S-04 (failure recovery) requires implementing checkpointing and restart logic with 30-minute diagnostic timeline that's unrealistic. S-06 (status tracking) requires event publishing infrastructure not currently present. S-07 (priority handling) requires replacing simple FIFO with priority queue and resource allocation. S-08 (zero-downtime upgrades) requires load balancing and version management capabilities. The process-based parallelization model makes dynamic changes complex. Not addressing this hotspot results in: prolonged system outages during failures, inability to meet rush processing SLAs, lack of operational visibility, and forced maintenance windows. This is the architectural linchpin - improvements here enable multiple business capabilities."
+        },
+        {
+          "component": "C-06",
+          "scenario_ids": [
+            "S-01",
+            "S-02",
+            "S-06",
+            "S-09"
+          ],
+          "priority": "Medium",
+          "rank": 4,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Front End is impacted by 4 scenarios primarily affecting developer productivity and system extensibility. S-02 (new service types) requires handling service-specific metadata. S-06 (status tracking) requires new API endpoints with authentication/authorization. S-09 (database logic migration) affects how dispatch decisions are exposed. S-10 (multiple formats) requires format detection and parser selection. While important for feature velocity, these changes are less immediately critical to operations than pipeline components. Not addressing this creates: slower time-to-market for new features, poor developer experience, and technical debt accumulation. However, workarounds exist (manual processes, separate endpoints) making this lower priority than core processing components."
+        },
+        {
+          "component": "C-04",
+          "scenario_ids": [
+            "S-02",
+            "S-05",
+            "S-06",
+            "S-10"
+          ],
+          "priority": "Medium",
+          "rank": 5,
+          "impacted_roles": [
+            "Developer",
+            "Maintainer"
+          ],
+          "rationale": "Normalizer is impacted by 4 scenarios focused on maintainability and extensibility. S-05 (code refactoring) directly addresses technical debt with 3-day timeline that's unrealistic without tests. S-02 (new service types) requires service-specific normalization rules. S-10 (multiple formats) requires fundamental redesign with parser abstraction layer. S-06 (status tracking) requires event publishing. The component is explicitly called out as having maintainability issues (complex, poorly documented code). Not addressing this increases: developer onboarding time, defect rates during changes, time to implement new features, and risk of knowledge loss. However, the system currently functions, making this a medium priority focused on long-term sustainability rather than immediate operational risk."
+        },
+        {
+          "component": "C-02",
+          "scenario_ids": [
+            "S-04",
+            "S-06",
+            "S-07",
+            "S-08"
+          ],
+          "priority": "Medium",
+          "rank": 6,
+          "impacted_roles": [
+            "System Administrator",
+            "Developer"
+          ],
+          "rationale": "Server handles batch scheduling and is impacted by 4 scenarios affecting operational control. S-07 (priority handling) requires replacing FIFO with priority queue and preventing starvation. S-04 (failure recovery) requires state management for restart capabilities. S-06 (status tracking) requires batch metadata management. S-08 (zero-downtime upgrades) affects deployment orchestration. Changes here primarily affect operational flexibility rather than core functionality. Not addressing this limits: ability to meet rush SLAs, operational responsiveness to failures, and deployment agility. However, current FIFO processing works adequately for standard operations, and manual administrator intervention can handle exceptions, making this medium priority."
+        },
+        {
+          "component": "C-01",
+          "scenario_ids": [
+            "S-06",
+            "S-07",
+            "S-10"
+          ],
+          "priority": "Low",
+          "rank": 7,
+          "impacted_roles": [
+            "End-user",
+            "System Administrator"
+          ],
+          "rationale": "Database is impacted by 3 scenarios but primarily as a supporting component rather than requiring complex logic changes. S-06 (status tracking) requires schema changes for status storage. S-07 (priority handling) requires priority metadata storage. S-10 (multiple formats) requires format metadata storage. Most evaluation findings identify Database schema changes as secondary effects of logic changes in other components. The main architectural concern is stored procedures containing business logic (S-09), but that's addressed through C-07. Not addressing Database-specific concerns creates: schema migration complexity and potential performance bottlenecks. However, database changes are typically lower risk with established migration practices, and the component itself isn't the primary blocker for business scenarios, making this lowest priority."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "Strength 1: Effective batch processing for primary use case - The architecture directly supports S-03 (standard batch processing) with no changes required. The sequential pipeline model with dedicated components (Normalizer \u2192 Checker & Cleaner \u2192 Pre-Generator & Generator) provides clear separation of concerns for the core workflow, enabling reliable processing of 50,000 records within 4-hour windows.",
+          "Strength 2: Process-based parallelization for throughput - The SubServer's ability to spawn multiple parallel processing instances enables horizontal scaling for batch volume. This architectural decision supports concurrent batch processing without complex threading concerns, as evidenced by S-03's successful handling of large batches.",
+          "Strength 3: Centralized data management - The Database component serves as a single source of truth for batch data, validation rules, and dispatch logic. This centralization simplifies data consistency and provides a stable integration point, though it creates coupling issues addressed in weaknesses."
+        ],
+        "architectural_weaknesses": [
+          "Weakness 1: Pervasive tight coupling prevents isolated changes - 8 of 10 scenarios (S-01, S-02, S-04, S-05, S-06, S-08, S-09, S-10) are classified as 'Indirect' with 'Widespread' change extent, requiring modifications across 3-7 components. The lack of interface contracts, abstraction layers, and clear component boundaries means even localized business logic changes (S-01 validation rules) trigger extensive regression testing across the entire pipeline. This coupling is the root cause of unrealistic timelines: S-01's 5-day validation change, S-02's 2-week service addition, S-04's 30-minute failure recovery, and S-08's 15-minute zero-downtime upgrade are all blocked by architectural rigidity.",
+          "Weakness 2: Absence of extensibility mechanisms blocks business growth - The non-object-oriented design lacks polymorphism, strategy patterns, or plugin architectures needed for S-02 (new service types), S-07 (priority handling), and S-10 (multiple formats). Adding certified mail service (S-02) requires conditional logic scattered across all 7 components with 'High' risk and effort. The architecture provides no extension points, forcing developers to modify core processing logic for every new capability, creating exponential complexity and regression risk.",
+          "Weakness 3: No automated testing infrastructure undermines change confidence - All scenarios except S-03 identify 'likely absence of automated test suite' as a critical issue. S-01 notes 'lack of automated tests means manual testing across entire pipeline,' S-05's refactoring is 'high-risk in legacy systems' without tests, and S-08's zero-downtime deployment is impossible without health checking and validation. This testing gap transforms every change into a high-risk manual effort, multiplying estimated timelines and blocking rapid iteration.",
+          "Weakness 4: Missing operational capabilities create SLA and reliability risks - The architecture lacks fundamental operational features: S-04 (failure recovery) requires building checkpointing from scratch with 'High' effort and risk; S-06 (status tracking) has no event-driven infrastructure requiring widespread component modifications; S-08 (zero-downtime upgrades) is blocked by process-based architecture with no service boundaries or versioning. These gaps force extended maintenance windows, manual failure diagnosis, and operational blind spots that directly impact customer SLAs and satisfaction.",
+          "Weakness 5: Business logic embedded in database stored procedures creates maintenance burden - S-09 identifies dispatch logic trapped in Database stored procedures, making it 'difficult to maintain and extend.' This anti-pattern appears across multiple scenarios (S-01 validation rules in stored procedures, S-06 status tracking requiring database triggers). The deep coupling between Database and application logic prevents independent evolution, complicates testing, and creates knowledge silos requiring specialized database expertise for business rule changes."
+        ],
+        "modifiability_assessment": "The architecture exhibits poor modifiability with rigid coupling, absent extensibility mechanisms, and missing operational capabilities that block 9 of 10 business scenarios. The sequential pipeline design serves the primary use case well but cannot accommodate evolution without widespread, high-risk changes across multiple components."
+      },
+      "architecture_comparison": [],
+      "recommendations": [
+        {
+          "priority": "High",
+          "recommendation": "Establish comprehensive automated testing infrastructure before attempting any architectural refactoring. Create characterization tests that capture current behavior of each component (Normalizer, Checker & Cleaner, Pre-Generator & Generator) using input/output snapshots from production batches. Implement continuous integration pipeline with automated regression testing.",
+          "rationale": "Testing infrastructure is the foundational prerequisite for safe architectural evolution. Every scenario evaluation (S-01, S-02, S-04, S-05, S-08, S-09, S-10) identifies lack of automated tests as blocking confident changes. Without tests, refactoring efforts carry unacceptable regression risk. This investment enables all subsequent recommendations by providing safety net for incremental improvements. Addresses root cause affecting all 7 components in hotspot analysis.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Introduce explicit interface contracts and abstraction layer between SubServer and processing components (Normalizer, Checker & Cleaner, Pre-Generator & Generator). Define standard interfaces for component lifecycle (initialize, process, checkpoint, resume, publish_status) and data contracts for inter-component communication. Implement adapter pattern to wrap existing components behind these interfaces without changing internal logic.",
+          "rationale": "Interface contracts directly address the tight coupling weakness affecting 8 scenarios. This enables: isolated component changes (S-01, S-05), pluggable implementations for new service types (S-02), checkpoint/restart capabilities (S-04), status event publishing (S-06), and zero-downtime deployments (S-08). The adapter pattern allows incremental adoption without big-bang rewrite. Targets C-03 (SubServer) and C-05 (Checker & Cleaner) hotspots with 5 scenario impacts each. Creates architectural foundation for extensibility.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Migrate dispatch business logic from Database stored procedures to application code in Pre-Generator & Generator using strangler fig pattern. Implement application-layer dispatch logic alongside stored procedures, run both in parallel with result comparison, gradually shift traffic to application code, then deprecate stored procedures. Include comprehensive test suite creation as part of migration.",
+          "rationale": "Addresses S-09 directly and reduces Database coupling affecting 7 scenarios. Moving logic to application code enables: proper unit testing, version control, easier debugging, and independent deployment. The strangler fig approach (recommended in S-09 evaluation) minimizes risk through gradual migration with validation. Targets C-07 (Pre-Generator & Generator) - the #1 ranked hotspot with 7 scenario impacts. Unlocks maintainability improvements and reduces specialized database expertise dependency. Feasible 4-week timeline with disciplined execution.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "High",
+          "recommendation": "Implement service type abstraction using strategy pattern or configuration-driven approach to support multiple mail service types (standard, certified, future types). Create service type registry in Database with associated normalization rules, validation rules, and generation templates. Modify components to query service type configuration rather than hardcoding service-specific logic.",
+          "rationale": "Directly enables S-02 (new service types) - a critical revenue opportunity currently blocked by 'High' risk and effort. Configuration-driven approach works within non-OO constraints while providing extensibility. Reduces S-02 from requiring changes across all 7 components to primarily configuration changes. Addresses extensibility weakness and provides template for S-10 (multiple formats). Targets C-04 (Normalizer), C-05 (Checker & Cleaner), and C-07 (Pre-Generator & Generator) hotspots. Enables competitive response to market opportunities.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement checkpoint/restart capability in SubServer with stage-level granularity. Add state persistence to Database tracking current processing stage, intermediate data, and timestamps for each batch. Modify processing components to support resumption from saved state. Create administrative interface for triggering restarts with diagnostic information.",
+          "rationale": "Addresses S-04 (failure recovery) which directly impacts operational continuity and SLA compliance. Current manual recovery process is expensive and error-prone. Checkpoint/restart reduces mean time to recovery from hours to minutes, minimizing customer impact. Also enables S-08 (zero-downtime upgrades) by allowing graceful batch completion before component shutdown. Targets C-03 (SubServer) hotspot. Accept longer implementation timeline (6-8 weeks) than S-04's unrealistic 30-minute requirement, but deliver substantial operational value.",
+          "estimated_effort": "High"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement batch-level status tracking with stage transition events published to Database. Add status API endpoint in Front End for customer queries. Use database triggers or application-level event publishing when batches transition between processing stages. Implement email notifications as interim solution before building real-time push infrastructure.",
+          "rationale": "Addresses S-06 (customer visibility) which impacts service quality and customer satisfaction. Batch-level tracking (vs. real-time granular updates) reduces complexity while delivering core value. Email notifications avoid complex polling/push mechanisms initially. Targets C-01 (Front End), C-03 (SubServer), and C-07 (Pre-Generator & Generator) hotspots. Provides customer-facing value with manageable implementation scope. Can be enhanced incrementally toward real-time updates as infrastructure matures.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Medium",
+          "recommendation": "Implement priority queue in Server with separate processing pools for rush vs. standard batches. Add priority metadata to batch submissions in Front End. Allocate dedicated SubServer processes to rush pool to prevent resource contention. Use time-based scheduling windows as alternative to complex dynamic preemption.",
+          "rationale": "Addresses S-07 (priority handling) enabling premium service offerings and revenue opportunities. Separate processing pools avoid complex preemption logic and priority inversion risks. Simpler than dynamic queue reordering while delivering business value. Targets C-02 (Server) and C-01 (Front End) hotspots. Enables competitive differentiation through rush service SLAs. Lower complexity than checkpoint/restart but still provides operational flexibility.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Refactor Normalizer internal code structure using incremental approach over 4-6 weeks. Create characterization tests first, then apply small refactorings (extract method, improve naming, add comments) with continuous validation. Focus on reducing complexity and improving documentation rather than complete rewrite.",
+          "rationale": "Addresses S-05 (code maintainability) which affects developer productivity and onboarding. However, system currently functions despite poor code quality, making this lower priority than business-blocking issues. Incremental approach with test-first discipline minimizes risk. Targets C-04 (Normalizer) hotspot. Improves long-term sustainability but doesn't unlock immediate business capabilities. Should be combined with feature work rather than standalone effort to justify investment.",
+          "estimated_effort": "Medium"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Accept scheduled maintenance windows for component upgrades rather than pursuing zero-downtime deployments in current architecture. Implement blue-green deployment at infrastructure level (entire system) rather than component level. Schedule upgrades during off-peak hours with customer communication.",
+          "rationale": "S-08 (zero-downtime upgrades) requires fundamental architectural changes (service boundaries, versioning, load balancing) that are not justified by current business needs. The 15-minute requirement is aspirational rather than hard constraint. Scheduled maintenance windows are industry-standard practice for batch processing systems. Defer zero-downtime capability until service-oriented architecture refactoring is undertaken for other business reasons. Focus architectural investment on revenue-generating capabilities (S-02, S-07) and operational stability (S-04, S-06) instead.",
+          "estimated_effort": "Low"
+        },
+        {
+          "priority": "Low",
+          "recommendation": "Support multiple input formats through explicit customer declaration and separate submission endpoints rather than auto-detection and parser abstraction. Implement format-specific preprocessing as external conversion step before Front End ingestion. Add new formats incrementally with dedicated parsers.",
+          "rationale": "S-10 (multiple formats) requires significant architectural changes (parser abstraction, factory pattern, format detection) that exceed business value in non-OO architecture. Explicit format declaration simplifies implementation and reduces ambiguity. External preprocessing isolates format handling from core pipeline. This pragmatic approach delivers multi-format capability without fundamental redesign. Defer sophisticated parser architecture until broader refactoring toward extensible design. Targets C-01 (Front End) and C-04 (Normalizer) but with minimal invasiveness.",
+          "estimated_effort": "Medium"
+        }
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Complete",
+      "missing_information": [],
+      "inference_notes": [
+        "Generated by AI Agents"
+      ]
+    }
+  }
+}

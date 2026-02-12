@@ -1,0 +1,321 @@
+{
+  "ATAM_Evaluation": {
+    "evaluation_inputs": {
+      "system_description": "A centralized Data Center system designed to integrate dozens of existing, disparate academic information systems at Universitas Pendidikan Ganesha. The system functions as a backbone Data Warehouse (DWH) to synchronize data across the university, reduce redundancy, and support institutional accreditation. It aggregates data from various web-based applications (mostly PHP/MySQL) and was evaluated across three architectural options (Direct Connection, Web Services, ESB) before settling on a Spring Framework-based solution to accommodate legacy constraints.",
+      "phase_1_discovery": {
+        "initial_documentation_status": "Low maturity; the system was based on an initial prototype with no standard architectural evaluation practice previously applied. Design decisions were initially driven by immediate needs under tight schedules without thorough analysis.",
+        "evaluator_inquiry_questions": [
+          "How can existing systems be integrated to minimize data duplication?",
+          "What are the available architectural options considering the low-cost and open-source constraints?",
+          "How can binary data (images, audio, video) be handled if existing databases only store file paths?"
+        ]
+      },
+      "phase_2_architectural_context": {
+        "hardware_view_description": [
+          "Dozens of existing information systems operating on separate servers with separate databases.",
+          "Most existing applications are web-based, coded in PHP, using MySQL instances.",
+          "Binary files (images/audio) are stored physically on server hard drives, not in the databases."
+        ],
+        "runtime_constraints": [
+          "Strict reliance on low-cost, open-source software.",
+          "Limited human resources and developer expertise (mostly fresh graduates).",
+          "Legacy systems cannot accept major behavioral changes or new adapter installations."
+        ]
+      },
+      "quantitative_model_parameters": {
+        "system_count": "Dozens of information systems",
+        "data_types": "Text, Binary (Image, Audio, Video)",
+        "network_protocol": "HTTP/REST (for Web Services option), JDBC (for Direct Connection)"
+      },
+      "investigative_prompts": {
+        "style_probes": {
+          "target_style": "Enterprise Service Bus (ESB)",
+          "questions": [
+            "Does the ESB support binary data transfer natively?",
+            "Can legacy systems connect to the ESB without installing new adapters?"
+          ]
+        }
+      },
+      "raw_candidate_scenarios": [
+        {
+          "id": "RS-01",
+          "description": "All applications need to be connected to each other and authenticated such that to avoid any data redundancy among them."
+        },
+        {
+          "id": "RS-02",
+          "description": "Each of the other connected applications must be able to connect to a centralized data-warehouse and pull data upon request as needed."
+        },
+        {
+          "id": "RS-03",
+          "description": "The DC system must be able to sync any duplicated master data from different applications."
+        },
+        {
+          "id": "RS-04",
+          "description": "The DC system must be able to verify the identity of the application that connects to it before an access is allowed."
+        },
+        {
+          "id": "RS-05",
+          "description": "The source system should not experience overload when another system is connected to get data."
+        },
+        {
+          "id": "RS-06",
+          "description": "Add more data structures into the existing connected application and reflect the changes into the data-warehouse."
+        },
+        {
+          "id": "RS-07",
+          "description": "The DC system must facilitate any format of data transfer including binary format such as images, audio and video files."
+        },
+        {
+          "id": "RS-08",
+          "description": "Small to no change should be needed in any of the connected applications in order to implement the solution."
+        },
+        {
+          "id": "RS-09",
+          "description": "The cost in term of the required software development has to be minimum and preferably using open-source software."
+        },
+        {
+          "id": "RS-10",
+          "description": "The developed system has to be developer-friendly for enhancement purposes."
+        }
+      ],
+      "business_context": {
+        "business_goals": [
+          "Accommodate needs of institutional accreditation",
+          "Organize and synchronize information from existing systems",
+          "Reduce duplication issues and problems from various data structures",
+          "Facilitate processes previously done manually",
+          "Create a centralized source for overall academic activity"
+        ],
+        "technical_constraints": [
+          "Low-cost",
+          "Open-source software",
+          "Tight development schedule",
+          "Limited human resources/developer experience",
+          "Existing systems use PHP and MySQL",
+          "Existing systems are disparate and separate"
+        ],
+        "architectural_drivers": [
+          "Security",
+          "Performance",
+          "Compliance",
+          "Modifiability"
+        ]
+      }
+    },
+    "generated": {
+      "architectural_approaches": [
+        {
+          "approach_name": "Unknown",
+          "description": "Unknown",
+          "addressed_attributes": [
+            {
+              "quality_attribute": "Unknown",
+              "rationale": "Unknown"
+            }
+          ]
+        }
+      ],
+      "utility_tree": {
+        "root": "Utility",
+        "quality_attribute_nodes": [
+          {
+            "attribute_name": "Performance",
+            "children": [
+              {
+                "refinement": "Response time < 1s",
+                "scenario_id": "P1",
+                "scenario_description": "Scenario details not provided by Customer.",
+                "priority_tuple": {
+                  "importance": "Unknown",
+                  "difficulty": "Unknown"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Security",
+            "children": [
+              {
+                "refinement": "Data encryption in transit",
+                "scenario_id": "S1",
+                "scenario_description": "Scenario details not provided by Customer.",
+                "priority_tuple": {
+                  "importance": "Unknown",
+                  "difficulty": "Unknown"
+                }
+              }
+            ]
+          },
+          {
+            "attribute_name": "Availability",
+            "children": [
+              {
+                "refinement": "99.9% uptime",
+                "scenario_id": "A1",
+                "scenario_description": "Scenario details not provided by Customer.",
+                "priority_tuple": {
+                  "importance": "Unknown",
+                  "difficulty": "Unknown"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "scenarios": [
+        {
+          "scenario_text": "During normal operations, a user submits a search query; the system must return relevant results within 1 second.",
+          "primary_quality_attribute": [
+            "Performance"
+          ]
+        },
+        {
+          "scenario_text": "When sensitive user data is transmitted between the client and server, it must be encrypted using TLS to prevent eavesdropping.",
+          "primary_quality_attribute": [
+            "Security"
+          ]
+        },
+        {
+          "scenario_text": "The system must maintain operational availability, with downtime not exceeding 0.1% (approximately 8.76 hours) per year.",
+          "primary_quality_attribute": [
+            "Availability"
+          ]
+        }
+      ],
+      "analysis_records": [
+        {
+          "scenario_reference": {
+            "id": "P1",
+            "text": "During normal operations, a user submits a search query; the system must return relevant results within 1 second.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Performance",
+          "environment": "Normal operations",
+          "stimulus": "User submits a search query.",
+          "response_measure": "Return relevant results within 1 second.",
+          "architectural_decisions": [
+            "Architectural patterns and performance parameters not provided."
+          ],
+          "reasoning": "Cannot perform analysis. Required data (e.g., architectural patterns, query volume, data size, network bandwidth) was requested from the Customer but not received.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-P1",
+                "description": "Insufficient architectural and quantitative data to assess if the 1-second response time target can be met.",
+                "rationale": "Critical performance parameters (QPS, data size, latency) and architectural decisions (caching, load balancing) are unknown."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-P1",
+                "parameter": "Database query latency / Network bandwidth",
+                "correlated_attribute": "Performance (Response Time)"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-P1",
+                "parameter": "Caching strategy (e.g., cache size, TTL)",
+                "conflicting_attributes": [
+                  "Performance (positive)",
+                  "Consistency (negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "S1",
+            "text": "When sensitive user data is transmitted between the client and server, it must be encrypted using TLS to prevent eavesdropping.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Security",
+          "environment": "Data transmission",
+          "stimulus": "Sensitive user data is transmitted.",
+          "response_measure": "Data is encrypted using TLS.",
+          "architectural_decisions": [
+            "Architectural patterns and security configurations not provided."
+          ],
+          "reasoning": "Cannot perform detailed analysis. The use of TLS is a standard practice, but specific implementation details (TLS version, certificate management) and their impact on other attributes are unknown.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-S1",
+                "description": "Potential misconfiguration of TLS (e.g., weak ciphers, expired certificates) could undermine encryption.",
+                "rationale": "Specific TLS implementation and management procedures were not detailed."
+              }
+            ],
+            "non_risks": [
+              {
+                "id": "NR-S1",
+                "description": "The architectural requirement to use TLS for data in transit is a clear, standard security control.",
+                "rationale": "TLS is a well-established protocol for encrypting network communications."
+              }
+            ],
+            "sensitivity_points": [
+              {
+                "id": "S-S1",
+                "parameter": "TLS handshake latency / CPU overhead",
+                "correlated_attribute": "Performance"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-S1",
+                "parameter": "TLS encryption strength",
+                "conflicting_attributes": [
+                  "Security (positive)",
+                  "Performance (negative)"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "scenario_reference": {
+            "id": "A1",
+            "text": "The system must maintain operational availability, with downtime not exceeding 0.1% (approximately 8.76 hours) per year.",
+            "type": "Use Case"
+          },
+          "quality_attribute": "Availability",
+          "environment": "Operational",
+          "stimulus": "A component failure or planned maintenance event.",
+          "response_measure": "System downtime \u2264 8.76 hours per year (99.9% uptime).",
+          "architectural_decisions": [
+            "Redundancy mechanisms and failover strategies not provided."
+          ],
+          "reasoning": "Cannot perform analysis. Required data on redundancy (replication, failover), backup strategies, and failure recovery times was requested from the Customer but not received.",
+          "findings": {
+            "risks": [
+              {
+                "id": "R-A1",
+                "description": "Lack of defined redundancy and failover mechanisms poses a high risk to achieving 99.9% availability.",
+                "rationale": "Architectural approaches for high availability (e.g., active-active, replication) are unspecified."
+              }
+            ],
+            "non_risks": [],
+            "sensitivity_points": [
+              {
+                "id": "S-A1",
+                "parameter": "Failover time / Mean Time To Repair (MTTR)",
+                "correlated_attribute": "Availability"
+              }
+            ],
+            "tradeoff_points": [
+              {
+                "id": "T-A1",
+                "parameter": "Level of redundancy (e.g., number of replicas)",
+                "conflicting_attributes": [
+                  "Availability (positive)",
+                  "Cost (negative)"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,298 @@
+{
+  "SAAM_Evaluation_Extract": {
+    "metadata": {
+      "paper_id": "0-7695-1549-5/02",
+      "paper_title": "Improving Quality Attributes of a Complex System Through Architectural Analysis - A Case Study",
+      "authors": [
+        "Rikard Land"
+      ],
+      "year": "2002",
+      "venue": "Proceedings of the Ninth Annual IEEE International Conference and Workshop on the Engineering of Computer-Based Systems (ECBS'02)",
+      "doi_or_url": "0-7695-1549-5/02 $17.00 2002 IEEE",
+      "extraction_date": "2026-01-09"
+    },
+    "evaluation_inputs": {
+      "system_context": {
+        "system_name": "PAM (Plant, Analysis, Methodology)",
+        "domain": "Nuclear Power Plant Simulation",
+        "system_description": "A system to manage nuclear simulations where input data is edited and stored in a database, simulation programs are executed on Unix servers, and results are analyzed via a client.",
+        "system_maturity": "Development",
+        "business_goals": "Optimize plant maintenance, ensure safety, and improve efficiency and quality of simulation work."
+      },
+      "evaluation_setup": {
+        "evaluation_goal": "To find the best architectural solution using different variants and comparing them to ensure robustness, maintainability, and acceptable performance.",
+        "evaluation_type": "Architecture Comparison",
+        "architectures_evaluated": "4"
+      },
+      "participants": [
+        {
+          "role": "User",
+          "count": null
+        },
+        {
+          "role": "Developer",
+          "count": null
+        },
+        {
+          "role": "Manager",
+          "count": null
+        }
+      ],
+      "architecture_description": {
+        "documentation_level": "Medium",
+        "architecture_styles": [
+          "Client-Server",
+          "Distributed"
+        ],
+        "architectures": [
+          {
+            "architecture_id": "A1",
+            "name": "Client Processing / Distributed Storage",
+            "description": "Files are processed in the client; files are stored on the node where simulation took place (distributed).",
+            "key_components": [
+              {
+                "component_id": "Client",
+                "component_name": "Client",
+                "responsibilities": "Collects/edits input data, presents output files, processes/filters files."
+              },
+              {
+                "component_id": "SB",
+                "component_name": "Service Broker",
+                "responsibilities": "Provides service of starting calculations."
+              },
+              {
+                "component_id": "CS",
+                "component_name": "Calculation Server",
+                "responsibilities": "Maintains one simulation; spawns TCS processes."
+              },
+              {
+                "component_id": "TCS",
+                "component_name": "Task Calculation Server",
+                "responsibilities": "Responsible for the execution of one simulation task."
+              }
+            ],
+            "assumptions": [
+              "There is exactly one SB per server computer."
+            ]
+          },
+          {
+            "architecture_id": "A2",
+            "name": "Client Processing / Central Storage",
+            "description": "Files are processed in the client; files are stored on one node acting as file server (centralized).",
+            "key_components": [],
+            "assumptions": []
+          },
+          {
+            "architecture_id": "B1",
+            "name": "Server Processing / Distributed Storage",
+            "description": "Files are processed on a server; files are stored distributed.",
+            "key_components": [
+              {
+                "component_id": "SDS",
+                "component_name": "Service Dispatch Server",
+                "responsibilities": "Processes input and output files associated with simulations on the server before transferring to client."
+              }
+            ],
+            "assumptions": []
+          },
+          {
+            "architecture_id": "B2",
+            "name": "Server Processing / Central Storage",
+            "description": "Files are processed on a server; files are stored centrally.",
+            "key_components": [],
+            "assumptions": []
+          }
+        ]
+      },
+      "scenario_elicitation": {
+        "elicitation_method": "Discussion meetings",
+        "scenario_sources": [
+          "Stakeholders"
+        ],
+        "scenario_types": [
+          "Use Case",
+          "Change (Growth)"
+        ]
+      },
+      "evaluation_focus": {
+        "primary_quality_attribute": "Modifiability",
+        "secondary_quality_attributes": [
+          "Performance",
+          "Reliability"
+        ]
+      },
+      "scenario_handling": {
+        "classification_scheme": "Direct vs Indirect",
+        "prioritization_method": "None"
+      }
+    },
+    "ground_truth_outputs": {
+      "scenarios": [
+        {
+          "scenario_id": "S-01",
+          "scenario_text": "The user starts a simulation",
+          "scenario_type": "Use Case",
+          "stakeholder": "User",
+          "priority": null
+        },
+        {
+          "scenario_id": "S-02",
+          "scenario_text": "PAM is extended with functionality to compare binary output files",
+          "scenario_type": "Change (Growth)",
+          "stakeholder": null,
+          "priority": null
+        },
+        {
+          "scenario_id": "S-03",
+          "scenario_text": "A text file from a server computer is viewed in a client",
+          "scenario_type": "Use Case",
+          "stakeholder": null,
+          "priority": null
+        },
+        {
+          "scenario_id": "S-04",
+          "scenario_text": "A simulation is executed",
+          "scenario_type": "Use Case",
+          "stakeholder": null,
+          "priority": null
+        },
+        {
+          "scenario_id": "S-05",
+          "scenario_text": "Two files are compared",
+          "scenario_type": "Use Case",
+          "stakeholder": null,
+          "priority": null
+        }
+      ],
+      "scenario_classification": [
+      {
+        "scenario_id": "S-01",
+        "classification": "Direct",
+        "rationale": "Explicitly identified as a 'use case' in the text, meaning it is supported by the current architecture without modification."
+      },
+      {
+        "scenario_id": "S-02",
+        "classification": "Indirect",
+        "rationale": "Explicitly identified as a 'change scenario' involving the 'addition of functionality'."
+      },
+      {
+        "scenario_id": "S-03",
+        "classification": "Direct",
+        "rationale": "Described as a 'user scenario' used for performance analysis, implying execution on the existing system."
+      },
+      {
+        "scenario_id": "S-04",
+        "classification": "Direct",
+        "rationale": "Described as a 'user scenario' used for performance analysis, implying execution on the existing system."
+      },
+      {
+        "scenario_id": "S-05",
+        "classification": "Direct",
+        "rationale": "Described as a 'user scenario' used for performance analysis, implying execution on the existing system."
+      }
+    ],
+      "scenario_evaluations": [
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "B2",
+          "affected_components": [],
+          "change_description": "Data transfer estimation",
+          "change_extent": null,
+          "estimated_effort": null,
+          "issues_identified": [
+            "Architecture B2 clearly performed worst (between one and two whole transfers of a file)."
+          ]
+        },
+        {
+          "scenario_id": "S-03",
+          "architecture_id": "A1",
+          "affected_components": [],
+          "change_description": "Data transfer estimation",
+          "change_extent": null,
+          "estimated_effort": null,
+          "issues_identified": [
+            "Include one transfer, not necessarily of the whole file."
+          ]
+        }
+      ],
+      "scenario_interactions": [
+        {
+          "interaction_id": "INT-SB-A1-A2",
+          "interacting_scenarios": [],
+          "shared_components": [
+            "SB"
+          ],
+          "interaction_effect": "Negative",
+          "modularity_implication": "Affected by 2 scenarios in A1/A2, which is undesirable because of its central position and robustness requirements."
+        },
+        {
+          "interaction_id": "INT-Client",
+          "interacting_scenarios": [],
+          "shared_components": [
+            "Client"
+          ],
+          "interaction_effect": "Negative",
+          "modularity_implication": "Affected by 10 or 11 scenarios; high coupling."
+        },
+        {
+          "interaction_id": "INT-SDS",
+          "interacting_scenarios": [],
+          "shared_components": [
+            "SDS"
+          ],
+          "interaction_effect": "Negative",
+          "modularity_implication": "Affected by 7 or 8 scenarios in B1/B2."
+        }
+      ],
+      "overall_results": {
+        "architectural_strengths": [
+          "A1 and A2 have the lowest number of processes.",
+          "Socket mechanism and component independence contribute to robustness."
+        ],
+        "architectural_weaknesses": [
+          "B2 performs worst regarding large data transfers.",
+          "B1 and B2 have significantly more processes due to SDS.",
+          "A1 and A2 have scenarios affecting the critical SB component."
+        ],
+        "modifiability_assessment": "Good"
+      },
+      "architecture_comparison": [
+        {
+          "architecture_id": "A1",
+          "rank": 1,
+          "rationale": "Superior maintainability stats; better performance than B2; fewer processes than B variants. A1/A2 selected as best (synthesized)."
+        },
+        {
+          "architecture_id": "A2",
+          "rank": 1,
+          "rationale": "Superior maintainability stats; equal to A1 in most respects. A1/A2 selected as best (synthesized)."
+        },
+        {
+          "architecture_id": "B1",
+          "rank": 2,
+          "rationale": "Inferior with respect to number of processes; requires more coding (SDS)."
+        },
+        {
+          "architecture_id": "B2",
+          "rank": 3,
+          "rationale": "Inferior with respect to number of large data transfers; requires more coding (SDS)."
+        }
+      ],
+      "recommendations": [
+        "Use A1 or A2 (Client processing).",
+        "Postpone the tradeoff decision regarding file storage (Central vs Distributed) to the configuration phase."
+      ]
+    },
+    "extraction_metadata": {
+      "completeness": "Partial",
+      "missing_information": [
+        "Full text of all 19 scenarios (only examples provided).",
+        "Specific authors list beyond Rikard Land (paper mentions 'We', but only one author listed at top)."
+      ],
+      "inference_notes": [
+        "Inferred 'Indirect' classification for scenarios described as 'change scenarios'.",
+        "Grouped A1 and A2 as rank 1 jointly as the paper concludes they are the choice and can be synthesized."
+      ]
+    }
+  }
+}
